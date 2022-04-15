@@ -325,6 +325,9 @@ public sealed class PlayerController : UnitController
         if (results.Count > 0)
             return;
 
+        bool isShiftBtPressed = Input.GetKey(KeyCode.LeftShift);
+        bool isCtrlBtPressed = Input.GetKey(KeyCode.LeftControl);
+
         RaycastHit raycastInfo;
         // factory selection
         if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, factoryMask))
@@ -342,8 +345,6 @@ public sealed class PlayerController : UnitController
         // unit selection / unselection
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, unitMask))
         {
-            bool isShiftBtPressed = Input.GetKey(KeyCode.LeftShift);
-            bool isCtrlBtPressed = Input.GetKey(KeyCode.LeftControl);
 
             UnselectCurrentFactory();
 
@@ -610,4 +611,26 @@ public sealed class PlayerController : UnitController
         }
     }
     #endregion
+
+    #region GUI
+
+    private void OnGUI()
+    {
+        if (!SelectionStarted)
+            return;
+
+        Vector3 start = Camera.main.WorldToScreenPoint(SelectionStart);
+        Vector3 end = Camera.main.WorldToScreenPoint(SelectionEnd);
+
+        Vector2 startPoint = new Vector2(start.x, Screen.height - start.y);
+        Vector2 endPoint = new Vector2(end.x, Screen.height - end.y);
+
+        Vector2 size = endPoint - startPoint;
+
+        Rect rect = new Rect(startPoint, size);
+        Color color = new Color(0.0f, 1.0f, 0.0f, 0.25f);
+        MousePickingGUI.DrawScreenRect(rect, color);
+    }
+
+#endregion
 }
