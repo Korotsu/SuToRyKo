@@ -16,7 +16,7 @@ public class UnitController : MonoBehaviour
     protected int _TotalBuildPoints = 0;
     public int TotalBuildPoints
     {
-        get { return _TotalBuildPoints; }
+        get => _TotalBuildPoints;
         set
         {
             Debug.Log("TotalBuildPoints updated");
@@ -28,7 +28,7 @@ public class UnitController : MonoBehaviour
     protected int _CapturedTargets = 0;
     public int CapturedTargets
     {
-        get { return _CapturedTargets; }
+        get => _CapturedTargets;
         set
         {
             _CapturedTargets = value;
@@ -39,9 +39,9 @@ public class UnitController : MonoBehaviour
     protected Transform TeamRoot = null;
     public Transform GetTeamRoot() { return TeamRoot; }
 
-    protected List<Unit> UnitList = new List<Unit>();
+    protected readonly List<Unit> UnitList = new List<Unit>();
     protected List<Unit> SelectedUnitList = new List<Unit>();
-    protected List<Factory> FactoryList = new List<Factory>();
+    protected readonly List<Factory> FactoryList = new List<Factory>();
     protected Factory SelectedFactory = null;
 
     // events

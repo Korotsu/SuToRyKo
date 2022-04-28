@@ -11,14 +11,15 @@ public class MenuController : MonoBehaviour
     Transform FactoryMenuCanvas = null;
     public GraphicRaycaster BuildMenuRaycaster { get; private set; }
 
-    UnitController Controller = null;
-    GameObject FactoryMenuPanel = null;
-    Text BuildPointsText = null;
-    Text CapturedTargetsText = null;
-    Button[] BuildUnitButtons = null;
-    Button[] BuildFactoryButtons = null;
-    Button CancelBuildButton = null;
-    Text[] BuildQueueTexts = null;
+    private UnitController Controller = null;
+    private GameObject FactoryMenuPanel = null;
+    private Text BuildPointsText = null;
+    private Text CapturedTargetsText = null;
+    private Button[] BuildUnitButtons = null;
+    private Button[] BuildFactoryButtons = null;
+    private Button CancelBuildButton = null;
+    private Button CancelFactoryButton = null;
+    private Text[] BuildQueueTexts = null;
 
     public void HideFactoryMenu()
     {
@@ -76,7 +77,7 @@ public class MenuController : MonoBehaviour
         }
     }
 
-    public void UpdateFactoryMenu(Factory selectedFactory, Func<int, bool> requestUnitBuildMethod, Action<int> enterFactoryBuildModeMethod)
+    public void UpdateFactoryMenu(Factory selectedFactory, Func<int, bool> requestUnitBuildMethod, Action<int> enterFactoryBuildModeMethod, Action exitFactoryBuildMethod)
     {
         ShowFactoryMenu();
 
@@ -124,15 +125,16 @@ public class MenuController : MonoBehaviour
             BuildFactoryButtons[i].gameObject.SetActive(true);
 
             int index = i; // capture index value for event closure
-            BuildFactoryButtons[i].onClick.AddListener(() =>
-            {
-                enterFactoryBuildModeMethod(index);
-            });
+            BuildFactoryButtons[i].onClick.AddListener(() => { enterFactoryBuildModeMethod(index); });
 
             Text buttonText = BuildFactoryButtons[i].GetComponentInChildren<Text>();
             FactoryDataScriptable data = selectedFactory.GetBuildableFactoryData(i);
             buttonText.text = data.Caption + "(" + data.Cost + ")";
         }
+
+        CancelFactoryButton.onClick.AddListener( exitFactoryBuildMethod.Invoke );
+
+        
         // hide remaining buttons
         for (; i < BuildFactoryButtons.Length; i++)
         {
@@ -170,9 +172,10 @@ public class MenuController : MonoBehaviour
     }
     void Start()
     {
-        BuildUnitButtons = FactoryMenuPanel.transform.Find("BuildUnitMenu_Panel").GetComponentsInChildren<Button>();
+        BuildUnitButtons    = FactoryMenuPanel.transform.Find("BuildUnitMenu_Panel").GetComponentsInChildren<Button>();
         BuildFactoryButtons = FactoryMenuPanel.transform.Find("BuildFactoryMenu_Panel").GetComponentsInChildren<Button>();
-        CancelBuildButton = FactoryMenuPanel.transform.Find("Cancel_Button").GetComponent<Button>();
+        CancelBuildButton   = FactoryMenuPanel.transform.Find("UnitsCancel_Button").GetComponent<Button>();
+        CancelFactoryButton = FactoryMenuPanel.transform.Find("FactoryCancel_Button").GetComponent<Button>();
         BuildQueueTexts = new Text[BuildUnitButtons.Length];
     }
 }
