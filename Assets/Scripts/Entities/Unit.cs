@@ -20,6 +20,8 @@ public class Unit : BaseEntity
 
     public FormationNode formationNode = null;
 
+    private bool isCapturing = false;
+    
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -76,7 +78,11 @@ public class Unit : BaseEntity
             else
                 ComputeRepairing();
         }
-	}
+
+        if (CaptureTarget != null && !isCapturing && CanCapture(CaptureTarget))
+            StartCapture(CaptureTarget);
+        
+    }
     #endregion
 
     #region IRepairable
@@ -129,43 +135,50 @@ public class Unit : BaseEntity
     // Targetting Task - attack
     public void SetAttackTarget(BaseEntity target)
     {
-        if (CanAttack(target) == false)
+        if (target == null)
             return;
 
-        if (CaptureTarget != null)
-            StopCapture();
-
+        //if (CanAttack(target) == false)
+        //    SetTargetPos(target.transform.position);
+        //
         if (target.GetTeam() != GetTeam())
             StartAttacking(target);
+        
+        
+        
+        if (CaptureTarget != null)
+            StopCapture();
     }
 
     // Targetting Task - capture
     public void SetCaptureTarget(TargetBuilding target)
     {
-        if (CanCapture(target) == false)
+        if (target == null)
             return;
 
+        if (CanCapture(target) == false)
+            SetTargetPos(target.transform.position);
+        
         if (EntityTarget != null)
             EntityTarget = null;
 
         if (IsCapturing())
             StopCapture();
-
-        if (target.GetTeam() != GetTeam())
-            StartCapture(target);
+        
+        CaptureTarget = target;
     }
 
     // Targetting Task - repairing
     public void SetRepairTarget(BaseEntity entity)
     {
-        if (CanRepair(entity) == false)
+        if (entity == null)
             return;
-
-        if (CaptureTarget != null)
-            StopCapture();
 
         if (entity.GetTeam() == GetTeam())
             StartRepairing(entity);
+
+        if (CaptureTarget != null)
+            StopCapture();
     }
     public bool CanAttack(BaseEntity target)
     {
@@ -186,8 +199,16 @@ public class Unit : BaseEntity
     }
     public void ComputeAttack()
     {
-        if (CanAttack(EntityTarget) == false)
+        if (CanAttack(EntityTarget) == false) //TODO: Check if you already have the current position of his target.
+        {
+            if (NavMeshAgent)
+            {
+                NavMeshAgent.SetDestination(EntityTarget.transform.position);
+                NavMeshAgent.isStopped = false;
+            }
+
             return;
+        }
 
         if (NavMeshAgent)
             NavMeshAgent.isStopped = true;
@@ -229,7 +250,7 @@ public class Unit : BaseEntity
     // Capture Task
     public void StartCapture(TargetBuilding target)
     {
-        if (CanCapture(target) == false)
+        if (CanCapture(target) == false || target.GetTeam() == GetTeam())
             return;
 
         if (NavMeshAgent)
@@ -237,6 +258,8 @@ public class Unit : BaseEntity
 
         CaptureTarget = target;
         CaptureTarget.StartCapture(this);
+
+        isCapturing = true;
     }
     public void StopCapture()
     {
@@ -245,11 +268,13 @@ public class Unit : BaseEntity
 
         CaptureTarget.StopCapture(this);
         CaptureTarget = null;
+        
+        isCapturing = false;
     }
 
     public bool IsCapturing()
     {
-        return CaptureTarget != null;
+        return isCapturing;
     }
 
     // Repairing Task
@@ -276,7 +301,11 @@ public class Unit : BaseEntity
     public void ComputeRepairing()
     {
         if (CanRepair(EntityTarget) == false)
+        {
+            NavMeshAgent.SetDestination(EntityTarget.transform.position);
+            NavMeshAgent.isStopped = false;
             return;
+        }
 
         if (NavMeshAgent)
             NavMeshAgent.isStopped = true;

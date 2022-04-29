@@ -325,8 +325,10 @@ public sealed class PlayerController : UnitController
         if (results.Count > 0)
             return;
 
-        bool isShiftBtPressed = Input.GetKey(KeyCode.LeftShift);
         bool isCtrlBtPressed = Input.GetKey(KeyCode.LeftControl);
+        
+        if(!isCtrlBtPressed)
+            UnselectAllUnits();
 
         RaycastHit raycastInfo;
         // factory selection
@@ -335,7 +337,7 @@ public sealed class PlayerController : UnitController
             Factory factory = raycastInfo.transform.GetComponent<Factory>();
             if (factory != null)
             {
-                if (factory.GetTeam() == Team && SelectedFactory != factory)
+                if (factory.GetTeam() == Team && SelectedFactory != factory && SelectedUnitList.Count <= 0)
                 {
                     UnselectCurrentFactory();
                     SelectFactory(factory);
@@ -345,25 +347,15 @@ public sealed class PlayerController : UnitController
         // unit selection / unselection
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, unitMask))
         {
-
             UnselectCurrentFactory();
 
             Unit selectedUnit = raycastInfo.transform.GetComponent<Unit>();
             if (selectedUnit != null && selectedUnit.GetTeam() == Team)
             {
-                if (isShiftBtPressed)
-                {
+                if (isCtrlBtPressed && SelectedUnitList.Contains(selectedUnit))
                     UnselectUnit(selectedUnit);
-                }
-                else if (isCtrlBtPressed)
-                {
-                    SelectUnit(selectedUnit);
-                }
                 else
-                {
-                    UnselectAllUnits();
                     SelectUnit(selectedUnit);
-                }
             }
         }
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
@@ -414,7 +406,10 @@ public sealed class PlayerController : UnitController
         size.y = Mathf.Abs(size.y);
         size.z = Mathf.Abs(size.z);
 
-        UnselectAllUnits();
+        if (!Input.GetKey(KeyCode.LeftControl))
+            UnselectAllUnits();
+        
+
         UnselectCurrentFactory();
 
         int unitLayerMask = 1 << LayerMask.NameToLayer("Unit");
@@ -428,17 +423,23 @@ public sealed class PlayerController : UnitController
             {
                 if (selectedEntity is Unit)
                 {
-                    SelectUnit((selectedEntity as Unit));
+                    Unit unit = selectedEntity as Unit;
+                    
+                    if (!SelectedUnitList.Contains(unit))
+                        SelectUnit(unit);
                 }
                 else if (selectedEntity is Factory)
                 {
                     // Select only one factory at a time
-                    if (SelectedFactory == null)
+                    if (SelectedFactory == null && SelectedUnitList.Count <= 0)
                         SelectFactory(selectedEntity as Factory);
                 }
             }
         }
 
+        if (SelectedFactory != null && SelectedUnitList.Count > 0)
+            UnselectCurrentFactory();
+        
         SelectionStarted = false;
         SelectionStart = Vector3.zero;
         SelectionEnd = Vector3.zero;
@@ -457,7 +458,7 @@ public sealed class PlayerController : UnitController
 
         base.SelectFactory(factory);
 
-        PlayerMenuController.UpdateFactoryMenu(SelectedFactory, RequestUnitBuild, EnterFactoryBuildMode);
+        PlayerMenuController.UpdateFactoryMenu(SelectedFactory, RequestUnitBuild, EnterFactoryBuildMode, ExitFactoryBuildMode);
     }
     protected override void UnselectCurrentFactory()
     {
@@ -479,7 +480,10 @@ public sealed class PlayerController : UnitController
 
         //Debug.Log("EnterFactoryBuildMode");
 
-        CurrentInputMode = InputMode.FactoryPositioning;
+        if (CurrentInputMode == InputMode.FactoryPositioning)
+            Destroy(WantedFactoryPreview);
+        else
+            CurrentInputMode = InputMode.FactoryPositioning;
 
         WantedFactoryId = factoryId;
 
