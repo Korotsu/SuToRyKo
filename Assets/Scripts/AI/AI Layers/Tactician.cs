@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class Tactician : MonoBehaviour
 {
-    [SerializeField]
-    private List<State> orderlist = new List<State>();
+    private List<State> orderlist = new List<State> { new Idle() };
 
     private List<Soldier> soldiers = new List<Soldier>();
 
@@ -31,7 +30,7 @@ public class Tactician : MonoBehaviour
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        State order = new Idle();
+        State order = orderlist[0];
         soldiers.ForEach(soldier => soldier.SetState(order));
     }
 

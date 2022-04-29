@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+[System.Serializable]
 public class Strategist : MonoBehaviour
 {
-    [SerializeField]
-    private List<State> orderlist = new List<State>();
+    private List<State> orderlist = new List<State> { new Idle()};
 
     private List<Tactician> tacticians = new List<Tactician>();
 
@@ -30,7 +30,7 @@ public class Strategist : MonoBehaviour
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        State order = new Idle();
+        State order = orderlist[0];
         tacticians.ForEach(tactician => tactician.SetState(order));
     }
 }

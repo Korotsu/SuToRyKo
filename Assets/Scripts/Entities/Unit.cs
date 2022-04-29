@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System;
+
 public class Unit : BaseEntity
 {
     [SerializeField]
@@ -13,6 +15,11 @@ public class Unit : BaseEntity
     public UnitDataScriptable GetUnitData { get { return UnitData; } }
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
+
+    public Action actions;
+
+    public FormationNode formationNode = null;
+
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -59,6 +66,8 @@ public class Unit : BaseEntity
     }
     override protected void Update()
     {
+        actions();
+        
         // Attack / repair task debug test $$$ to be removed for AI implementation
         if (EntityTarget != null)
         {
@@ -104,6 +113,17 @@ public class Unit : BaseEntity
             NavMeshAgent.SetDestination(pos);
             NavMeshAgent.isStopped = false;
         }
+    }
+    
+    public void FollowFormation()
+    {
+        SetTargetPos(formationNode.GetPosition());
+    }
+
+    public void SetFormationNode(ref FormationNode _formationNode)
+    {
+        formationNode = _formationNode;
+        actions += FollowFormation;
     }
 
     // Targetting Task - attack
