@@ -457,7 +457,7 @@ public sealed class PlayerController : UnitController
 
         base.SelectFactory(factory);
 
-        PlayerMenuController.UpdateFactoryMenu(SelectedFactory, RequestUnitBuild, EnterFactoryBuildMode);
+        PlayerMenuController.UpdateFactoryMenu(SelectedFactory, RequestUnitBuild, EnterFactoryBuildMode, ExitFactoryBuildMode);
     }
     protected override void UnselectCurrentFactory()
     {
@@ -479,7 +479,10 @@ public sealed class PlayerController : UnitController
 
         //Debug.Log("EnterFactoryBuildMode");
 
-        CurrentInputMode = InputMode.FactoryPositioning;
+        if (CurrentInputMode == InputMode.FactoryPositioning)
+            Destroy(WantedFactoryPreview);
+        else
+            CurrentInputMode = InputMode.FactoryPositioning;
 
         WantedFactoryId = factoryId;
 
