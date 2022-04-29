@@ -119,11 +119,13 @@ public class Unit : BaseEntity
         if (target == null)
             return;
 
-        if (CanAttack(target) == false)
-            SetTargetPos(target.transform.position);
-        
+        //if (CanAttack(target) == false)
+        //    SetTargetPos(target.transform.position);
+        //
         if (target.GetTeam() != GetTeam())
             StartAttacking(target);
+        
+        
         
         if (CaptureTarget != null)
             StopCapture();
@@ -155,9 +157,6 @@ public class Unit : BaseEntity
         if (entity == null)
             return;
 
-        if (CanRepair(entity) == false)
-            SetTargetPos(EntityTarget.transform.position);
-        
         if (entity.GetTeam() == GetTeam())
             StartRepairing(entity);
 
@@ -183,8 +182,16 @@ public class Unit : BaseEntity
     }
     public void ComputeAttack()
     {
-        if (CanAttack(EntityTarget) == false)
+        if (CanAttack(EntityTarget) == false) //TODO: Check if you already have the current position of his target.
+        {
+            if (NavMeshAgent)
+            {
+                NavMeshAgent.SetDestination(EntityTarget.transform.position);
+                NavMeshAgent.isStopped = false;
+            }
+
             return;
+        }
 
         if (NavMeshAgent)
             NavMeshAgent.isStopped = true;
@@ -277,7 +284,11 @@ public class Unit : BaseEntity
     public void ComputeRepairing()
     {
         if (CanRepair(EntityTarget) == false)
+        {
+            NavMeshAgent.SetDestination(EntityTarget.transform.position);
+            NavMeshAgent.isStopped = false;
             return;
+        }
 
         if (NavMeshAgent)
             NavMeshAgent.isStopped = true;
