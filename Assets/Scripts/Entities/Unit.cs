@@ -138,17 +138,15 @@ public class Unit : BaseEntity
             return;
 
         if (CanCapture(target) == false)
-        {
             SetTargetPos(target.transform.position);
-            CaptureTarget = target;
-            return;
-        }
-
+        
         if (EntityTarget != null)
             EntityTarget = null;
 
         if (IsCapturing())
             StopCapture();
+        
+        CaptureTarget = target;
     }
 
     // Targetting Task - repairing
