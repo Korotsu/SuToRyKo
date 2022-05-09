@@ -14,11 +14,13 @@ public abstract class State
 
 public abstract class TacticianState : State
 {
-
+    private Tactician tactician;
+    public TacticianState(Tactician _tactician) => tactician = _tactician;
 }
 
-public abstract class UnitState : State
+public abstract class SoldierState : State
 {
-
+    private Soldier soldier;
+    public SoldierState(Soldier _soldier) => soldier = _soldier;
 }
 

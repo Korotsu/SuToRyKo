@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class Tactician : MonoBehaviour
 {
-    private List<UnitState> orderlist = new List<UnitState>();
+    private List<SoldierState> orderlist = new List<SoldierState>();
 
     private List<Soldier> soldiers = new List<Soldier>();
 
-    private TacticianState currentState = new IdleTactician();
+    private TacticianState currentState;
 
     private void Start()
     {
+        currentState = new IdleTactician(this);
+
         foreach (Transform child in transform)
         {
             Soldier soldier = child.GetComponent<Soldier>();
@@ -30,8 +32,7 @@ public class Tactician : MonoBehaviour
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        UnitState order = new IdleUnit();
-        soldiers.ForEach(soldier => soldier.SetState(order));
+        soldiers.ForEach(soldier => soldier.SetState(new IdleSoldier(soldier)));
     }
 
     public void SetState(TacticianState order/*, Vector3 Target*/)

@@ -30,7 +30,6 @@ public class Strategist : MonoBehaviour
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        TacticianState order = new IdleTactician();
-        tacticians.ForEach(tactician => tactician.SetState(order));
+        tacticians.ForEach(tactician => tactician.SetState(new IdleTactician(tactician)));
     }
 }
