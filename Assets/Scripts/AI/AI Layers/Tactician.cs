@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class Tactician : MonoBehaviour
 {
-    private List<State> orderlist = new List<State> { new Idle() };
+    private List<UnitState> orderlist = new List<UnitState>();
 
     private List<Soldier> soldiers = new List<Soldier>();
 
-    private State currentState = new Idle();
+    private TacticianState currentState = new IdleTactician();
 
     private void Start()
     {
@@ -30,11 +30,11 @@ public class Tactician : MonoBehaviour
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        State order = orderlist[0];
+        UnitState order = new IdleUnit();
         soldiers.ForEach(soldier => soldier.SetState(order));
     }
 
-    public void SetState(State order/*, Vector3 Target*/)
+    public void SetState(TacticianState order/*, Vector3 Target*/)
     {
         currentState.End();
         currentState = order;

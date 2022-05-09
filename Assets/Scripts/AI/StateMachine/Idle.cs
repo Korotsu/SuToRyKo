@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class Idle : State
+
+public class IdleUnit : UnitState
 {
     // Start is called before the first frame update
     public override void Start()
@@ -15,6 +15,26 @@ public class Idle : State
     public override void Update()
     {
         
+    }
+
+    public override void End()
+    {
+
+    }
+}
+
+public class IdleTactician : TacticianState
+{
+    // Start is called before the first frame update
+    public override void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    public override void Update()
+    {
+
     }
 
     public override void End()

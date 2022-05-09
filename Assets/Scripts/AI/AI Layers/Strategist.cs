@@ -6,7 +6,7 @@ using System.Linq;
 [System.Serializable]
 public class Strategist : MonoBehaviour
 {
-    private List<State> orderlist = new List<State> { new Idle()};
+    private List<TacticianState> orderlist = new List<TacticianState>();
 
     private List<Tactician> tacticians = new List<Tactician>();
 
@@ -30,7 +30,7 @@ public class Strategist : MonoBehaviour
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        State order = orderlist[0];
+        TacticianState order = new IdleTactician();
         tacticians.ForEach(tactician => tactician.SetState(order));
     }
 }

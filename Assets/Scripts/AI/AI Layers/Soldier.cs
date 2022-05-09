@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Soldier : MonoBehaviour
 {
-    private State currentState = new Idle();
+    private UnitState currentState = new IdleUnit();
 
     // Update is called once per frame
     void Update()
@@ -12,7 +12,7 @@ public class Soldier : MonoBehaviour
         currentState.Update();
     }
 
-    public void SetState(State order/*, Vector3 Target*/)
+    public void SetState(UnitState order/*, Vector3 Target*/)
     {
         currentState.End();
         currentState = order;

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
+
 public abstract class State
 {
     public abstract void Start();
@@ -11,3 +11,14 @@ public abstract class State
 
     public abstract void End();
 }
+
+public abstract class TacticianState : State
+{
+
+}
+
+public abstract class UnitState : State
+{
+
+}
+
