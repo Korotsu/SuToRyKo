@@ -18,7 +18,7 @@ public class Unit : BaseEntity
 
     public Action actions;
 
-    public FormationNode formationNode = null;
+    public Formations.FormationNode formationNode = null;
 
     private bool isCapturing = false;
     
@@ -126,7 +126,7 @@ public class Unit : BaseEntity
         SetTargetPos(formationNode.GetPosition());
     }
 
-    public void SetFormationNode(ref FormationNode _formationNode)
+    public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
         formationNode = _formationNode;
         actions += FollowFormation;

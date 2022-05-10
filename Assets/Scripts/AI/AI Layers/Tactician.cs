@@ -8,6 +8,8 @@ public class Tactician : MonoBehaviour
 
     private List<Soldier> soldiers = new List<Soldier>();
 
+    public List<Soldier> GetSoldiers() => soldiers;
+
     private TacticianState currentState;
 
     private void Start()

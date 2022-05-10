@@ -4,14 +4,27 @@ using UnityEngine;
 
 namespace Formations
 {
-    public class LinearFormation : FormationType
+    public partial class FormationManager
     {
-        protected override void Create()
+        private void CreateLinearFormation()
         {
-            throw new System.NotImplementedException();
+            List<Soldier> soldiers = tactician.GetSoldiers();
+            formationSize = soldiers.Count;
+
+            Vector3 maxBounds = Vector3.zero;
+
+            foreach (Soldier soldier in soldiers)
+            {
+                Bounds bounds = soldier.gameObject.GetComponent<Mesh>().bounds;
+                maxBounds = Vector3.Max(maxBounds, bounds.size);
+            }
+
+            lineSize = maxBounds.x * lineUnitNb;
+            lineNb = Mathf.CeilToInt((float)soldiers.Count / lineUnitNb);
+
         }
 
-        protected override void Update()
+        private void UpdateLinearFormation()
         {
             throw new System.NotImplementedException();
         }

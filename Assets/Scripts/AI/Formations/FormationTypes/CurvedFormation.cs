@@ -4,16 +4,23 @@ using UnityEngine;
 
 namespace Formations
 {
-    public class CurvedFormation : FormationType
+    public partial class FormationManager
     {
-        protected override void Create()
+        private void CreateCurvedFormation()
         {
             throw new System.NotImplementedException();
         }
 
-        protected override void Update()
+        private void UpdateCurvedFormation()
         {
             throw new System.NotImplementedException();
         }
+
+        /*note for me : the Z offset : 
+            center = nbofUnitInline / 2;
+            offset = abs(rankInLine - center) * angle;
+            node.z -= offset;
+            repeat for all nodes;
+        */
     }
 }

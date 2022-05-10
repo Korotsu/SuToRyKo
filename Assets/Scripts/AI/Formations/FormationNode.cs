@@ -2,21 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FormationNode
+namespace Formations
 {
-    private FormationManager manager;
-    private Vector3 relativePosition;
-
-    public FormationNode(FormationManager _manager, Vector3 startPosition)
+    public class FormationNode
     {
-        manager             = _manager;
-        relativePosition    = startPosition;
+        private FormationManager manager;
+        private Vector3 relativePosition;
+
+        public FormationNode(FormationManager _manager, Vector3 startPosition)
+        {
+            manager = _manager;
+            relativePosition = startPosition;
+        }
+
+        public void SetRelativePosition(Vector3 newRelativePos) => relativePosition = newRelativePos;
+
+        public Vector3 GetPosition() => relativePosition + manager.transform.position;
     }
-
-    public void SetRelativePosition(Vector3 newRelativePos) => relativePosition = newRelativePos;
-
-    public Vector3 GetPosition()
-    {
-        return relativePosition + manager.transform.position;
-    } 
 }

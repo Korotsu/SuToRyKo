@@ -6,6 +6,8 @@ public class Soldier : MonoBehaviour
 {
     private SoldierState currentState;
 
+    public Unit unit;
+
     private void Start()
     {
         currentState = new IdleSoldier(this);        

@@ -3,111 +3,96 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class FormationManager : MonoBehaviour
+namespace Formations
 {
-    private enum EFormationTypes
+    public partial class FormationManager : MonoBehaviour
     {
-        Linear,
-        VShaped,
-        Curved,
-    }
-
-    private EFormationTypes formationType = EFormationTypes.Linear;
-     
-    private List<FormationNode> nodes;
-
-    private FormationNode leaderNode;
-
-    private Action UpdateFormation;
-
-    [SerializeField, Range(0, 10)]
-    private int lineSize = 5;
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        Tactician tactician = GetComponent<Tactician>();
-
-        if (!tactician)
+        private enum EFormationTypes
         {
-            enabled = false;
-            return;
+            Linear,
+            VShaped,
+            Curved,
         }
 
-        leaderNode = new FormationNode(this,transform.position);
+        private EFormationTypes formationType = EFormationTypes.Linear;
 
-        UpdateFormation += UpdateLinearFormation;
-    }
+        private List<FormationNode> nodes;
 
-    private void SwitchFormationType(EFormationTypes newType)
-    {
-        switch (formationType)
+        private FormationNode leaderNode;
+
+        private Action UpdateFormation;
+
+        private Tactician tactician;
+
+        private int formationSize;
+
+        [SerializeField, Range(0, 10)]
+        private int lineUnitNb = 5;
+
+        private float lineSize = 0f;
+
+        private int lineNb = 0;
+
+
+        // Start is called before the first frame update
+        void Start()
         {
-            case EFormationTypes.Linear:
-                UpdateFormation -= UpdateLinearFormation;
-                break;
-            case EFormationTypes.VShaped:
-                UpdateFormation -= UpdateVShapedFormation;
-                break;
-            case EFormationTypes.Curved:
-                UpdateFormation -= UpdateCurvedFormation;
-                break;
-            default:
-                break;
+            tactician = GetComponent<Tactician>();
+
+            if (!tactician)
+            {
+                enabled = false;
+                return;
+            }
+
+            leaderNode = new FormationNode(this, transform.position);
+
+            CreateLinearFormation();
+            UpdateFormation += UpdateLinearFormation;
         }
 
-        switch (newType)
+        private void SwitchFormationType(EFormationTypes newType)
         {
-            case EFormationTypes.Linear:
-                UpdateFormation += UpdateLinearFormation;
-                break;
-            case EFormationTypes.VShaped:
-                UpdateFormation += UpdateVShapedFormation;
-                break;
-            case EFormationTypes.Curved:
-                UpdateFormation += UpdateCurvedFormation;
-                break;
-            default:
-                break;
+            switch (formationType)
+            {
+                case EFormationTypes.Linear:
+                    UpdateFormation -= UpdateLinearFormation;
+                    break;
+                case EFormationTypes.VShaped:
+                    UpdateFormation -= UpdateVShapedFormation;
+                    break;
+                case EFormationTypes.Curved:
+                    UpdateFormation -= UpdateCurvedFormation;
+                    break;
+                default:
+                    break;
+            }
+
+            switch (newType)
+            {
+                case EFormationTypes.Linear:
+                    CreateLinearFormation();
+                    UpdateFormation += UpdateLinearFormation;
+                    break;
+                case EFormationTypes.VShaped:
+                    CreateVShapedFormation();
+                    UpdateFormation += UpdateVShapedFormation;
+                    break;
+                case EFormationTypes.Curved:
+                    CreateCurvedFormation();
+                    UpdateFormation += UpdateCurvedFormation;
+                    break;
+                default:
+                    break;
+            }
+
+            formationType = newType;
         }
 
-        formationType = newType;
-    }
-
-    private void CreateLinearFormation()
-    {
-
-    }
-
-    private void CreateVShapedFormation()
-    {
-
-    }
-
-    private void CreateCurvedFormation()
-    {
-
-    }
-
-    private void UpdateLinearFormation()
-    {
-
-    }
-
-    private void UpdateVShapedFormation()
-    {
-
-    }
-
-    private void UpdateCurvedFormation()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        UpdateFormation();
+        // Update is called once per frame
+        void Update()
+        {
+            UpdateFormation();
+        }
     }
 }
