@@ -5,10 +5,13 @@ using UnityEngine;
 
 public abstract class State
 {
+    // Called when the state is swapped in
     public abstract void Start();
 
+    // Update is called once per frame
     public abstract void Update();
 
+    // Called when the state is swiped out
     public abstract void End();
 }
 
@@ -18,9 +21,9 @@ public abstract class TacticianState : State
     public TacticianState(Tactician _tactician) => tactician = _tactician;
 }
 
-public abstract class SoldierState : State
+public abstract class UnitState : State
 {
-    private Soldier soldier;
-    public SoldierState(Soldier _soldier) => soldier = _soldier;
+    private UnitLogic targetLogic;
+    public UnitState(UnitLogic _targetLogic) => targetLogic = _targetLogic;
 }
 

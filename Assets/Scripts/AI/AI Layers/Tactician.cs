@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using AI.StateMachine;
 using UnityEngine;
 
 public class Tactician : MonoBehaviour
 {
-    private List<SoldierState> orderlist = new List<SoldierState>();
+    private List<UnitState> orderlist = new List<UnitState>();
 
-    private List<Soldier> soldiers = new List<Soldier>();
+    private List<UnitLogic> soldiers = new List<UnitLogic>();
 
     private TacticianState currentState;
 
@@ -16,9 +17,9 @@ public class Tactician : MonoBehaviour
 
         foreach (Transform child in transform)
         {
-            Soldier soldier = child.GetComponent<Soldier>();
-            if (soldier)
-                soldiers.Add(soldier);
+            UnitLogic unitLogic = child.GetComponent<UnitLogic>();
+            if (unitLogic)
+                soldiers.Add(unitLogic);
         }
     }
 
@@ -32,7 +33,7 @@ public class Tactician : MonoBehaviour
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        soldiers.ForEach(soldier => soldier.SetState(new IdleSoldier(soldier)));
+        soldiers.ForEach(soldier => soldier.SetState(new IdleUnit(soldier)));
     }
 
     public void SetState(TacticianState order/*, Vector3 Target*/)
