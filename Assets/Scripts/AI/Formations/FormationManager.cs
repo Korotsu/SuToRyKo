@@ -14,9 +14,15 @@ public class FormationManager : MonoBehaviour
 
     private EFormationTypes formationType = EFormationTypes.Linear;
      
-    private List<FormationNode> nodes = new List<FormationNode>();
+    private List<FormationNode> nodes;
 
-    public Action UpdateFormation;
+    private FormationNode leaderNode;
+
+    private Action UpdateFormation;
+
+    [SerializeField, Range(0, 10)]
+    private int lineSize = 5;
+
 
     // Start is called before the first frame update
     void Start()
@@ -28,6 +34,8 @@ public class FormationManager : MonoBehaviour
             enabled = false;
             return;
         }
+
+        leaderNode = new FormationNode(this,transform.position);
 
         UpdateFormation += UpdateLinearFormation;
     }
@@ -65,6 +73,21 @@ public class FormationManager : MonoBehaviour
         }
 
         formationType = newType;
+    }
+
+    private void CreateLinearFormation()
+    {
+
+    }
+
+    private void CreateVShapedFormation()
+    {
+
+    }
+
+    private void CreateCurvedFormation()
+    {
+
     }
 
     private void UpdateLinearFormation()
