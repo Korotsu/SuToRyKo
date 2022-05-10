@@ -2,7 +2,7 @@
 using UnityEngine.AI;
 using System;
 
-public class Unit : BaseEntity
+public partial class Unit : BaseEntity
 {
     [SerializeField]
     UnitDataScriptable UnitData = null;

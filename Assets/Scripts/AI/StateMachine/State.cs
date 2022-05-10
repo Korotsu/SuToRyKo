@@ -23,7 +23,7 @@ public abstract class TacticianState : State
 
 public abstract class UnitState : State
 {
-    private UnitLogic targetLogic;
+    protected UnitLogic targetLogic;
     public UnitState(UnitLogic _targetLogic) => targetLogic = _targetLogic;
 }
 
