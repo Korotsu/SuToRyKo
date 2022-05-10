@@ -6,7 +6,8 @@ public enum ETeam
     Red = 1,
     //Green,
 
-    Neutral
+    Neutral,
+    Count
 }
 
 [RequireComponent(typeof(GameState))]
