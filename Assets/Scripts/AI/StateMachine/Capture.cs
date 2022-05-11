@@ -9,7 +9,7 @@ namespace AI.StateMachine
         public UnitCapture(UnitLogic _targetLogic) : base(_targetLogic) { }
         public override void Start()
         {
-            //targetLogic.AssociatedUnit.StartCapture();
+
         }
 
         public override void Update()

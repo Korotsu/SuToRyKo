@@ -564,7 +564,12 @@ public sealed class PlayerController : UnitController
                 {
                     // Direct call to reparing task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
+                    {
+                        if (!(unit.UnitLogic.CurrentState is AI.StateMachine.UnitRepair))
+                            unit.UnitLogic.SetState(new AI.StateMachine.UnitRepair(unit.UnitLogic));
+
                         unit.SetRepairTarget(other);
+                    }
                 }
             }
         }

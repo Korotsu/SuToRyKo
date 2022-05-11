@@ -28,7 +28,7 @@ public partial class Unit : BaseEntity
             return;
 
         base.Init(_team);
-
+        
         HP = UnitData.MaxHP;
         OnDeadEvent += Unit_OnDead;
     }
@@ -78,26 +78,10 @@ public partial class Unit : BaseEntity
     {
         if (ActionCooldown > 0f)
             ActionCooldown -= Time.time;
-
-        CaptureUpdate();
     }
     #endregion
 
-    #region IRepairable
-    public override bool NeedsRepairing()
-    {
-        return HP < GetUnitData.MaxHP;
-    }
-    public override void Repair(int amount)
-    {
-        HP = Mathf.Min(HP + amount, GetUnitData.MaxHP);
-        base.Repair(amount);
-    }
-    public override void FullRepair()
-    {
-        Repair(GetUnitData.MaxHP);
-    }
-    #endregion
+    
 
     #region Tasks methods : Moving, Capturing, Targeting, Attacking, Repairing ...
 
@@ -127,62 +111,6 @@ public partial class Unit : BaseEntity
     {
         formationNode = _formationNode;
         actions += FollowFormation;
-    }
-    
-
-    // Targetting Task - repairing
-    public void SetRepairTarget(BaseEntity entity)
-    {
-        if (entity == null)
-            return;
-
-        if (entity.GetTeam() == GetTeam())
-            StartRepairing(entity);
-
-        if (CaptureTarget != null)
-            StopCapture();
-    }
-
-    // Repairing Task
-    public bool CanRepair(BaseEntity target)
-    {
-        if (GetUnitData.CanRepair == false || target is null)
-            return false;
-
-        // distance check
-        return (target.transform.position - transform.position).sqrMagnitude < GetUnitData.RepairDistanceMax * GetUnitData.RepairDistanceMax;
-    }
-    public void StartRepairing(BaseEntity entity)
-    {
-        if (GetUnitData.CanRepair)
-        {
-            EntityTarget = entity;
-        }
-    }
-
-    // $$$ TODO : add repairing visual feedback
-    public void ComputeRepairing()
-    {
-        if (CanRepair(EntityTarget) == false)
-        {
-            NavMeshAgent.SetDestination(EntityTarget.transform.position);
-            NavMeshAgent.isStopped = false;
-            return;
-        }
-
-        if (NavMeshAgent)
-            NavMeshAgent.isStopped = true;
-
-        LookAtTarget();
-
-        if ((Time.time - ActionCooldown) > UnitData.RepairFrequency)
-        {
-            ActionCooldown = Time.time;
-
-            // apply reparing
-            int amount = Mathf.FloorToInt(UnitData.RPS * UnitData.RepairFrequency);
-            EntityTarget.Repair(amount);
-        }
     }
 
     #endregion
