@@ -9,7 +9,6 @@ public partial class Unit : BaseEntity
     private Transform BulletSlot;
     private float ActionCooldown = 0f;
     private BaseEntity EntityTarget = null;
-    private TargetBuilding CaptureTarget = null;
     private NavMeshAgent NavMeshAgent;
     public UnitDataScriptable GetUnitData => UnitData;
     public int Cost => UnitData.Cost;
@@ -19,7 +18,9 @@ public partial class Unit : BaseEntity
 
     public FormationNode formationNode = null;
 
-    private bool isCapturing = false;
+    private UnitLogic unitLogic = null;
+
+    public UnitLogic UnitLogic { get => unitLogic; }
     
     public override void Init(ETeam _team)
     {
@@ -64,6 +65,13 @@ public partial class Unit : BaseEntity
         if (!IsInitialized)
             Init(Team);
 
+        if (!unitLogic)
+        {
+            unitLogic = gameObject.AddComponent<UnitLogic>();
+            unitLogic.SetUnit(this);
+        }
+            
+
         base.Start();
     }
     protected override void Update()
@@ -71,9 +79,7 @@ public partial class Unit : BaseEntity
         if (ActionCooldown > 0f)
             ActionCooldown -= Time.time;
 
-        if (CaptureTarget != null && !isCapturing && CanCapture(CaptureTarget))
-            StartCapture(CaptureTarget);
-        
+        CaptureUpdate();
     }
     #endregion
 
@@ -124,24 +130,6 @@ public partial class Unit : BaseEntity
     }
     
 
-    // Targetting Task - capture
-    public void SetCaptureTarget(TargetBuilding target)
-    {
-        if (target == null)
-            return;
-
-        if (CanCapture(target) == false)
-            SetTargetPos(target.transform.position);
-        
-        if (EntityTarget != null)
-            EntityTarget = null;
-
-        if (IsCapturing())
-            StopCapture();
-        
-        CaptureTarget = target;
-    }
-
     // Targetting Task - repairing
     public void SetRepairTarget(BaseEntity entity)
     {
@@ -153,48 +141,6 @@ public partial class Unit : BaseEntity
 
         if (CaptureTarget != null)
             StopCapture();
-    }
-    
-    public bool CanCapture(TargetBuilding target)
-    {
-        if (target == null)
-            return false;
-
-        // distance check
-        if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
-            return false;
-
-        return true;
-    }
-
-    // Capture Task
-    public void StartCapture(TargetBuilding target)
-    {
-        if (CanCapture(target) == false || target.GetTeam() == GetTeam())
-            return;
-
-        if (NavMeshAgent)
-            NavMeshAgent.isStopped = true;
-
-        CaptureTarget = target;
-        CaptureTarget.StartCapture(this);
-
-        isCapturing = true;
-    }
-    public void StopCapture()
-    {
-        if (CaptureTarget == null)
-            return;
-
-        CaptureTarget.StopCapture(this);
-        CaptureTarget = null;
-        
-        isCapturing = false;
-    }
-
-    public bool IsCapturing()
-    {
-        return isCapturing;
     }
 
     // Repairing Task
