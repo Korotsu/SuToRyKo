@@ -26,4 +26,3 @@ public abstract class UnitState : State
     protected UnitLogic targetLogic;
     public UnitState(UnitLogic _targetLogic) => targetLogic = _targetLogic;
 }
-

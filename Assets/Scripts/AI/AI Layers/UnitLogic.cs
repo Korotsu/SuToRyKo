@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using AI.StateMachine;
@@ -8,6 +9,9 @@ public class UnitLogic : MonoBehaviour
     private UnitState currentState;
 
     private Unit associatedUnit;
+
+    public UnitState CurrentState { get => currentState; }
+    public Unit AssociatedUnit { get => associatedUnit; }
 
     public UnitLogic(Unit _associatedUnit)
     {
@@ -27,8 +31,15 @@ public class UnitLogic : MonoBehaviour
 
     public void SetState(UnitState order/*, Vector3 Target*/)
     {
-        currentState.End();
+        if(currentState != null)
+            currentState.End();
+
         currentState = order;
         currentState.Start();
+    }
+
+    public void SetUnit(Unit unit)
+    {
+        associatedUnit = unit;
     }
 }

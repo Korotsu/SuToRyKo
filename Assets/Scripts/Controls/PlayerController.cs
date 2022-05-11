@@ -576,7 +576,11 @@ public sealed class PlayerController : UnitController
             {
                 // Direct call to capturing task $$$ to be improved by AI behaviour
                 foreach (Unit unit in SelectedUnitList)
+                {
                     unit.SetCaptureTarget(target);
+                    if(!(unit.UnitLogic.CurrentState is AI.StateMachine.UnitCapture))
+                        unit.UnitLogic.SetState(new AI.StateMachine.UnitCapture(unit.UnitLogic));
+                }
             }
         }
         // Set unit move target
@@ -588,7 +592,11 @@ public sealed class PlayerController : UnitController
 
             // Direct call to moving task $$$ to be improved by AI behaviour
             foreach (Unit unit in SelectedUnitList)
+            {
                 unit.SetTargetPos(newPos);
+                if (!(unit.UnitLogic.CurrentState is AI.StateMachine.IdleUnit))
+                    unit.UnitLogic.SetState(new AI.StateMachine.IdleUnit(unit.UnitLogic));
+            }
         }
     }
     #endregion
