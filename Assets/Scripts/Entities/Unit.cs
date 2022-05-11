@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Unit : BaseEntity
 {
@@ -18,9 +20,15 @@ public class Unit : BaseEntity
 
     public Action actions;
 
+    public Tactician mainTactician = null;
+
+    public Tactician tempTactician = null;
+
     public Formations.FormationNode formationNode = null;
 
     private bool isCapturing = false;
+
+    public bool isInLockedFormation = false;
     
     override public void Init(ETeam _team)
     {
@@ -68,7 +76,7 @@ public class Unit : BaseEntity
     }
     override protected void Update()
     {
-        //actions();
+        actions?.Invoke();
         
         // Attack / repair task debug test $$$ to be removed for AI implementation
         if (EntityTarget != null)
@@ -128,8 +136,19 @@ public class Unit : BaseEntity
 
     public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
-        formationNode = _formationNode;
-        actions += FollowFormation;
+        formationNode   = _formationNode;
+        actions         += FollowFormation;
+    }
+
+    public List<Unit> GetAllUnitsInFormation()
+    {
+        List<Unit> units = new List<Unit>();
+        Tactician tactician = tempTactician ?? mainTactician;
+        
+        if (tactician)
+            tactician.GetSoldiers().ForEach(soldier => units.Add(soldier.Unit));
+        
+        return units;
     }
 
     // Targetting Task - attack

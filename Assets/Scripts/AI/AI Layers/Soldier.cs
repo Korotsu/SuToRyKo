@@ -6,11 +6,22 @@ public class Soldier : MonoBehaviour
 {
     private SoldierState currentState;
 
-    public Unit unit;
+    private Unit unit;
+
+    public Unit Unit => unit;
+
+    public Soldier(Unit _unit) => unit = _unit;
 
     private void Start()
     {
-        currentState = new IdleSoldier(this);        
+        currentState = new IdleSoldier(this);
+
+        unit = GetComponent<Unit>();
+        if (!unit)
+        {
+            enabled = false;
+            return;
+        }
     }
 
     // Update is called once per frame
@@ -21,7 +32,9 @@ public class Soldier : MonoBehaviour
 
     public void SetState(SoldierState order/*, Vector3 Target*/)
     {
-        currentState.End();
+        if (currentState != null)
+            currentState.End();
+
         currentState = order;
         currentState.Start();
     }

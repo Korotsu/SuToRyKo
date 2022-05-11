@@ -6,27 +6,57 @@ namespace Formations
 {
     public partial class FormationManager
     {
-        private void CreateLinearFormation()
+        private  void CreateLinearFormation()
         {
             List<Soldier> soldiers = tactician.GetSoldiers();
             formationSize = soldiers.Count;
 
-            Vector3 maxBounds = Vector3.zero;
+            List<Renderer> renderers = new List<Renderer>();
 
             foreach (Soldier soldier in soldiers)
             {
-                Bounds bounds = soldier.gameObject.GetComponent<Mesh>().bounds;
-                maxBounds = Vector3.Max(maxBounds, bounds.size);
+                GetRenderers(ref renderers, soldier.transform, true);
+                renderers.ForEach(renderer => maxBounds = Vector3.Max(maxBounds, renderer.bounds.size));
+                renderers.Clear();
             }
 
             lineSize = maxBounds.x * lineUnitNb;
             lineNb = Mathf.CeilToInt((float)soldiers.Count / lineUnitNb);
+            float centerX = lineSize / 2;
 
+
+            for(int i = 0;  i < lineNb; i++)
+            {
+                for (int j = 0; j < lineUnitNb; j++)
+                {
+                    if (i * lineUnitNb + j > soldiers.Count)
+                        return;
+
+                    FormationNode formationNode = new FormationNode(this, new Vector3(maxBounds.x * j - centerX, 0, -i * maxBounds.z));
+                    soldiers[i * lineUnitNb + j].Unit.SetFormationNode(ref formationNode);
+                    nodes.Add(formationNode);
+                }
+            }
         }
 
         private void UpdateLinearFormation()
         {
             throw new System.NotImplementedException();
+        }
+
+
+        private void GetRenderers(ref List<Renderer> renderers, Transform obj, bool includeChildren = false)
+        {
+            Renderer renderer = obj.GetComponent<Renderer>();
+            
+            if(renderer)
+                renderers.Add(renderer);
+
+            if (!includeChildren)
+                return;
+
+            foreach (Transform child in obj)
+                GetRenderers(ref renderers, child, includeChildren);
         }
     }
 }

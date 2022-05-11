@@ -8,20 +8,17 @@ public class Tactician : MonoBehaviour
 
     private List<Soldier> soldiers = new List<Soldier>();
 
-    public List<Soldier> GetSoldiers() => soldiers;
+    public ref List<Soldier> GetSoldiers() => ref soldiers;
 
     private TacticianState currentState;
+
+    public bool isFormationLocked = false;
 
     private void Start()
     {
         currentState = new IdleTactician(this);
 
-        foreach (Transform child in transform)
-        {
-            Soldier soldier = child.GetComponent<Soldier>();
-            if (soldier)
-                soldiers.Add(soldier);
-        }
+        //soldiers.ForEach(soldier => soldier.Unit)
     }
 
     // Update is called once per frame

@@ -268,6 +268,7 @@ public sealed class Factory : BaseEntity
         unitInst.name = unitInst.name.Replace("(Clone)", "_" + SpawnCount.ToString());
         Unit newUnit = unitInst.GetComponent<Unit>();
         newUnit.Init(GetTeam());
+        unitInst.AddComponent<Soldier>();
 
         SpawnCount++;
 

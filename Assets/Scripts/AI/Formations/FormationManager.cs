@@ -7,7 +7,7 @@ namespace Formations
 {
     public partial class FormationManager : MonoBehaviour
     {
-        private enum EFormationTypes
+        public enum EFormationTypes
         {
             Linear,
             VShaped,
@@ -16,7 +16,7 @@ namespace Formations
 
         private EFormationTypes formationType = EFormationTypes.Linear;
 
-        private List<FormationNode> nodes;
+        private List<FormationNode> nodes = new List<FormationNode>();
 
         private FormationNode leaderNode;
 
@@ -24,7 +24,11 @@ namespace Formations
 
         private Tactician tactician;
 
+        public Tactician Tactician => tactician;
+
         private int formationSize;
+
+        private Vector3 maxBounds = Vector3.zero;
 
         [SerializeField, Range(0, 10)]
         private int lineUnitNb = 5;
@@ -33,6 +37,8 @@ namespace Formations
 
         private int lineNb = 0;
 
+        [SerializeField]
+        private bool displayNodes = false;
 
         // Start is called before the first frame update
         void Start()
@@ -47,11 +53,10 @@ namespace Formations
 
             leaderNode = new FormationNode(this, transform.position);
 
-            CreateLinearFormation();
             UpdateFormation += UpdateLinearFormation;
         }
 
-        private void SwitchFormationType(EFormationTypes newType)
+        public void SwitchFormationType(EFormationTypes newType)
         {
             switch (formationType)
             {
@@ -92,7 +97,23 @@ namespace Formations
         // Update is called once per frame
         void Update()
         {
-            UpdateFormation();
+            UpdateFormation?.Invoke();
+
+            if (Input.GetAxis("CreateLinearFormation") != 0)
+            {
+                CreateLinearFormation();
+            }
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (displayNodes)
+            {
+                foreach (FormationNode node in nodes)
+                {
+                    Gizmos.DrawCube(node.GetPosition(), maxBounds);
+                }
+            }
         }
     }
 }

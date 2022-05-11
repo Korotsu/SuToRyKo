@@ -70,6 +70,10 @@ public sealed class PlayerController : UnitController
     Action OnDestroyEntityPressed = null;
     Action OnCancelFactoryPositioning = null;
     Action OnSelectAllPressed = null;
+    Action OnCreateTacticianPressed = null;
+    Action OnCreateLinearFormationPressed = null;
+    Action OnKillTacticianPressed = null;
+    Action OnFormationLockTogglePressed = null;
     Action [] OnCategoryPressed = new Action[9];
 
     GameObject GetTargetCursor()
@@ -194,6 +198,11 @@ public sealed class PlayerController : UnitController
                 SelectAllUnitsByTypeId(typeId);
             };
         }
+
+        OnCreateLinearFormationPressed += CreateLinearFormation;
+        OnCreateTacticianPressed += CreateTactician;
+        OnKillTacticianPressed += KillTactician;
+        OnFormationLockTogglePressed += FormationLockToggle;
     }
     override protected void Update()
     {
@@ -235,6 +244,15 @@ public sealed class PlayerController : UnitController
 
         if (Input.GetKeyDown(KeyCode.A))
             OnSelectAllPressed?.Invoke();
+
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+            OnFormationLockTogglePressed?.Invoke();
+        
+        if (Input.GetKeyDown(KeyCode.KeypadMinus))
+            OnKillTacticianPressed?.Invoke();
+
+        if (Input.GetKeyDown(KeyCode.Keypad1))
+            OnCreateLinearFormationPressed?.Invoke();
 
         for (int i = 0; i < OnCategoryPressed.Length; i++)
         {
@@ -353,9 +371,18 @@ public sealed class PlayerController : UnitController
             if (selectedUnit != null && selectedUnit.GetTeam() == Team)
             {
                 if (isCtrlBtPressed && SelectedUnitList.Contains(selectedUnit))
-                    UnselectUnit(selectedUnit);
+                {
+                    if (selectedUnit.isInLockedFormation)
+                        UnselectFormation(selectedUnit);
+                    else
+                        UnselectSingleUnit(selectedUnit);
+                }
+
+                else if (selectedUnit.isInLockedFormation)
+                    SelectFormation(selectedUnit);
+
                 else
-                    SelectUnit(selectedUnit);
+                    SelectSingleUnit(selectedUnit);
             }
         }
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
@@ -426,7 +453,13 @@ public sealed class PlayerController : UnitController
                     Unit unit = selectedEntity as Unit;
                     
                     if (!SelectedUnitList.Contains(unit))
-                        SelectUnit(unit);
+                    {
+                        if (unit.isInLockedFormation)
+                            SelectFormation(unit);
+
+                        else
+                            SelectSingleUnit(unit);
+                    }
                 }
                 else if (selectedEntity is Factory)
                 {

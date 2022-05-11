@@ -7,6 +7,9 @@ namespace Formations
     public class FormationNode
     {
         private FormationManager manager;
+
+        public FormationManager FormationManager => manager;
+
         private Vector3 relativePosition;
 
         public FormationNode(FormationManager _manager, Vector3 startPosition)
