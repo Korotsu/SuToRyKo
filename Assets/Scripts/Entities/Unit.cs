@@ -4,17 +4,16 @@ using System;
 
 public partial class Unit : BaseEntity
 {
-    [SerializeField]
-    UnitDataScriptable UnitData = null;
+    [SerializeField] private UnitDataScriptable UnitData = null;
 
-    Transform BulletSlot;
-    float LastActionDate = 0f;
-    BaseEntity EntityTarget = null;
-    TargetBuilding CaptureTarget = null;
-    NavMeshAgent NavMeshAgent;
-    public UnitDataScriptable GetUnitData { get { return UnitData; } }
-    public int Cost { get { return UnitData.Cost; } }
-    public int GetTypeId { get { return UnitData.TypeId; } }
+    private Transform BulletSlot;
+    private float ActionCooldown = 0f;
+    private BaseEntity EntityTarget = null;
+    private TargetBuilding CaptureTarget = null;
+    private NavMeshAgent NavMeshAgent;
+    public UnitDataScriptable GetUnitData => UnitData;
+    public int Cost => UnitData.Cost;
+    public int GetTypeId => UnitData.TypeId;
 
     public Action actions;
 
@@ -22,7 +21,7 @@ public partial class Unit : BaseEntity
 
     private bool isCapturing = false;
     
-    override public void Init(ETeam _team)
+    public override void Init(ETeam _team)
     {
         if (IsInitialized)
             return;
@@ -32,7 +31,8 @@ public partial class Unit : BaseEntity
         HP = UnitData.MaxHP;
         OnDeadEvent += Unit_OnDead;
     }
-    void Unit_OnDead()
+
+    private void Unit_OnDead()
     {
         if (IsCapturing())
             StopCapture();
@@ -46,7 +46,7 @@ public partial class Unit : BaseEntity
         Destroy(gameObject);
     }
     #region MonoBehaviour methods
-    override protected void Awake()
+    protected override void Awake()
     {
         base.Awake();
 
@@ -58,7 +58,7 @@ public partial class Unit : BaseEntity
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
     }
-    override protected void Start()
+    protected override void Start()
     {
         // Needed for non factory spawned units (debug)
         if (!IsInitialized)
@@ -66,18 +66,10 @@ public partial class Unit : BaseEntity
 
         base.Start();
     }
-    override protected void Update()
+    protected override void Update()
     {
-        //actions();
-        
-        // Attack / repair task debug test $$$ to be removed for AI implementation
-        if (EntityTarget != null)
-        {
-            if (EntityTarget.GetTeam() != GetTeam())
-                ComputeAttack();
-            else
-                ComputeRepairing();
-        }
+        if (ActionCooldown > 0f)
+            ActionCooldown -= Time.time;
 
         if (CaptureTarget != null && !isCapturing && CanCapture(CaptureTarget))
             StartCapture(CaptureTarget);
@@ -86,16 +78,16 @@ public partial class Unit : BaseEntity
     #endregion
 
     #region IRepairable
-    override public bool NeedsRepairing()
+    public override bool NeedsRepairing()
     {
         return HP < GetUnitData.MaxHP;
     }
-    override public void Repair(int amount)
+    public override void Repair(int amount)
     {
         HP = Mathf.Min(HP + amount, GetUnitData.MaxHP);
         base.Repair(amount);
     }
-    override public void FullRepair()
+    public override void FullRepair()
     {
         Repair(GetUnitData.MaxHP);
     }
@@ -108,10 +100,9 @@ public partial class Unit : BaseEntity
     // Moving Task
     public void SetTargetPos(Vector3 pos)
     {
-        if (EntityTarget != null)
-            EntityTarget = null;
+        EntityTarget = null;
 
-        if (CaptureTarget != null)
+        if ( !(CaptureTarget is null) )
             StopCapture();
 
         if (NavMeshAgent)
@@ -131,24 +122,7 @@ public partial class Unit : BaseEntity
         formationNode = _formationNode;
         actions += FollowFormation;
     }
-
-    // Targetting Task - attack
-    public void SetAttackTarget(BaseEntity target)
-    {
-        if (target == null)
-            return;
-
-        //if (CanAttack(target) == false)
-        //    SetTargetPos(target.transform.position);
-        //
-        if (target.GetTeam() != GetTeam())
-            StartAttacking(target);
-        
-        
-        
-        if (CaptureTarget != null)
-            StopCapture();
-    }
+    
 
     // Targetting Task - capture
     public void SetCaptureTarget(TargetBuilding target)
@@ -180,61 +154,7 @@ public partial class Unit : BaseEntity
         if (CaptureTarget != null)
             StopCapture();
     }
-    public bool CanAttack(BaseEntity target)
-    {
-        if (target == null)
-            return false;
-
-        // distance check
-        if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.AttackDistanceMax * GetUnitData.AttackDistanceMax)
-            return false;
-
-        return true;
-    }
-
-    // Attack Task
-    public void StartAttacking(BaseEntity target)
-    {
-        EntityTarget = target;
-    }
-    public void ComputeAttack()
-    {
-        if (CanAttack(EntityTarget) == false) //TODO: Check if you already have the current position of his target.
-        {
-            if (NavMeshAgent)
-            {
-                NavMeshAgent.SetDestination(EntityTarget.transform.position);
-                NavMeshAgent.isStopped = false;
-            }
-
-            return;
-        }
-
-        if (NavMeshAgent)
-            NavMeshAgent.isStopped = true;
-
-        transform.LookAt(EntityTarget.transform);
-        // only keep Y axis
-        Vector3 eulerRotation = transform.eulerAngles;
-        eulerRotation.x = 0f;
-        eulerRotation.z = 0f;
-        transform.eulerAngles = eulerRotation;
-
-        if ((Time.time - LastActionDate) > UnitData.AttackFrequency)
-        {
-            LastActionDate = Time.time;
-            // visual only ?
-            if (UnitData.BulletPrefab)
-            {
-                GameObject newBullet = Instantiate(UnitData.BulletPrefab, BulletSlot);
-                newBullet.transform.parent = null;
-                newBullet.GetComponent<Bullet>().ShootToward(EntityTarget.transform.position - transform.position, this);
-            }
-            // apply damages
-            int damages = Mathf.FloorToInt(UnitData.DPS * UnitData.AttackFrequency);
-            EntityTarget.AddDamage(damages);
-        }
-    }
+    
     public bool CanCapture(TargetBuilding target)
     {
         if (target == null)
@@ -280,14 +200,11 @@ public partial class Unit : BaseEntity
     // Repairing Task
     public bool CanRepair(BaseEntity target)
     {
-        if (GetUnitData.CanRepair == false || target == null)
+        if (GetUnitData.CanRepair == false || target is null)
             return false;
 
         // distance check
-        if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.RepairDistanceMax * GetUnitData.RepairDistanceMax)
-            return false;
-
-        return true;
+        return (target.transform.position - transform.position).sqrMagnitude < GetUnitData.RepairDistanceMax * GetUnitData.RepairDistanceMax;
     }
     public void StartRepairing(BaseEntity entity)
     {
@@ -310,21 +227,31 @@ public partial class Unit : BaseEntity
         if (NavMeshAgent)
             NavMeshAgent.isStopped = true;
 
-        transform.LookAt(EntityTarget.transform);
-        // only keep Y axis
-        Vector3 eulerRotation = transform.eulerAngles;
-        eulerRotation.x = 0f;
-        eulerRotation.z = 0f;
-        transform.eulerAngles = eulerRotation;
+        LookAtTarget();
 
-        if ((Time.time - LastActionDate) > UnitData.RepairFrequency)
+        if ((Time.time - ActionCooldown) > UnitData.RepairFrequency)
         {
-            LastActionDate = Time.time;
+            ActionCooldown = Time.time;
 
             // apply reparing
             int amount = Mathf.FloorToInt(UnitData.RPS * UnitData.RepairFrequency);
             EntityTarget.Repair(amount);
         }
     }
+
     #endregion
+    
+    private void LookAtTarget()
+    {
+        Transform _transform = transform;
+        
+        _transform.LookAt(EntityTarget.transform);
+        
+        // only keep Y axis
+        Vector3 eulerRotation = _transform.eulerAngles;
+        eulerRotation.x = 0f;
+        eulerRotation.z = 0f;
+        
+        _transform.eulerAngles = eulerRotation;
+    }
 }

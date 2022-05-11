@@ -23,7 +23,13 @@ public abstract class TacticianState : State
 
 public abstract class UnitState : State
 {
-    protected UnitLogic targetLogic;
-    public UnitState(UnitLogic _targetLogic) => targetLogic = _targetLogic;
+    protected readonly UnitLogic targetLogic;
+    protected readonly Unit targetUnit;
+
+    protected UnitState(UnitLogic _targetLogic)
+    {
+        targetLogic = _targetLogic; 
+        targetUnit = _targetLogic.associatedUnit;
+    } 
 }
 

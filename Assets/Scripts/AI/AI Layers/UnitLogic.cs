@@ -7,7 +7,7 @@ public class UnitLogic : MonoBehaviour
 {
     private UnitState currentState;
 
-    private Unit associatedUnit;
+    public readonly Unit associatedUnit;
 
     public UnitLogic(Unit _associatedUnit)
     {
