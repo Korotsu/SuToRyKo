@@ -16,7 +16,7 @@ namespace AI.StateMachine
 
         public override void Update()
         {
-            targetLogic.AssociatedUnit.ComputeRepairing();
+            unitLogic.associatedUnit.ComputeRepairing();
         }
 
         public override void End()
