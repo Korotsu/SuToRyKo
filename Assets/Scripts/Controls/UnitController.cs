@@ -61,14 +61,15 @@ public class UnitController : MonoBehaviour
         foreach (Unit unit in SelectedUnitList)
         {
             unit.SetSelected(false);
-            if (unit.isInLockedFormation)
+            if (unit.mainTactician && unit.mainTactician == selectedTactician)
                 shouldKillTactician = false;
         }
 
-        if (shouldKillTactician)
-            Destroy(selectedTactician);
+        if (shouldKillTactician && selectedTactician)
+            Destroy(selectedTactician.gameObject);
 
         SelectedUnitList.Clear();
+        selectedTactician = null;
     }
     protected void SelectAllUnits()
     {
@@ -114,10 +115,13 @@ public class UnitController : MonoBehaviour
     {
         SelectUnit(unit);
 
-        if (unit.isInLockedFormation)
-            SelectFormation(unit);
+        if (selectedTactician)
+        {
+            selectedTactician.GetSoldiers().Add(unit.GetComponent<Soldier>());
+            unit.tempTactician = selectedTactician;
+        }
         
-        if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
+        else if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
             CreateTactician();
     }
 
@@ -129,14 +133,45 @@ public class UnitController : MonoBehaviour
 
     protected void SelectFormation(Unit unit)
     {
-        selectedTactician = unit.formationNode.FormationManager.Tactician;
-        unit.GetAllUnitsInFormation().ForEach(_unit => SelectUnit(_unit));
+        if (selectedTactician)
+        {
+            List<Unit> unitsInFormation = unit.GetAllUnitsInFormation();
+
+            if (unit.tempTactician)
+                Destroy(unit.tempTactician.gameObject);
+
+            foreach (Unit formationUnit in unitsInFormation)
+            {
+                formationUnit.tempTactician = selectedTactician;
+                SelectUnit(formationUnit);
+            }
+        }
+
+        else
+        {
+            selectedTactician = unit.tempTactician ?? unit.mainTactician;
+            unit.GetAllUnitsInFormation().ForEach(_unit => SelectUnit(_unit));
+        }
     }
 
     protected void UnselectFormation(Unit unit)
     {
-        selectedTactician = null;
-        unit.GetAllUnitsInFormation().ForEach(_unit => UnselectUnit(_unit));
+        foreach (Unit _unit in unit.GetAllUnitsInFormation())
+        {
+            UnselectUnit(_unit);
+
+            if (selectedTactician && _unit.tempTactician && selectedTactician.GetTacticianState() != null)
+            {
+                _unit.tempTactician.GetSoldiers().Remove(_unit.GetComponent<Soldier>());
+                _unit.tempTactician = null;
+            }
+        }
+
+        if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
+        {
+            Destroy(selectedTactician.gameObject);
+            selectedTactician = null;
+        }
     }
 
     protected void UnselectUnit(Unit unit)
@@ -149,15 +184,13 @@ public class UnitController : MonoBehaviour
     {
         UnselectUnit(unit);
 
-        if(!unit.isInLockedFormation)
-            selectedTactician.GetSoldiers().Remove(unit.GetComponent<Soldier>());
-
         if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
         {
-            unit.isInLockedFormation = false;
-            Destroy(selectedTactician);
+            Destroy(selectedTactician.gameObject);
+            selectedTactician = null;
         }
     }
+
     virtual public void AddUnit(Unit unit)
     {
         unit.OnDeadEvent += () =>
@@ -210,8 +243,6 @@ public class UnitController : MonoBehaviour
             GameObject tacticianObject = Instantiate(tacticianPrefab, transform);
             Tactician tactician = tacticianObject.GetComponent<Tactician>();
 
-            //lockedTacticians.Add(tactician);
-
             List<Soldier> soldiers = tactician.GetSoldiers();
 
             foreach (Unit unit in SelectedUnitList)
@@ -219,13 +250,27 @@ public class UnitController : MonoBehaviour
                 soldiers.Add(unit.GetComponent<Soldier>());
                 unit.tempTactician = tactician;
             }
+
+            selectedTactician = tactician;
         }
     }
 
     protected void FormationLockToggle()
     {
         if (selectedTactician)
+        {
+            foreach (Unit unit in SelectedUnitList)
+            {
+                unit.tempTactician = selectedTactician.isFormationLocked ? selectedTactician : null;
+
+                if (!selectedTactician.isFormationLocked && unit.mainTactician)
+                    Destroy(unit.mainTactician.gameObject);
+
+                unit.mainTactician = selectedTactician.isFormationLocked ? null : selectedTactician;
+            }
+
             selectedTactician.isFormationLocked = !selectedTactician.isFormationLocked;
+        }
     }
 
     #endregion

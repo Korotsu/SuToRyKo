@@ -12,6 +12,8 @@ public class Tactician : MonoBehaviour
 
     private TacticianState currentState;
 
+    public TacticianState GetTacticianState() => currentState;
+
     public bool isFormationLocked = false;
 
     private void Start()
@@ -39,5 +41,19 @@ public class Tactician : MonoBehaviour
         currentState.End();
         currentState = order;
         currentState.Start();
+    }
+
+    private void OnDestroy()
+    {
+        foreach (Soldier soldier in soldiers)
+        {
+            if (soldier.Unit.mainTactician == this)
+                soldier.Unit.mainTactician = null;
+
+            if (soldier.Unit.tempTactician == this)
+                soldier.Unit.tempTactician = null;
+        }
+
+        soldiers.Clear();
     }
 }

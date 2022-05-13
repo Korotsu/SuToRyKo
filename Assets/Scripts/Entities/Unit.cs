@@ -27,8 +27,6 @@ public class Unit : BaseEntity
     public Formations.FormationNode formationNode = null;
 
     private bool isCapturing = false;
-
-    public bool isInLockedFormation = false;
     
     override public void Init(ETeam _team)
     {

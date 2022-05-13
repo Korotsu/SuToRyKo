@@ -8,7 +8,7 @@ public class Soldier : MonoBehaviour
 
     private Unit unit;
 
-    public Unit Unit => unit;
+    public ref Unit Unit => ref unit;
 
     public Soldier(Unit _unit) => unit = _unit;
 

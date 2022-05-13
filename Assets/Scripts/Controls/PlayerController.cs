@@ -70,7 +70,6 @@ public sealed class PlayerController : UnitController
     Action OnDestroyEntityPressed = null;
     Action OnCancelFactoryPositioning = null;
     Action OnSelectAllPressed = null;
-    Action OnCreateTacticianPressed = null;
     Action OnCreateLinearFormationPressed = null;
     Action OnKillTacticianPressed = null;
     Action OnFormationLockTogglePressed = null;
@@ -200,7 +199,6 @@ public sealed class PlayerController : UnitController
         }
 
         OnCreateLinearFormationPressed += CreateLinearFormation;
-        OnCreateTacticianPressed += CreateTactician;
         OnKillTacticianPressed += KillTactician;
         OnFormationLockTogglePressed += FormationLockToggle;
     }
@@ -372,13 +370,13 @@ public sealed class PlayerController : UnitController
             {
                 if (isCtrlBtPressed && SelectedUnitList.Contains(selectedUnit))
                 {
-                    if (selectedUnit.isInLockedFormation)
+                    if (selectedUnit.mainTactician)
                         UnselectFormation(selectedUnit);
                     else
                         UnselectSingleUnit(selectedUnit);
                 }
 
-                else if (selectedUnit.isInLockedFormation)
+                else if (selectedUnit.tempTactician || selectedUnit.mainTactician)
                     SelectFormation(selectedUnit);
 
                 else
@@ -454,7 +452,7 @@ public sealed class PlayerController : UnitController
                     
                     if (!SelectedUnitList.Contains(unit))
                     {
-                        if (unit.isInLockedFormation)
+                        if (unit.tempTactician || unit.mainTactician)
                             SelectFormation(unit);
 
                         else
