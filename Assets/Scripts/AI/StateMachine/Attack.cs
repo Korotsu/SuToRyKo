@@ -4,30 +4,38 @@ namespace AI.StateMachine
 {
     public class UnitAttack : UnitState
     {
-        private readonly BaseEntity givenTarget;
+        private Unit givenTarget;
+        
 
-        public UnitAttack(UnitLogic _targetLogic, BaseEntity _givenTarget) : base(_targetLogic)
-        { givenTarget = _givenTarget; }
+        public UnitAttack(UnitLogic unitLogic, Unit _givenTarget) : base(unitLogic)
+        {
+            givenTarget = _givenTarget;
+        }
         
         public override void Start()
         {
             if (givenTarget is null)
-                Debug.LogWarning("An attack was ordered, but the target is null!", targetUnit);
+                Debug.LogWarning("An attack was ordered, but the target is null!", unit);
 
-            else if (givenTarget.GetTeam() == targetUnit.GetTeam())
-                Debug.LogWarning("An attack was ordered, but the target is of the same team!", targetUnit);
+            else if (givenTarget.GetTeam() == unit.GetTeam())
+                Debug.LogWarning("An attack was ordered, but the target is of the same team!", unit);
 
-            else targetUnit.SetAttackTarget(givenTarget);
+            else
+            {
+                unit.StartAttacking(givenTarget);
+                givenTarget.OnDeadEvent += () => unitLogic.SetState(new IdleUnit(unitLogic));
+
+            }
         }
 
         public override void Update()
         {
-            targetUnit.ComputeAttack();
+            unit.ComputeAttack();
         }
 
         public override void End()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }
@@ -35,24 +43,15 @@ namespace AI.StateMachine
 
 public partial class Unit
 {
-    // Begin attack
-    public void SetAttackTarget(BaseEntity target)
-    {
-        if (target is null)
-            return;
-
-        // TODO: Remove this as soon as the capture state is implemented
-        if ( !(CaptureTarget is null) )
-            StopCapture();
-    }
-    
-    // Attack Task
+    // Begin Attack, stops movements!
     public void StartAttacking(BaseEntity target)
     {
+        NavMeshAgent.isStopped = true;
+        
         EntityTarget = target;
-    } 
-    
-    public bool CanAttack(BaseEntity target)
+    }
+
+    private bool CanAttack(BaseEntity target)
     {
         if (target is null)
             return false;

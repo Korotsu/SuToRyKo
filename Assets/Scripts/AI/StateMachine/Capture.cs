@@ -6,7 +6,7 @@ namespace AI.StateMachine
 {
     public class UnitCapture : UnitState
     {
-        public UnitCapture(UnitLogic _targetLogic) : base(_targetLogic) { }
+        public UnitCapture(UnitLogic unitLogic) : base(unitLogic) { }
         public override void Start()
         {
             //targetLogic.AssociatedUnit.StartCapture();
@@ -14,17 +14,17 @@ namespace AI.StateMachine
 
         public override void Update()
         {
-            targetLogic.AssociatedUnit.CaptureUpdate();
+            unitLogic.associatedUnit.CaptureUpdate();
         }
 
         public override void End()
         {
-            targetLogic.AssociatedUnit.StopCapture();
+            unitLogic.associatedUnit.StopCapture();
         }
     }
 }
 
-public partial class Unit
+partial class Unit
 {
     TargetBuilding CaptureTarget = null;
 

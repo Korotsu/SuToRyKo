@@ -19,3 +19,10 @@ namespace AI.StateMachine
     }
 }
 
+partial class Unit
+{
+    public void DefendBase()
+    {
+        
+    }
+}

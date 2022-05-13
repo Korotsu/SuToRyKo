@@ -558,7 +558,7 @@ public sealed class PlayerController : UnitController
                 {
                     // Direct call to attacking task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
-                        unit.SetAttackTarget(other);
+                        unit.StartAttacking(other);
                 }
                 else if (other.NeedsRepairing())
                 {
