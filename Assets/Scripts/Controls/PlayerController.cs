@@ -28,6 +28,7 @@ public sealed class PlayerController : UnitController
 
     private Texture2D fogTex;
     public bool DrawFog = true;
+    public short Pass = 0;
 
     PointerEventData MenuPointerEventData = null;
 
@@ -337,7 +338,12 @@ public sealed class PlayerController : UnitController
             {
                 if(data.unitVisObj.activeSelf)
                     data.unitVisObj.SetActive(false);
-                unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+                if (Pass != 1)
+                {
+                    Pass = 1;
+                    unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+                }
+               
             }
             else if (t != Team)
             {
@@ -350,18 +356,31 @@ public sealed class PlayerController : UnitController
                 Color c =fogTex.GetPixel((int)(fogTex.width * pos.x), (int)(fogTex.height * pos.y));
                 if (c.a > 0.5f)
                 {
-                    unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+                    if (Pass != 2)
+                    {
+                        Pass = 2;
+                        unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+
+                    }
                 }
                 else
                 {
-                    unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(false);
+                    if (Pass != 3)
+                    {
+                        Pass = 3;
+                        unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(false);
+                    }
                 }
-                
+
             }
             else if (t == Team && !data.unitVisObj.activeSelf)
             {
                 data.unitVisObj.SetActive(true);
-                unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+                if (Pass != 1)
+                {
+                    Pass = 1;
+                    unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+                }
             }
             
 

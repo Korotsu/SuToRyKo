@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 [Serializable]
 public struct InfluenceData
 {
-    public int Team;
     public float buildingWeight;
     public float unitWeight;
     public float weight => unitWeight + buildingWeight;
@@ -34,6 +36,15 @@ public class CellData
         b = d.b;
         teamsWeights = new InfluenceData[(int)ETeam.Count];
     }
+    
+    public void Reset()
+    {
+        for (int i = 0; i < teamsWeights.Length; i++)
+        {
+            teamsWeights[i].buildingWeight = 0;
+            teamsWeights[i].unitWeight = 0;
+        }
+    }
 
     public void CalcBounds()
     {
@@ -58,12 +69,19 @@ public class InfluenceMap : MonoBehaviour
     private Vector3 center;
     private float InfluenceCellSize;
     private CellData[,] map;
-    [SerializeField, Range(0.001f, 0.999f)]
+    private Task[] tasks;
+        [SerializeField, Range(0.001f, 0.999f)]
     private float spreadFalloff =0.99f;
 
     [SerializeField, MinAttribute(0.01f)] private float Exponent;
     [SerializeField] private bool useSecondary;
     [SerializeField, Range(0, 0.999f)] private float Exponent2;
+    
+    [SerializeField] private bool GizmoBuilding;
+    [SerializeField] private bool GizmoUnit;
+    //[SerializeField] private bool Bench;
+
+    
     void Awake()
     {
         isInitialized = false;
@@ -78,21 +96,44 @@ public class InfluenceMap : MonoBehaviour
     cellID FindCellAtPos(Vector3 pos)
     {
         cellID id = new cellID();
-        
-        for (int x = 0; x < subdivision; x++)
+        //if (Bench)
         {
-            for (int y = 0; y < subdivision; y++)
+            Vector3 corner = new Vector3(-Radius,0, -Radius);
+            corner = pos - corner;
+            for (int x = (int)(corner.x/InfluenceCellSize); x < subdivision; x++)
             {
-                CellData cellData = map[x, y];
-                //Bounds b = new Bounds(cellData.center, cellData.size);
-                if (cellData.b.Contains(pos))
+                for (int y = (int)(corner.z/InfluenceCellSize); y < subdivision; y++)
                 {
-                    id.x = x;
-                    id.y = y;
-                    return id;
+                    CellData cellData = map[x, y];
+                    //Bounds b = new Bounds(cellData.center, cellData.size);
+                    if (cellData.b.Contains(pos))
+                    {
+                        id.x = x;
+                        id.y = y;
+                        return id;
+                    }
                 }
             }
         }
+        /*else
+        {
+            
+            for (int x = 0; x < subdivision; x++)
+            {
+                for (int y = 0; y < subdivision; y++)
+                {
+                    CellData cellData = map[x, y];
+                    //Bounds b = new Bounds(cellData.center, cellData.size);
+                    if (cellData.b.Contains(pos))
+                    {
+                        id.x = x;
+                        id.y = y;
+                        return id;
+                    }
+                }
+            }
+        }*/
+        
 
         return id;
     }
@@ -144,14 +185,19 @@ public class InfluenceMap : MonoBehaviour
         {
             for (int y = 0; y < subdivision; y++)
             {
-                map[x, y] = new CellData(map[x, y]);
+                map[x, y].Reset();
             }
         }
+
     }
+
+   
     
     public void Init()
     {
         map = new CellData[subdivision, subdivision];
+        tasks = new Task[subdivision];
+        
         center = transform.position;
         Transform t = transform.GetChild(0);
         int count = 1;
@@ -182,7 +228,7 @@ public class InfluenceMap : MonoBehaviour
             corner += new Vector3(InfluenceCellSize, 0 , 0);
             corner.z = -Radius;
         }
-
+       
         
         isInitialized = true;
     }
@@ -235,7 +281,13 @@ public class InfluenceMap : MonoBehaviour
                     Vector4 color = new Vector4();
                     for (int i = 0; i < (int)ETeam.Count; i++)
                     {
-                        float weight = tileData.teamsWeights[i].weight;
+                        float weight = 0;
+                        if(GizmoBuilding && GizmoUnit)
+                         weight =tileData.teamsWeights[i].weight;
+                        else if (GizmoUnit)
+                            weight = tileData.teamsWeights[i].unitWeight;
+                        else if(GizmoBuilding)
+                            weight = tileData.teamsWeights[i].buildingWeight;
                         if (i == (int)ETeam.Blue)
                         {
                             Vector4 tocolor = Color.blue;
