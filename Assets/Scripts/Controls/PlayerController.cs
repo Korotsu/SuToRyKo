@@ -27,6 +27,7 @@ public sealed class PlayerController : UnitController
     RenderTexture Fog = null;
 
     private Texture2D fogTex;
+    public bool DrawFog = true;
 
     PointerEventData MenuPointerEventData = null;
 
@@ -311,6 +312,7 @@ public sealed class PlayerController : UnitController
     int Counter = 0;
     void UpdateFog()
     {
+        
         GameObject[] units =GameObject.FindGameObjectsWithTag("Unit");
         GameObject[] buildings =GameObject.FindGameObjectsWithTag("Building");
         Counter++;
@@ -331,7 +333,13 @@ public sealed class PlayerController : UnitController
         {
             Unit data = unit.GetComponent<Unit>();
             ETeam t = data.GetTeam();
-            if (t != Team)
+            if (!DrawFog)
+            {
+                if(data.unitVisObj.activeSelf)
+                    data.unitVisObj.SetActive(false);
+                unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+            }
+            else if (t != Team)
             {
                 if(data.unitVisObj.activeSelf)
                     data.unitVisObj.SetActive(false);
