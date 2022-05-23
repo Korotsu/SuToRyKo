@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using System;
+using UnityEditor;
 
 public class Unit : BaseEntity
 {
@@ -12,6 +13,12 @@ public class Unit : BaseEntity
     BaseEntity EntityTarget = null;
     TargetBuilding CaptureTarget = null;
     NavMeshAgent NavMeshAgent;
+    
+    Mesh unitVisMesh;
+    MeshRenderer unitvisMeshRend;
+    [HideInInspector]
+    public GameObject unitVisObj;
+    public Material VisMat;
     public UnitDataScriptable GetUnitData { get { return UnitData; } }
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
@@ -57,6 +64,13 @@ public class Unit : BaseEntity
         NavMeshAgent.speed = GetUnitData.Speed;
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
+        unitVisObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        unitVisObj.transform.SetParent(transform, false);
+        unitVisObj.transform.localScale = new Vector3(UnitData.VisionMax, UnitData.VisionMax,UnitData.VisionMax);
+        unitVisMesh = unitVisObj.GetComponent<MeshFilter>().mesh;
+        unitvisMeshRend = unitVisObj.GetComponent<MeshRenderer>();
+        unitvisMeshRend.material = VisMat;
+        unitVisObj.layer = LayerMask.NameToLayer("UnitView");
     }
     override protected void Start()
     {

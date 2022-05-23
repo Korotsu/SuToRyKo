@@ -7,7 +7,9 @@ using UnityEngine;
 public struct InfluenceData
 {
     public int Team;
-    public float weight;
+    public float buildingWeight;
+    public float unitWeight;
+    public float weight => unitWeight + buildingWeight;
 }
 
 
@@ -45,6 +47,7 @@ public class cellID
     public int y;
 }
 
+
 public class InfluenceMap : MonoBehaviour
 {
     private int updateCount = 0;
@@ -57,16 +60,25 @@ public class InfluenceMap : MonoBehaviour
     private CellData[,] map;
     [SerializeField, Range(0.001f, 0.999f)]
     private float spreadFalloff =0.99f;
-    
+
+    [SerializeField, MinAttribute(0.01f)] private float Exponent;
+    [SerializeField] private bool useSecondary;
+    [SerializeField, Range(0, 0.999f)] private float Exponent2;
     void Awake()
     {
         isInitialized = false;
         Init();
     }
 
+    void ApplyLayer(ModifierMap layer)
+    {
+        
+    }
+
     cellID FindCellAtPos(Vector3 pos)
     {
         cellID id = new cellID();
+        
         for (int x = 0; x < subdivision; x++)
         {
             for (int y = 0; y < subdivision; y++)
@@ -85,86 +97,10 @@ public class InfluenceMap : MonoBehaviour
         return id;
     }
 
-    void Spread(cellID id, int teamId, float weight)
+    void Spread(cellID id, int teamId, float weight, float falloff, bool isBuilding )
     {
-        /*List<cellID> points = new List<cellID>();
-        
-        //List<cellID> pointsCompleted = new List<cellID>();
-        int nb_div = (int)(spreadFalloff*1000);
-        if (nb_div < 68)
-            nb_div = 68;
-        
-        points.Capacity = nb_div;
-        map[id.x, id.y].teamsWeights[teamId].weight += weight;
-        int lastx = id.x;
-        int lasty = id.y;
         int c = 0;
-        
-        for (float w = weight; w > 0.0001; w*= (spreadFalloff))
-        {
-            c++;
-        }
-
-        c *= 5;
-        c = (int)(c / InfluenceCellSize);
-        for (int i = 0; i < nb_div; i++)
-        {
-            float theta = 2.0f * Mathf.PI * i / (nb_div); //get the current angle
-
-            int x = (int)(c * Mathf.Cos(theta)); //calculate the x component
-            int y = (int)(c * Mathf.Sin(theta)); //calculate the y component
-
-            cellID px = new cellID { x = id.x + x, y = id.y + y };
-            if (px.x != lastx || px.y != lasty)
-            {
-                bool f = px.x < 0 || px.x >= subdivision || px.y < 0 || px.y >= subdivision;
-                if (!f)
-                {
-                    map[px.x, px.y].teamsWeights[teamId].weight += weight;
-                    
-                }
-                lastx = px.x;
-                lasty = px.y;
-                points.Add(new cellID{x=px.x, y=px.y});
-                
-            }
-            
-            
-        }
-
-        float pas = subdivision / 2000.0f;
-        foreach (cellID p2 in points)
-        {
-            float advance = 0;
-            cellID p1 = id;
-            Vector2 p1v = new Vector2(p1.x, p1.y);
-            Vector2 p2v = new Vector2(p2.x, p2.y);
-            int lastX2 = p1.x;
-            int lastY2 = p1.y;
-            for (; advance <0.99f; advance+=pas)
-            {
-                Vector2 pxv = Vector2.Lerp(p1v, p2v, advance);
-                cellID px = new cellID { x = (int)pxv.x, y = (int)pxv.y };
-                if (lastX2 != px.x || lastY2 != px.y)
-                {
-                    {
-                        bool f = px.x < 0 || px.x >= subdivision || px.y < 0 || px.y >= subdivision;
-                        if(!f)
-                            map[px.x, px.y].teamsWeights[teamId].weight = weight * (1-advance);
-                    }
-                    lastX2 = px.x;
-                    lastY2 = px.y;
-                }
-            }
-            
-        }*/
-        
-        /*for(int y=-radius; y<=radius; y++)
-    for(int x=-radius; x<=radius; x++)
-        if(x*x+y*y <= radius*radius)
-            setpixel(origin.x+x, origin.y+y);*/
-        int c = 0;
-        for (float w = weight; w > 0.0001; w*= (spreadFalloff-0.01f))
+        for (float w = weight; w > 0.0001; w*= (falloff-0.01f))
         {
             c++;
         }
@@ -181,8 +117,23 @@ public class InfluenceMap : MonoBehaviour
                     if (!f)
                     {
                         float distance = (x*x+y*y) / c2 ;
-                        float w = weight -  weight*distance ;
-                        map[id.x+x, id.y+y].teamsWeights[teamId].weight += w >= 0 ? w : 0;
+                        float w;
+                        if (useSecondary)
+                        {
+                            float e2 = (Mathf.Pow(Exponent2, distance) - 1) / (Exponent2 - 1);
+                            w= weight -  (weight*e2) ;
+                        }
+                        else
+                        {
+                            float e = Mathf.Exp(Exponent - Exponent / distance);
+                            w=weight -  (weight*e) ;
+                        }
+
+                        if(isBuilding)
+                            map[id.x+x, id.y+y].teamsWeights[teamId].buildingWeight += w >= 0 ? w : 0;
+                        else
+                            map[id.x+x, id.y+y].teamsWeights[teamId].unitWeight += w >= 0 ? w : 0;
+
                     }
                 }
     }
@@ -252,7 +203,7 @@ public class InfluenceMap : MonoBehaviour
             Vector3 position = unit.transform.position;
             cellID id = FindCellAtPos(position);
             int team = (int)data.GetTeam();
-            Spread(id,team, data.Cost);
+            Spread(id,team, data.Cost, spreadFalloff, false);
             
         }
         foreach (GameObject building in buildings)
@@ -261,7 +212,8 @@ public class InfluenceMap : MonoBehaviour
             Vector3 position = building.transform.position;
             cellID id = FindCellAtPos(position);
             int team = (int)data.GetTeam();
-            Spread(id,team, data.Cost);
+            Spread(id,team, data.Cost, spreadFalloff, true);
+            
         }
     }
 

@@ -8,6 +8,7 @@ public class UnitDataScriptable : EntityDataScriptable
     public float AttackFrequency = 1f;
     public float AttackDistanceMax = 10f;
     public float CaptureDistanceMax = 10f;
+    public float VisionMax = 20f;
 
     [Header("Repairing")]
     public bool CanRepair = false;

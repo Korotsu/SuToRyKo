@@ -23,6 +23,10 @@ public sealed class PlayerController : UnitController
 
     [SerializeField, Range(0f, 1f)]
     float FactoryPreviewTransparency = 0.3f;
+    [SerializeField]
+    RenderTexture Fog = null;
+
+    private Texture2D fogTex;
 
     PointerEventData MenuPointerEventData = null;
 
@@ -126,6 +130,7 @@ public sealed class PlayerController : UnitController
         }
         // Set up the new Pointer Event
         MenuPointerEventData = new PointerEventData(SceneEventSystem);
+        fogTex = new Texture2D(Fog.width, Fog.height);
     }
 
     override protected void Start()
@@ -212,6 +217,7 @@ public sealed class PlayerController : UnitController
 
         // Apply camera movement
         UpdateMoveCamera();
+        UpdateFog();
     }
     #endregion
 
@@ -301,6 +307,68 @@ public sealed class PlayerController : UnitController
         if (Input.GetMouseButtonUp(2))
             OnCameraDragMoveEnd?.Invoke();
     }
+
+    int Counter = 0;
+    void UpdateFog()
+    {
+        GameObject[] units =GameObject.FindGameObjectsWithTag("Unit");
+        GameObject[] buildings =GameObject.FindGameObjectsWithTag("Building");
+        Counter++;
+        if (Counter > 20)
+        {
+            RenderTexture last = RenderTexture.active;
+            RenderTexture.active =Fog;
+ 
+                
+            fogTex.ReadPixels(new Rect(0, 0, fogTex.width, fogTex.height), 0, 0);
+            // Restore previously active render texture
+            RenderTexture.active = last;
+            Counter = 0;
+        }
+        
+        
+        foreach (GameObject unit in units)
+        {
+            Unit data = unit.GetComponent<Unit>();
+            ETeam t = data.GetTeam();
+            if (t != Team)
+            {
+                if(data.unitVisObj.activeSelf)
+                    data.unitVisObj.SetActive(false);
+                var position = data.unitVisObj.transform.position;
+                Vector2 pos = new Vector2(position.x,position.y);
+                pos.Normalize();
+                
+                Color c =fogTex.GetPixel((int)(fogTex.width * pos.x), (int)(fogTex.height * pos.y));
+                if (c.a > 0.5f)
+                {
+                    unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+                }
+                else
+                {
+                    unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(false);
+                }
+                
+            }
+            else if (t == Team && !data.unitVisObj.activeSelf)
+            {
+                data.unitVisObj.SetActive(true);
+                unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
+            }
+            
+
+        }
+        foreach (GameObject building in buildings)
+        {
+            Factory data = building.GetComponent<Factory>();
+            ETeam t = data.GetTeam();
+            if(t!= Team && data.FactoVisObj.activeSelf)
+                data.FactoVisObj.SetActive(false);
+            else if(t == Team && !data.FactoVisObj.activeSelf)
+                data.FactoVisObj.SetActive(true);
+        }
+    }
+    
     #endregion
 
     #region Unit selection methods

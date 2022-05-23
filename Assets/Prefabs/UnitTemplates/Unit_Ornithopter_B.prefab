@@ -52,6 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Team: 0
   UnitData: {fileID: 11400000, guid: 8457afbb9d6b31c4188a955c071a22ba, type: 2}
+  VisMat: {fileID: 2100000, guid: 178cda581d0d1b24d82d69bcb50ff2a1, type: 2}
 --- !u!65 &3563715967324713862
 BoxCollider:
   m_ObjectHideFlags: 0
