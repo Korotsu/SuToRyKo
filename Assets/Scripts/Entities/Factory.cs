@@ -19,6 +19,11 @@ public sealed class Factory : BaseEntity
     const int MaxAvailableFactories = 3;
 
     UnitController Controller = null;
+    Mesh FactoVisMesh;
+    MeshRenderer FactovisMeshRend;
+    [HideInInspector]
+    public GameObject FactoVisObj;
+    public Material VisMat;
 
     [SerializeField]
     int MaxBuildingQueueSize = 5;
@@ -79,6 +84,15 @@ public sealed class Factory : BaseEntity
             string path = "Prefabs/Factories/" + templateFactoryPrefab.name + "_" + Team.ToString();
             FactoryPrefabs[i] = Resources.Load<GameObject>(path);
         }
+        
+        FactoVisObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        FactoVisObj.transform.SetParent(transform, false);
+        FactoVisObj.transform.localScale = new Vector3(FactoryData.VisionMax, FactoryData.VisionMax,FactoryData.VisionMax);
+        FactoVisMesh = FactoVisObj.GetComponent<MeshFilter>().mesh;
+        FactovisMeshRend = FactoVisObj.GetComponent<MeshRenderer>();
+        FactovisMeshRend.material = VisMat;
+        FactoVisObj.layer = LayerMask.NameToLayer("UnitView");
+        
     }
     protected override void Start()
     {
