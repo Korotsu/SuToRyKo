@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.AI;
 using UnityEngine;
 using System;
+using System.Linq;
 
 namespace Formations
 {
@@ -44,7 +46,6 @@ namespace Formations
         void Start()
         {
             tactician = GetComponent<Tactician>();
-
             if (!tactician)
             {
                 enabled = false;
@@ -58,6 +59,8 @@ namespace Formations
 
         public void SwitchFormationType(EFormationTypes newType)
         {
+            nodes.Clear();
+
             switch (formationType)
             {
                 case EFormationTypes.Linear:
@@ -98,11 +101,6 @@ namespace Formations
         void Update()
         {
             UpdateFormation?.Invoke();
-
-            if (Input.GetAxis("CreateLinearFormation") != 0)
-            {
-                CreateLinearFormation();
-            }
         }
 
         private void OnDrawGizmos()
@@ -113,6 +111,38 @@ namespace Formations
                 {
                     Gizmos.DrawCube(node.GetPosition(), maxBounds);
                 }
+            }
+        }
+
+        public void SetTargetPos(Vector3 pos)
+        {
+            SetFormationSpeed();
+
+            transform.position = pos;
+            tactician.GetSoldiers().ForEach(soldier => soldier.Unit.UpdateTargetPos());
+        }
+
+        public void SetFormationSpeed()
+        {
+            List<Unit> units = tactician.GetSoldiers().Select(soldier => soldier.Unit).ToList();
+
+            float maxSpeed = 100000.0f;
+            float maxAngularSpeed = 100000.0f;
+            float maxAcceleration = 100000.0f;
+
+            foreach (Unit unit in units)
+            {
+                maxSpeed        = (unit.GetUnitData.Speed        < maxSpeed)         ? unit.GetUnitData.Speed         : maxSpeed;
+                maxAngularSpeed = (unit.GetUnitData.AngularSpeed < maxAngularSpeed)  ? unit.GetUnitData.AngularSpeed  : maxAngularSpeed;
+                maxAcceleration = (unit.GetUnitData.Acceleration < maxAcceleration)  ? unit.GetUnitData.Acceleration  : maxAcceleration;
+            }
+
+            foreach (Unit unit in units)
+            {
+                unit.NavMeshAgent.speed         = maxSpeed;
+                unit.NavMeshAgent.angularSpeed  = maxAngularSpeed;
+                unit.NavMeshAgent.acceleration  = maxAcceleration;
+                unit.NavMeshAgent.radius        = maxBounds.x/2;
             }
         }
     }

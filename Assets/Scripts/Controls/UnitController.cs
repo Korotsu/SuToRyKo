@@ -57,30 +57,37 @@ public class UnitController : MonoBehaviour
     #region Unit methods
     protected void UnselectAllUnits()
     {
-        bool shouldKillTactician = true;
         foreach (Unit unit in SelectedUnitList)
         {
             unit.SetSelected(false);
-            if (unit.mainTactician && unit.mainTactician == selectedTactician)
-                shouldKillTactician = false;
+
+            if (selectedTactician && unit.tempTactician && selectedTactician.GetTacticianState() != null)
+            {
+                if (selectedTactician != unit.mainTactician)
+                    unit.tempTactician.GetSoldiers().Remove(unit.GetComponent<Soldier>());
+                unit.tempTactician = null;
+            }
         }
 
-        if (shouldKillTactician && selectedTactician)
-            Destroy(selectedTactician.gameObject);
-
         SelectedUnitList.Clear();
+
+        if (selectedTactician && selectedTactician.isFormationLocked == false && selectedTactician.GetSoldiers().Count <= 1)
+            Destroy(selectedTactician.gameObject);
+        
         selectedTactician = null;
     }
     protected void SelectAllUnits()
     {
+        UnselectAllUnits();
+
         foreach (Unit unit in UnitList)
-            unit.SetSelected(true);
+        {
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
 
-        SelectedUnitList.Clear();
-        SelectedUnitList.AddRange(UnitList);
-
-        if (selectedTactician == null && SelectedUnitList.Count > 1)
-            CreateTactician();
+            else
+                SelectSingleUnit(unit);
+        }
     }
     protected void SelectAllUnitsByTypeId(int typeId)
     {
@@ -93,65 +100,61 @@ public class UnitController : MonoBehaviour
         );
         foreach (Unit unit in SelectedUnitList)
         {
-            unit.SetSelected(true);
-        }
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
 
-        if (selectedTactician == null && SelectedUnitList.Count > 1)
-            CreateTactician();
+            else
+                SelectSingleUnit(unit);
+        }
     }
     protected void SelectUnitList(List<Unit> units)
     {
         foreach (Unit unit in units)
-            unit.SetSelected(true);
-        SelectedUnitList.AddRange(units);
+        {
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
+
+            else
+                SelectSingleUnit(unit);
+        }
     }
     protected void SelectUnitList(Unit [] units)
     {
         foreach (Unit unit in units)
-            unit.SetSelected(true);
-        SelectedUnitList.AddRange(units);
+        {
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
+
+            else
+                SelectSingleUnit(unit);
+        }
     }
     protected void SelectSingleUnit(Unit unit)
     {
         SelectUnit(unit);
+        
+        if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
+            CreateTactician();
 
-        if (selectedTactician)
+        else if(selectedTactician)
         {
             selectedTactician.GetSoldiers().Add(unit.GetComponent<Soldier>());
             unit.tempTactician = selectedTactician;
         }
-        
-        else if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
-            CreateTactician();
     }
 
     protected void SelectUnit(Unit unit)
     {
         unit.SetSelected(true);
-        SelectedUnitList.Add(unit);
+
+        if(!SelectedUnitList.Contains(unit))
+            SelectedUnitList.Add(unit);
     }
 
     protected void SelectFormation(Unit unit)
     {
-        if (selectedTactician)
-        {
-            List<Unit> unitsInFormation = unit.GetAllUnitsInFormation();
-
-            if (unit.tempTactician)
-                Destroy(unit.tempTactician.gameObject);
-
-            foreach (Unit formationUnit in unitsInFormation)
-            {
-                formationUnit.tempTactician = selectedTactician;
-                SelectUnit(formationUnit);
-            }
-        }
-
-        else
-        {
-            selectedTactician = unit.tempTactician ?? unit.mainTactician;
-            unit.GetAllUnitsInFormation().ForEach(_unit => SelectUnit(_unit));
-        }
+        selectedTactician ??= unit.tempTactician ?? unit.mainTactician;
+        unit.GetAllUnitsInFormation().ForEach(_unit => SelectUnit(_unit));
     }
 
     protected void UnselectFormation(Unit unit)
@@ -162,16 +165,21 @@ public class UnitController : MonoBehaviour
 
             if (selectedTactician && _unit.tempTactician && selectedTactician.GetTacticianState() != null)
             {
-                _unit.tempTactician.GetSoldiers().Remove(_unit.GetComponent<Soldier>());
+                if(!_unit.mainTactician)
+                    _unit.tempTactician.GetSoldiers().Remove(_unit.GetComponent<Soldier>());
                 _unit.tempTactician = null;
             }
         }
 
         if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
         {
-            Destroy(selectedTactician.gameObject);
             selectedTactician = null;
+
+            if (selectedTactician.isFormationLocked == false)
+                Destroy(selectedTactician.gameObject);
         }
+
+        
     }
 
     protected void UnselectUnit(Unit unit)
@@ -219,8 +227,9 @@ public class UnitController : MonoBehaviour
 
     protected void CreateLinearFormation()
     {
-        if (lockedTacticians.Count > 0)
-            lockedTacticians.ForEach(tactician => tactician.GetComponent<Formations.FormationManager>().SwitchFormationType(Formations.FormationManager.EFormationTypes.Linear));
+        selectedTactician.GetComponent<Formations.FormationManager>().SwitchFormationType(Formations.FormationManager.EFormationTypes.Linear);
+        //if (lockedTacticians.Count > 0)
+        //lockedTacticians.ForEach(tactician => tactician.GetComponent<Formations.FormationManager>().SwitchFormationType(Formations.FormationManager.EFormationTypes.Linear));
     }
 
     protected void KillTactician()

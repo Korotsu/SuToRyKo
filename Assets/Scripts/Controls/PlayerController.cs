@@ -254,7 +254,7 @@ public sealed class PlayerController : UnitController
 
         for (int i = 0; i < OnCategoryPressed.Length; i++)
         {
-            if (Input.GetKeyDown(KeyCode.Keypad1 + i) || Input.GetKeyDown(KeyCode.Alpha1 + i))
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
             {
                 OnCategoryPressed[i]?.Invoke();
                 break;
@@ -588,14 +588,18 @@ public sealed class PlayerController : UnitController
                 if (other.GetTeam() != GetTeam())
                 {
                     // Direct call to attacking task $$$ to be improved by AI behaviour
-                    foreach (Unit unit in SelectedUnitList)
-                        unit.SetAttackTarget(other);
+                    /*if (selectedTactician)
+                        selectedTactician.SetAttackTarget(other);  //Placeholder for tactician attack;
+                    else*/
+                        SelectedUnitList[0].SetAttackTarget(other);
                 }
                 else if (other.NeedsRepairing())
                 {
                     // Direct call to reparing task $$$ to be improved by AI behaviour
-                    foreach (Unit unit in SelectedUnitList)
-                        unit.SetRepairTarget(other);
+                    /*if (selectedTactician)
+                        selectedTactician.SetRepairTarget(other);  //Placeholder for tactician repair;
+                    else*/
+                    SelectedUnitList[0].SetRepairTarget(other);
                 }
             }
         }
@@ -606,8 +610,10 @@ public sealed class PlayerController : UnitController
             if (target != null && target.GetTeam() != GetTeam())
             {
                 // Direct call to capturing task $$$ to be improved by AI behaviour
-                foreach (Unit unit in SelectedUnitList)
-                    unit.SetCaptureTarget(target);
+                /*if (selectedTactician)
+                        selectedTactician.SetCaptureTarget(other);  //Placeholder for tactician capture;
+                    else*/
+                SelectedUnitList[0].SetCaptureTarget(target);
             }
         }
         // Set unit move target
@@ -618,8 +624,10 @@ public sealed class PlayerController : UnitController
             SetTargetCursorPosition(newPos);
 
             // Direct call to moving task $$$ to be improved by AI behaviour
-            foreach (Unit unit in SelectedUnitList)
-                unit.SetTargetPos(newPos);
+            if (selectedTactician)
+                selectedTactician.SetTargetPos(newPos);  //Placeholder for tactician moving;
+            else
+                SelectedUnitList[0].SetTargetPos(newPos);
         }
     }
     #endregion

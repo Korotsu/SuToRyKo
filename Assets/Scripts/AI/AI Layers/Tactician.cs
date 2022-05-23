@@ -8,6 +8,8 @@ public class Tactician : MonoBehaviour
 
     private List<Soldier> soldiers = new List<Soldier>();
 
+    private Formations.FormationManager formationManager;
+
     public ref List<Soldier> GetSoldiers() => ref soldiers;
 
     private TacticianState currentState;
@@ -19,6 +21,14 @@ public class Tactician : MonoBehaviour
     private void Start()
     {
         currentState = new IdleTactician(this);
+
+        formationManager = GetComponent<Formations.FormationManager>();
+
+        if (!formationManager)
+        {
+            enabled = false;
+            return;
+        }
 
         //soldiers.ForEach(soldier => soldier.Unit)
     }
@@ -55,5 +65,10 @@ public class Tactician : MonoBehaviour
         }
 
         soldiers.Clear();
+    }
+
+    public void SetTargetPos(Vector3 pos)
+    {
+        formationManager.SetTargetPos(pos);
     }
 }

@@ -13,7 +13,7 @@ public class Unit : BaseEntity
     float LastActionDate = 0f;
     BaseEntity EntityTarget = null;
     TargetBuilding CaptureTarget = null;
-    NavMeshAgent NavMeshAgent;
+    public NavMeshAgent NavMeshAgent;
     public UnitDataScriptable GetUnitData { get { return UnitData; } }
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
@@ -129,13 +129,20 @@ public class Unit : BaseEntity
     
     public void FollowFormation()
     {
-        SetTargetPos(formationNode.GetPosition());
+        if (formationNode.FormationManager && NavMeshAgent.remainingDistance < 0.1)
+            SetTargetPos(formationNode.GetPosition());
+    }
+
+    public void UpdateTargetPos()
+    {
+        if (formationNode.FormationManager)
+           SetTargetPos(formationNode.GetPosition());
     }
 
     public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
         formationNode   = _formationNode;
-        actions         += FollowFormation;
+        //actions         += FollowFormation;
     }
 
     public List<Unit> GetAllUnitsInFormation()
