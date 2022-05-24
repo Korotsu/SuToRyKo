@@ -80,7 +80,8 @@ public class InfluenceMap : MonoBehaviour
     [SerializeField] private bool GizmoBuilding;
     [SerializeField] private bool GizmoUnit;
     //[SerializeField] private bool Bench;
-
+    private Vector3 CornerCalc;
+    private Vector3 mapCenter;
     
     void Awake()
     {
@@ -98,11 +99,12 @@ public class InfluenceMap : MonoBehaviour
         cellID id = new cellID();
         //if (Bench)
         {
-            Vector3 corner = new Vector3(-Radius,0, -Radius);
-            corner = pos - corner;
-            for (int x = (int)(corner.x/InfluenceCellSize); x < subdivision; x++)
+            CornerCalc.x = pos.x- mapCenter.x +Radius;
+            CornerCalc.z = pos.z- mapCenter.z +Radius;
+            
+            for (int x = (int)(CornerCalc.x/InfluenceCellSize); x < subdivision; x++)
             {
-                for (int y = (int)(corner.z/InfluenceCellSize); y < subdivision; y++)
+                for (int y = (int)(CornerCalc.z/InfluenceCellSize); y < subdivision; y++)
                 {
                     CellData cellData = map[x, y];
                     //Bounds b = new Bounds(cellData.center, cellData.size);
@@ -197,19 +199,51 @@ public class InfluenceMap : MonoBehaviour
     {
         map = new CellData[subdivision, subdivision];
         tasks = new Task[subdivision];
-        
+
         center = transform.position;
-        Transform t = transform.GetChild(0);
-        int count = 1;
+        int count = 0;
         for (int i = 0; i < transform.childCount; i++)
         {
             Transform child = transform.GetChild(i);
-            if (child.position.x > center.x && (int)child.position.z == (int)center.z)
+            if (child.position.x >= center.x && (int)child.position.z == (int)center.z)
                 count += 2;
         }
-        Radius = t.GetComponent<MeshFilter>().sharedMesh.bounds.extents.x * t.localScale.x * count;
+
+        MeshFilter mf = null;
+        Terrain ter = null;
+        float localScale = 1;
+         mapCenter = new Vector3();
+        if (count == 0)
+        {
+             TryGetComponent(out mf);
+             TryGetComponent(out ter);
+             localScale = transform.localScale.x;
+             count = 1;
+        }
+        else
+        {
+            transform.GetChild(0).TryGetComponent(out mf);
+            transform.GetChild(0).TryGetComponent(out ter);
+            localScale = transform.GetChild(0).localScale.x;
+
+        }
+
+        if (!(mf is null))
+        {
+            var sharedMesh = mf.sharedMesh;
+            Radius = sharedMesh.bounds.extents.x * localScale* count;
+            mapCenter = sharedMesh.bounds.center;
+        }
+
+        if (!(ter is null))
+        {
+            var terrainData = ter.terrainData;
+            Radius = terrainData.bounds.extents.x * localScale * count;
+            mapCenter = terrainData.bounds.center;
+        }
+        
         InfluenceCellSize = (Radius*2) / subdivision;
-        Vector3 corner = new Vector3(-Radius, 0, -Radius);
+        Vector3 corner = new Vector3(mapCenter.x-Radius, 0, mapCenter.z-Radius);
         float InfluenceCellCenter =  InfluenceCellSize/ 2.0f;
         for (int x = 0; x < subdivision; x++)
         {
@@ -226,7 +260,7 @@ public class InfluenceMap : MonoBehaviour
                 corner += new Vector3(0, 0 , InfluenceCellSize);
             }
             corner += new Vector3(InfluenceCellSize, 0 , 0);
-            corner.z = -Radius;
+            corner.z = mapCenter.z-Radius;
         }
        
         

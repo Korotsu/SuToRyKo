@@ -2055,6 +2055,8 @@ MonoBehaviour:
   Exponent: 0.01
   useSecondary: 0
   Exponent2: 0.0001
+  GizmoBuilding: 1
+  GizmoUnit: 1
 --- !u!1 &1582600687
 GameObject:
   m_ObjectHideFlags: 0

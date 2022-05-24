@@ -317,6 +317,9 @@ public sealed class PlayerController : UnitController
         GameObject[] units =GameObject.FindGameObjectsWithTag("Unit");
         GameObject[] buildings =GameObject.FindGameObjectsWithTag("Building");
         Counter++;
+        //ComputeShader shader;
+        //ComputeBuffer buf;
+        
         if (Counter > 20)
         {
             RenderTexture last = RenderTexture.active;
