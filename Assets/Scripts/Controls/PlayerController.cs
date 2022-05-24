@@ -663,8 +663,8 @@ public sealed class PlayerController : UnitController
                     // Direct call to reparing task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
                     {
-                        if (!(unit.UnitLogic.CurrentState is AI.StateMachine.UnitRepair))
-                            unit.UnitLogic.SetState(new AI.StateMachine.UnitRepair(unit.UnitLogic));
+                        if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitRepair))
+                            unit.UnitLogic.SetState(new AI.BehaviorStates.UnitRepair(unit.UnitLogic));
 
                         unit.SetRepairTarget(other);
                     }
@@ -681,8 +681,8 @@ public sealed class PlayerController : UnitController
                 foreach (Unit unit in SelectedUnitList)
                 {
                     unit.SetCaptureTarget(target);
-                    if(!(unit.UnitLogic.CurrentState is AI.StateMachine.UnitCapture))
-                        unit.UnitLogic.SetState(new AI.StateMachine.UnitCapture(unit.UnitLogic));
+                    if(!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCapture))
+                        unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCapture(unit.UnitLogic));
                 }
             }
         }
@@ -697,8 +697,8 @@ public sealed class PlayerController : UnitController
             foreach (Unit unit in SelectedUnitList)
             {
                 unit.SetTargetPos(newPos);
-                if (!(unit.UnitLogic.CurrentState is AI.StateMachine.IdleUnit))
-                    unit.UnitLogic.SetState(new AI.StateMachine.IdleUnit(unit.UnitLogic));
+                if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.IdleUnit))
+                    unit.UnitLogic.SetState(new AI.BehaviorStates.IdleUnit(unit.UnitLogic));
             }
         }
     }

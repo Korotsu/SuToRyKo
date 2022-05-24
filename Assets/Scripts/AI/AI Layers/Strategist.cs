@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using AI.StateMachine;
+using AI.BehaviorStates;
 
 [System.Serializable]
 public class Strategist : MonoBehaviour

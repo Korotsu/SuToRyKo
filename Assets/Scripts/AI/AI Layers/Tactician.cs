@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using AI.StateMachine;
+using AI.BehaviorStates;
 using UnityEngine;
 
 public class Tactician : MonoBehaviour
@@ -40,6 +40,5 @@ public class Tactician : MonoBehaviour
     {
         currentState.End();
         currentState = order;
-        currentState.Start();
     }
 }

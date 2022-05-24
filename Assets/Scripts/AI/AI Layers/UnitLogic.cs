@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using AI.StateMachine;
+using AI.BehaviorStates;
 using UnityEngine;
 
 public class UnitLogic : MonoBehaviour
@@ -33,7 +33,6 @@ public class UnitLogic : MonoBehaviour
             CurrentState.End();
 
         CurrentState = order;
-        CurrentState.Start();
     }
 
     public void SetUnit(Unit unit)

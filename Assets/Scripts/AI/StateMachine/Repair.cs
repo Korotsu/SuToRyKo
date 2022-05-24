@@ -3,16 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace AI.StateMachine
+namespace AI.BehaviorStates
 {
     public class UnitRepair : UnitState
     {
         public UnitRepair(UnitLogic _targetLogic) : base(_targetLogic) { }
-
-        public override void Start()
-        {
-
-        }
 
         public override void Update()
         {
