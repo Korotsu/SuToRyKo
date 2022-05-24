@@ -48,7 +48,8 @@ public class UnitDataScriptable : EntityDataScriptable
             coef = BuildDuration;
         if (BuildDuration == 0)
             coef = Cost;
-        
+        if (Power == 0)
+            return 0.1f;
         return  Power -(coef *3.0f);
     }
    
