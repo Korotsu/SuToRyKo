@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-public class TargetBuilding : MonoBehaviour
+public class TargetBuilding : BaseEntity
 {
     [SerializeField]
     float CaptureGaugeStart = 100f;
@@ -21,6 +21,10 @@ public class TargetBuilding : MonoBehaviour
     ETeam OwningTeam = ETeam.Neutral;
     ETeam CapturingTeam = ETeam.Neutral;
     public ETeam GetTeam() { return OwningTeam; }
+    protected override float GetInfluence()
+    {
+        return 10;
+    }
 
 
     #region MonoBehaviour methods

@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRepairable
+public abstract class BaseEntity : MonoBehaviour
 {
     [SerializeField]
     protected ETeam Team;
@@ -12,7 +12,13 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
     protected GameObject SelectedSprite = null;
     protected Text HPText = null;
     protected bool IsInitialized = false;
-
+    
+    Mesh entityVisMesh;
+    MeshRenderer entityvisMeshRend;
+    [HideInInspector]
+    public GameObject entityVisObj;
+    public Material VisMat;
+    public float VisionMax = 50f;
     public Action OnDeadEvent;
     public bool IsSelected { get; protected set; }
     public bool IsAlive { get; protected set; }
@@ -29,60 +35,19 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
     {
         return GameServices.GetTeamColor(GetTeam());
     }
+    public ETeam GetTeam()
+    {
+        return Team;
+    }
+    public float Influence => GetInfluence();
+    protected abstract float GetInfluence();
     void UpdateHpUI()
     {
         if (HPText != null)
             HPText.text = "HP : " + HP.ToString();
     }
 
-    #region ISelectable
-    public void SetSelected(bool selected)
-    {
-        IsSelected = selected;
-        SelectedSprite?.SetActive(IsSelected);
-    }
-    public ETeam GetTeam()
-    {
-        return Team;
-    }
-    #endregion
-
-    #region IDamageable
-    public void AddDamage(int damageAmount)
-    {
-        if (IsAlive == false)
-            return;
-
-        HP -= damageAmount;
-
-        OnHpUpdated?.Invoke();
-
-        if (HP <= 0)
-        {
-            IsAlive = false;
-            OnDeadEvent?.Invoke();
-            Debug.Log("Entity " + gameObject.name + " died");
-        }
-    }
-    public void Destroy()
-    {
-        AddDamage(HP);
-    }
-    #endregion
-
-    #region IRepairable
-    virtual public bool NeedsRepairing()
-    {
-        return true;
-    }
-    virtual public void Repair(int amount)
-    {
-        OnHpUpdated?.Invoke();
-    }
-    virtual public void FullRepair()
-    {
-    }
-    #endregion
+   
 
     #region MonoBehaviour methods
     virtual protected void Awake()
@@ -97,6 +62,13 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
             HPText = hpTransform.GetComponent<Text>();
 
         OnHpUpdated += UpdateHpUI;
+        entityVisObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        entityVisObj.transform.SetParent(transform, false);
+        entityVisObj.transform.localScale = new Vector3(VisionMax, VisionMax,VisionMax);
+        entityVisMesh = entityVisObj.GetComponent<MeshFilter>().mesh;
+        entityvisMeshRend = entityVisObj.GetComponent<MeshRenderer>();
+        entityvisMeshRend.material = VisMat;
+        entityVisObj.layer = LayerMask.NameToLayer("UnitView");
     }
     virtual protected void Start()
     {

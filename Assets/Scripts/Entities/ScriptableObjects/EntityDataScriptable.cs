@@ -10,4 +10,19 @@ public class EntityDataScriptable : ScriptableObject
 
     [Header("Health Points")]
     public int MaxHP = 100;
+
+
+    public virtual float GetPower()
+    {
+        return 0;
+    }
+    public virtual float GetInfluence(float Power)
+    {
+        return Power;
+    }
+    public float GetInfluence()
+    {
+        return GetInfluence(GetPower());
+    }
+    
 }

@@ -279,20 +279,20 @@ public class InfluenceMap : MonoBehaviour
         GameObject[] buildings =GameObject.FindGameObjectsWithTag("Building");
         foreach (GameObject unit in units)
         {
-            Unit data = unit.GetComponent<Unit>();
+            BaseEntity data = unit.GetComponent<BaseEntity>();
             Vector3 position = unit.transform.position;
             cellID id = FindCellAtPos(position);
             int team = (int)data.GetTeam();
-            Spread(id,team, data.Cost, spreadFalloff, false);
+            Spread(id,team, data.Influence, spreadFalloff, false);
             
         }
         foreach (GameObject building in buildings)
         {
-            Factory data = building.GetComponent<Factory>();
+            BaseEntity data = building.GetComponent<BaseEntity>();
             Vector3 position = building.transform.position;
             cellID id = FindCellAtPos(position);
             int team = (int)data.GetTeam();
-            Spread(id,team, data.Cost, spreadFalloff, true);
+            Spread(id,team, data.Influence, spreadFalloff, true);
             
         }
     }

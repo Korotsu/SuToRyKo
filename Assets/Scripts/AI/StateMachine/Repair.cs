@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Entities;
 using UnityEngine;
 
 
@@ -46,7 +47,7 @@ public partial class Unit
 
     #region Task Methods
     // Targetting Task - repairing
-    public void SetRepairTarget(BaseEntity entity)
+    public void SetRepairTarget(InteractableEntity entity)
     {
         if (entity == null)
             return;
@@ -59,7 +60,7 @@ public partial class Unit
     }
 
     // Repairing Task
-    public bool CanRepair(BaseEntity target)
+    public bool CanRepair(InteractableEntity target)
     {
         if (GetUnitData.CanRepair == false || target is null)
             return false;
@@ -67,7 +68,7 @@ public partial class Unit
         // distance check
         return (target.transform.position - transform.position).sqrMagnitude < GetUnitData.RepairDistanceMax * GetUnitData.RepairDistanceMax;
     }
-    public void StartRepairing(BaseEntity entity)
+    public void StartRepairing(InteractableEntity entity)
     {
         if (GetUnitData.CanRepair)
         {
