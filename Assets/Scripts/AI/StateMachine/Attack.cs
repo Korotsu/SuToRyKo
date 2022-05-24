@@ -1,3 +1,4 @@
+using Entities;
 using UnityEngine;
 
 namespace AI.StateMachine
@@ -44,14 +45,14 @@ namespace AI.StateMachine
 public partial class Unit
 {
     // Begin Attack, stops movements!
-    public void StartAttacking(BaseEntity target)
+    public void StartAttacking(InteractableEntity target)
     {
         NavMeshAgent.isStopped = true;
         
         EntityTarget = target;
     }
 
-    private bool CanAttack(BaseEntity target)
+    private bool CanAttack(InteractableEntity target)
     {
         if (target is null)
             return false;

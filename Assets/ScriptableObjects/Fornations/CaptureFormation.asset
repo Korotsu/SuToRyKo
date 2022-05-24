@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c9facc0f2a285142b9373d13429a2dc, type: 3}
   m_Name: CaptureFormation
   m_EditorClassIdentifier: 
-  lightUnit: 0
+  lightUnit: 1
   HeavyUnit: 0

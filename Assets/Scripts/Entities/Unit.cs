@@ -1,23 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using System;
+using Entities;
+using UnityEditor;
 
-public partial class Unit : BaseEntity
+public partial class Unit : InteractableEntity
 {
     [SerializeField] private UnitDataScriptable UnitData = null;
 
     private Transform BulletSlot;
     private float ActionCooldown = 0f;
-    private BaseEntity EntityTarget = null;
+    private InteractableEntity EntityTarget = null;
     private NavMeshAgent NavMeshAgent;
     public UnitDataScriptable GetUnitData => UnitData;
     public int Cost => UnitData.Cost;
     public int GetTypeId => UnitData.TypeId;
-	Mesh unitVisMesh;
-    MeshRenderer unitvisMeshRend;
-    [HideInInspector]
-    public GameObject unitVisObj;
-    public Material VisMat;
+	
     public Action actions;
 
     public FormationNode formationNode = null;
@@ -25,6 +23,17 @@ public partial class Unit : BaseEntity
     private UnitLogic unitLogic = null;
 
     public UnitLogic UnitLogic { get => unitLogic; }
+
+    float GetPower()
+    {
+        float p = UnitData.GetPower();
+        p *= (HP / (float)UnitData.MaxHP);
+        return p;
+    }
+    protected override float GetInfluence()
+    {
+        return UnitData.GetInfluence(GetPower());
+    }
     
     public override void Init(ETeam _team)
     {
@@ -62,13 +71,7 @@ public partial class Unit : BaseEntity
         NavMeshAgent.speed = GetUnitData.Speed;
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
-        unitVisObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        unitVisObj.transform.SetParent(transform, false);
-        unitVisObj.transform.localScale = new Vector3(UnitData.VisionMax, UnitData.VisionMax,UnitData.VisionMax);
-        unitVisMesh = unitVisObj.GetComponent<MeshFilter>().mesh;
-        unitvisMeshRend = unitVisObj.GetComponent<MeshRenderer>();
-        unitvisMeshRend.material = VisMat;
-        unitVisObj.layer = LayerMask.NameToLayer("UnitView");
+        
     }
     protected override void Start()
     {

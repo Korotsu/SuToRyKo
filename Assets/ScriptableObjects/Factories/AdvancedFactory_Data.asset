@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: AdvancedFactory_Data
   m_EditorClassIdentifier: 
   TypeId: 1
+  type: 1
   Caption: Heavy Factory
   Cost: 15
   BuildDuration: 30
@@ -29,4 +30,3 @@ MonoBehaviour:
   - {fileID: 127182, guid: 79699270ed6dad648ad050a5e8010a5c, type: 3}
   DeathFXPrefab: {fileID: 1494083766182838, guid: 151b49b11ab5924429acc76ead6435fa,
     type: 3}
-  VisionMax: 50

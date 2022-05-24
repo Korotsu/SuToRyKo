@@ -109,20 +109,20 @@ public class Strategist : UnitController
         int lightUnitCost = lightFactory.GetUnitCost(0);
         int heavyUnitCost = heavyFactory.GetUnitCost(0);
 
-        int currentLightInfluance = 0;
-        int currentHeavyInfluance = 0;
-       
-        
+        float currentLightInfluance = 0, currentHeavyInfluance = 0;
+        float lightUnitInfluance = lightFactory.GetBuildableUnitInfluence(0), heavyUnitInfluance = heavyFactory.GetBuildableUnitInfluence(0);
+
+
         while(currentLightInfluance <= lightInfluance)
         {
             cost += lightUnitCost;
-            currentLightInfluance += lightUnitCost;
+            currentLightInfluance += lightUnitInfluance;
         }
 
         while(currentHeavyInfluance <= heavyInfluance)
         {
             cost += heavyUnitCost;
-            currentHeavyInfluance += heavyUnitCost;
+            currentHeavyInfluance += heavyUnitInfluance;
         }
 
         Debug.Log($"Attack Troup: Total cost require = {cost} points.");

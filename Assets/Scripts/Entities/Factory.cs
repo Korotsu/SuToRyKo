@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Entities;
 using UnityEngine;
 using UnityEngine.UI;
-public sealed class Factory : BaseEntity
+public sealed class Factory : InteractableEntity
 {
     [SerializeField]
     FactoryDataScriptable FactoryData = null;
@@ -19,11 +20,6 @@ public sealed class Factory : BaseEntity
     const int MaxAvailableFactories = 3;
 
     UnitController Controller = null;
-    Mesh FactoVisMesh;
-    MeshRenderer FactovisMeshRend;
-    [HideInInspector]
-    public GameObject FactoVisObj;
-    public Material VisMat;
 
     [SerializeField]
     int MaxBuildingQueueSize = 5;
@@ -44,6 +40,11 @@ public sealed class Factory : BaseEntity
     public Action<Factory> OnFactoryBuilt;
     public Action OnBuildCanceled;
     public bool IsBuildingUnit { get { return CurrentState == State.BuildingUnit; } }
+
+    protected override float GetInfluence()
+    {
+        return 0;
+    }
 
     #region MonoBehaviour methods
     protected override void Awake()
@@ -85,13 +86,7 @@ public sealed class Factory : BaseEntity
             FactoryPrefabs[i] = Resources.Load<GameObject>(path);
         }
         
-        FactoVisObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        FactoVisObj.transform.SetParent(transform, false);
-        FactoVisObj.transform.localScale = new Vector3(FactoryData.VisionMax, FactoryData.VisionMax,FactoryData.VisionMax);
-        FactoVisMesh = FactoVisObj.GetComponent<MeshFilter>().mesh;
-        FactovisMeshRend = FactoVisObj.GetComponent<MeshRenderer>();
-        FactovisMeshRend.material = VisMat;
-        FactoVisObj.layer = LayerMask.NameToLayer("UnitView");
+        
         
     }
     protected override void Start()
@@ -188,7 +183,7 @@ public sealed class Factory : BaseEntity
         if (IsUnitIndexValid(unitIndex) == false)
             return -1;
 
-        return UnitPrefabs[unitIndex].GetComponent<Unit>().Cost;
+        return UnitPrefabs[unitIndex].GetComponent<Unit>().GetUnitData.GetInfluence();
     }
     public int GetUnitCost(int unitIndex)
     {
