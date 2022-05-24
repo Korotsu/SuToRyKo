@@ -194,7 +194,7 @@ public class Strategist : UnitController
                     tactician.AddSoldier(_unit.UnitLogic);
                 }    
     
-                tactician.SetState(new AI.StateMachine.IdleTactician(tactician));//TODO: Set in AttackState
+                tactician.SetState(new IdleTactician(tactician));//TODO: Set in AttackState
                 return true;
             }
     }
@@ -274,7 +274,7 @@ public class Strategist : UnitController
                     tactician.AddSoldier(_unit.UnitLogic);
                 }
 
-                tactician.SetState(new AI.StateMachine.IdleTactician(tactician));//TODO: Set in CaptureState
+                tactician.SetState(new IdleTactician(tactician));//TODO: Set in CaptureState
                 return true;
             }
         }

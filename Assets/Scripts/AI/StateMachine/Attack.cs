@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using AI.BehaviorStates;
+using Entities;
 using UnityEngine;
 
 namespace AI.BehaviorStates
