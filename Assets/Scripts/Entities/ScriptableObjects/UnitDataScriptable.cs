@@ -8,7 +8,7 @@ public class UnitDataScriptable : EntityDataScriptable
     public float AttackFrequency = 1f;
     public float AttackDistanceMax = 10f;
     public float CaptureDistanceMax = 10f;
-    public float VisionMax = 20f;
+   
 
     [Header("Repairing")]
     public bool CanRepair = false;
@@ -26,4 +26,31 @@ public class UnitDataScriptable : EntityDataScriptable
     [Header("FX")]
     public GameObject BulletPrefab = null;
     public GameObject DeathFXPrefab = null;
+
+    public override float GetPower()
+    {
+        float p =  DPS * AttackFrequency;
+        if (CanRepair)
+        {
+            p += RPS * RepairFrequency;
+            p *= 1.2f;
+        }
+
+        p *= 1 + (AttackDistanceMax / 100.0f);
+        p *= 1 + (Speed / 100.0f);
+        p *= (MaxHP / 50.0f);
+        return p;
+    }
+    public override float GetInfluence(float Power)
+    {
+        float coef = (Cost * BuildDuration);
+        if (Cost == 0)
+            coef = BuildDuration;
+        if (BuildDuration == 0)
+            coef = Cost;
+        if (Power == 0)
+            return 0.1f;
+        return  Power -(coef *3.0f);
+    }
+   
 }

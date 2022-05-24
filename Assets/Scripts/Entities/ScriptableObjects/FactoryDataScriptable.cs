@@ -15,5 +15,5 @@ public class FactoryDataScriptable : EntityDataScriptable
     [Header("FX")]
     public GameObject DeathFXPrefab = null;
 
-    public float VisionMax = 50f;
+    
 }

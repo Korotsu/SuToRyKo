@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using Entities;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -335,12 +336,12 @@ public sealed class PlayerController : UnitController
         
         foreach (GameObject unit in units)
         {
-            Unit data = unit.GetComponent<Unit>();
+            BaseEntity data = unit.GetComponent<BaseEntity>();
             ETeam t = data.GetTeam();
             if (!DrawFog)
             {
-                if(data.unitVisObj.activeSelf)
-                    data.unitVisObj.SetActive(false);
+                if(data.entityVisObj.activeSelf)
+                    data.entityVisObj.SetActive(false);
                 if (Pass != 1)
                 {
                     Pass = 1;
@@ -350,9 +351,9 @@ public sealed class PlayerController : UnitController
             }
             else if (t != Team)
             {
-                if(data.unitVisObj.activeSelf)
-                    data.unitVisObj.SetActive(false);
-                var position = data.unitVisObj.transform.position;
+                if(data.entityVisObj.activeSelf)
+                    data.entityVisObj.SetActive(false);
+                var position = data.entityVisObj.transform.position;
                 Vector2 pos = new Vector2(position.x,position.y);
                 pos.Normalize();
                 
@@ -376,9 +377,9 @@ public sealed class PlayerController : UnitController
                 }
 
             }
-            else if (t == Team && !data.unitVisObj.activeSelf)
+            else if (t == Team && !data.entityVisObj.activeSelf)
             {
-                data.unitVisObj.SetActive(true);
+                data.entityVisObj.SetActive(true);
                 if (Pass != 1)
                 {
                     Pass = 1;
@@ -390,12 +391,12 @@ public sealed class PlayerController : UnitController
         }
         foreach (GameObject building in buildings)
         {
-            Factory data = building.GetComponent<Factory>();
+            BaseEntity data = building.GetComponent<BaseEntity>();
             ETeam t = data.GetTeam();
-            if(t!= Team && data.FactoVisObj.activeSelf)
-                data.FactoVisObj.SetActive(false);
-            else if(t == Team && !data.FactoVisObj.activeSelf)
-                data.FactoVisObj.SetActive(true);
+            if((t!= Team && t != ETeam.Neutral) && data.entityVisObj.activeSelf )
+                data.entityVisObj.SetActive(false);
+            else if((t == Team || t == ETeam.Neutral) && !data.entityVisObj.activeSelf)
+                data.entityVisObj.SetActive(true);
         }
     }
     
@@ -649,7 +650,7 @@ public sealed class PlayerController : UnitController
         // Set unit / factory attack target
         if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, damageableMask))
         {
-            BaseEntity other = raycastInfo.transform.GetComponent<BaseEntity>();
+            InteractableEntity other = raycastInfo.transform.GetComponent<InteractableEntity>();
             if (other != null)
             {
                 if (other.GetTeam() != GetTeam())

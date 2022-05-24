@@ -41,4 +41,9 @@ public class Tactician : MonoBehaviour
         currentState.End();
         currentState = order;
     }
+
+    public void AddSoldier(UnitLogic unitLogic)
+    {
+        soldiers.Add(unitLogic);
+    }
 }

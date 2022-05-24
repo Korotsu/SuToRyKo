@@ -17,10 +17,12 @@ MonoBehaviour:
   Cost: 2
   BuildDuration: 2
   MaxHP: 75
+  type: 0
   DPS: 15
   AttackFrequency: 0.8
   AttackDistanceMax: 15
   CaptureDistanceMax: 12
+  VisionMax: 20
   CanRepair: 0
   RPS: 10
   RepairFrequency: 1
