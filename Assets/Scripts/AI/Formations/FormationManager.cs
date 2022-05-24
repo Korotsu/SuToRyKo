@@ -26,7 +26,11 @@ namespace Formations
 
         private Tactician tactician;
 
+        private NavMeshPath path;
+
         public Tactician Tactician => tactician;
+
+        private NavMeshAgent navMeshAgent;
 
         private int formationSize;
 
@@ -46,7 +50,8 @@ namespace Formations
         void Start()
         {
             tactician = GetComponent<Tactician>();
-            if (!tactician)
+            navMeshAgent = GetComponent<NavMeshAgent>();
+            if (!tactician && !navMeshAgent)
             {
                 enabled = false;
                 return;
@@ -101,6 +106,9 @@ namespace Formations
         void Update()
         {
             UpdateFormation?.Invoke();
+
+            if (path != null && navMeshAgent.path != path)
+                navMeshAgent.SetPath(path);
         }
 
         private void OnDrawGizmos()
@@ -118,17 +126,30 @@ namespace Formations
         {
             SetFormationSpeed();
 
-            transform.position = pos;
-            tactician.GetSoldiers().ForEach(soldier => soldier.Unit.UpdateTargetPos());
+            if (!navMeshAgent.hasPath && path == null)
+            {
+                navMeshAgent.SetDestination(pos);
+                navMeshAgent.isStopped = false;
+            }
+
+            else
+            {
+                navMeshAgent.SetDestination(pos);
+                //path = new NavMeshPath();
+                //navMeshAgent.CalculatePath(pos, path);
+            }
+
+            /*transform.position = pos;
+            tactician.GetSoldiers().ForEach(soldier => soldier.Unit.UpdateTargetPos());*/
         }
 
         public void SetFormationSpeed()
         {
             List<Unit> units = tactician.GetSoldiers().Select(soldier => soldier.Unit).ToList();
 
-            float maxSpeed = 100000.0f;
-            float maxAngularSpeed = 100000.0f;
-            float maxAcceleration = 100000.0f;
+            float maxSpeed          = float.MaxValue;
+            float maxAngularSpeed   = float.MaxValue;
+            float maxAcceleration   = float.MaxValue;
 
             foreach (Unit unit in units)
             {
@@ -142,8 +163,14 @@ namespace Formations
                 unit.NavMeshAgent.speed         = maxSpeed;
                 unit.NavMeshAgent.angularSpeed  = maxAngularSpeed;
                 unit.NavMeshAgent.acceleration  = maxAcceleration;
-                unit.NavMeshAgent.radius        = maxBounds.x/2;
+                unit.NavMeshAgent.radius        = maxBounds.x / 2;
             }
+
+            navMeshAgent.speed          = maxSpeed * 0.9f;
+            navMeshAgent.angularSpeed   = maxAngularSpeed * 0.9f;
+            navMeshAgent.acceleration   = maxAcceleration;
+            navMeshAgent.radius         = 0.1f;
+            navMeshAgent.autoRepath     = true;
         }
     }
 }

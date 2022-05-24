@@ -60,9 +60,10 @@ public class Unit : BaseEntity
         BulletSlot = transform.Find("BulletSlot");
 
         // fill NavMeshAgent parameters
-        NavMeshAgent.speed = GetUnitData.Speed;
-        NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
-        NavMeshAgent.acceleration = GetUnitData.Acceleration;
+        NavMeshAgent.speed          = GetUnitData.Speed;
+        NavMeshAgent.angularSpeed   = GetUnitData.AngularSpeed;
+        NavMeshAgent.acceleration   = GetUnitData.Acceleration;
+        //NavMeshAgent.enabled        = false;
     }
     override protected void Start()
     {
@@ -126,15 +127,20 @@ public class Unit : BaseEntity
             NavMeshAgent.isStopped = false;
         }
     }
-    
+
     public void FollowFormation()
     {
-        if (formationNode.FormationManager && NavMeshAgent.remainingDistance < 0.1)
-            SetTargetPos(formationNode.GetPosition());
+        if (formationNode.FormationManager && (formationNode.GetPosition() - transform.position).sqrMagnitude >= 0.1)
+        { 
+            Vector3 destination = formationNode.GetPosition() - transform.position;
+            destination.Normalize();
+            NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+        }
     }
 
     public void UpdateTargetPos()
     {
+        //transform.position = formationNode.GetPosition();
         if (formationNode.FormationManager)
            SetTargetPos(formationNode.GetPosition());
     }
@@ -142,7 +148,7 @@ public class Unit : BaseEntity
     public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
         formationNode   = _formationNode;
-        //actions         += FollowFormation;
+        actions         += FollowFormation;
     }
 
     public List<Unit> GetAllUnitsInFormation()

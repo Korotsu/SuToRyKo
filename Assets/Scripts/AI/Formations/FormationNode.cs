@@ -20,6 +20,6 @@ namespace Formations
 
         public void SetRelativePosition(Vector3 newRelativePos) => relativePosition = newRelativePos;
 
-        public Vector3 GetPosition() => relativePosition + manager.transform.position;
+        public Vector3 GetPosition() => (manager.transform.rotation * relativePosition) + manager.transform.position;
     }
 }
