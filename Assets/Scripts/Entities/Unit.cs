@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using System;
-using UnityEditor;
 
 public partial class Unit : BaseEntity
 {

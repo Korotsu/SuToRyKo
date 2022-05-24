@@ -182,6 +182,14 @@ public sealed class Factory : BaseEntity
 
         return UnitPrefabs[unitIndex].GetComponent<Unit>().GetUnitData;
     }
+
+    public float GetBuildableUnitInfluence(int unitIndex)
+    {
+        if (IsUnitIndexValid(unitIndex) == false)
+            return -1;
+
+        return UnitPrefabs[unitIndex].GetComponent<Unit>().Cost;
+    }
     public int GetUnitCost(int unitIndex)
     {
         UnitDataScriptable data = GetBuildableUnitData(unitIndex);
