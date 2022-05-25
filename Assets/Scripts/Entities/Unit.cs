@@ -26,8 +26,17 @@ public class Unit : BaseEntity
 
     public Formations.FormationNode formationNode = null;
 
+    private NavMeshPath path = null;
+
+    private uint pathIndex = 0;
+
     private bool isCapturing = false;
-    
+
+    private float timeLeftForRaycast;
+
+    [SerializeField]
+    private readonly float raycastDelay = 5.0f;
+
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -64,6 +73,8 @@ public class Unit : BaseEntity
         NavMeshAgent.angularSpeed   = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration   = GetUnitData.Acceleration;
         //NavMeshAgent.enabled        = false;
+
+        timeLeftForRaycast = raycastDelay;
     }
     override protected void Start()
     {
@@ -130,8 +141,43 @@ public class Unit : BaseEntity
 
     public void FollowFormation()
     {
-        if (formationNode.FormationManager && (formationNode.GetPosition() - transform.position).sqrMagnitude >= 0.1)
-        { 
+        timeLeftForRaycast -= Time.deltaTime;
+
+        if (timeLeftForRaycast <= 0f)
+        {
+            NavMeshHit hit = new NavMeshHit();
+
+            if (NavMeshAgent.Raycast(formationNode.GetPosition(), out hit) && (path == null || path.status == NavMeshPathStatus.PathInvalid || path.status == NavMeshPathStatus.PathPartial))
+            {
+                //NavMeshAgent.SetDestination(formationNode.GetPosition());
+                //NavMeshAgent.isStopped = false;
+
+                path = new NavMeshPath();
+                if (NavMeshAgent.CalculatePath(formationNode.GetPosition(), path))
+                    pathIndex = 0;
+                else
+                    path = null;
+            }
+
+            timeLeftForRaycast = raycastDelay;
+        }
+
+        if (path != null && (path.status == NavMeshPathStatus.PathComplete || path.status == NavMeshPathStatus.PathPartial))
+        {
+            Vector3 destination = path.corners[pathIndex];
+            NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+            //NavMeshAgent.destination = destination;
+            if ((destination - transform.position).sqrMagnitude <= 0.1)
+            {
+                pathIndex++;
+
+                if (path.corners.Length <= pathIndex)
+                    path = null;
+            }
+        }
+
+        else if (formationNode.FormationManager && (formationNode.GetPosition() - transform.position).sqrMagnitude >= 0.1)
+        {
             Vector3 destination = formationNode.GetPosition() - transform.position;
             destination.Normalize();
             NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);

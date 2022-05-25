@@ -163,7 +163,7 @@ namespace Formations
                 unit.NavMeshAgent.speed         = maxSpeed;
                 unit.NavMeshAgent.angularSpeed  = maxAngularSpeed;
                 unit.NavMeshAgent.acceleration  = maxAcceleration;
-                unit.NavMeshAgent.radius        = maxBounds.x / 2;
+                unit.NavMeshAgent.radius        = float.Epsilon;//maxBounds.x / 2;
             }
 
             navMeshAgent.speed          = maxSpeed * 0.9f;
