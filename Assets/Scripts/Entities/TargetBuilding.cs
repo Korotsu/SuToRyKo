@@ -23,7 +23,7 @@ public class TargetBuilding : BaseEntity
     public ETeam GetTeam() { return OwningTeam; }
     protected override float GetInfluence()
     {
-        return 10;
+        return 100f;
     }
 
 

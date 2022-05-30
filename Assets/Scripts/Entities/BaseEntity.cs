@@ -2,11 +2,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class BaseEntity : MonoBehaviour
+public abstract class BaseEntity : Base
 {
-    [SerializeField]
-    protected ETeam Team;
-
     protected int HP = 0;
     protected Action OnHpUpdated;
     protected GameObject SelectedSprite = null;
@@ -35,12 +32,7 @@ public abstract class BaseEntity : MonoBehaviour
     {
         return GameServices.GetTeamColor(GetTeam());
     }
-    public ETeam GetTeam()
-    {
-        return Team;
-    }
-    public float Influence => GetInfluence();
-    protected abstract float GetInfluence();
+    
     void UpdateHpUI()
     {
         if (HPText != null)

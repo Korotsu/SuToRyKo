@@ -2,6 +2,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using AI.ScriptableObjects;
 
+
+public class Task
+{
+    public enum Type
+    {
+        Attack,
+        Capture,
+        Count
+    };
+
+    public float cost = 0f;
+    public int taskType = -1;
+
+    public List<Tactician> tacticians = new List<Tactician>();
+    public Base target = null;
+
+    public bool isRunning = false;
+}
+
 [System.Serializable]
 public class Strategist : UnitController
 {
@@ -9,12 +28,13 @@ public class Strategist : UnitController
     [SerializeField] private FormationData attackFormation = null;
     [SerializeField] private FormationData captureFormation = null;
 
-    private List<TacticianState> orderlist = new List<TacticianState>();
-
     private List<Tactician> tacticians = new List<Tactician>();
-    private List<Tactician> unusedTacticians = new List<Tactician>();
+    private List<Tactician> waitingTacticians = new List<Tactician>();
 
-    private List<Unit> unusedUnits = new List<Unit>();
+    private List<Task> runningTasks = new List<Task>();
+    private List<Task> waitingTasks = new List<Task>();
+
+    private List<Unit> waitingUnits = new List<Unit>();
 
     private List<TargetBuilding> targetBuildings = new List<TargetBuilding>();
 
@@ -36,7 +56,7 @@ public class Strategist : UnitController
         {
             factory.OnUnitBuilt += (Unit unit) =>
             {
-                unusedUnits.Add(unit);
+                waitingUnits.Add(unit);
             };
         }
 
@@ -46,93 +66,28 @@ public class Strategist : UnitController
     void Update()
     {
         base.Update();
+
+        if (!isStarted)
+        {
+            //TakeDecision();
+            isStarted = true;
+        }
+
         TakeDecision();
+
     }
 
     private void TakeDecision()
     {
-        float influence = 30f;
-        if (!isStarted)
-        {
-            if (CheckAttackTroupCost(influence) <= TotalBuildPoints)
-                CreateAttackTroup(influence);
-            else if (CheckCaptureTroupCost() <= TotalBuildPoints)
-                CreateCaptureTroup();
-            
-            isStarted = true;
-        }
-
-        int currentCount = UnitList.Count;
-
-        if (CheckAttackTroupCost(influence) <= TotalBuildPoints)
-            CreateAttackTroup(influence);
-
-        if (previousUnitsCount != currentCount)
-        {
-            previousUnitsCount = currentCount;
-            CreateAttackTactician();
-        }
-    }
-
-    #region Test
+        TaskUpdate();
+    }  
 
     #region Attack
-    private int CheckAttackTroupCost(float influance)
-    {
-        if (!attackFormation)
-        {
-            Debug.LogError("AttackFormation is not set.");
-            return int.MaxValue;
-        }
-        
-
-        float lightInfluance = attackFormation.lightUnit * influance;
-        float heavyInfluance = attackFormation.HeavyUnit * influance;
-
-        Factory lightFactory = null;
-        Factory heavyFactory = null;
-
-        int cost = 0;
-
-        foreach (Factory factory in FactoryList)
-        {
-            if (!lightFactory && factory.GetFactoryData.type == EntityDataScriptable.Type.Light)
-            {
-                lightFactory = factory;
-            }
-            else if (!heavyFactory && factory.GetFactoryData.type == EntityDataScriptable.Type.Heavy)
-            {
-                heavyFactory = factory;
-            }
-        }
-
-        int lightUnitCost = lightFactory.GetUnitCost(0);
-        int heavyUnitCost = heavyFactory.GetUnitCost(0);
-
-        float currentLightInfluance = 0, currentHeavyInfluance = 0;
-        float lightUnitInfluance = lightFactory.GetBuildableUnitInfluence(0), heavyUnitInfluance = heavyFactory.GetBuildableUnitInfluence(0);
-
-
-        while(currentLightInfluance <= lightInfluance)
-        {
-            cost += lightUnitCost;
-            currentLightInfluance += lightUnitInfluance;
-        }
-
-        while(currentHeavyInfluance <= heavyInfluance)
-        {
-            cost += heavyUnitCost;
-            currentHeavyInfluance += heavyUnitInfluance;
-        }
-
-        Debug.Log($"Attack Troup: Total cost require = {cost} points.");
-        return cost;
-    }
 
     private void CreateAttackTroup(float influance)
     {
         float lightInfluance = attackFormation.lightUnit * influance;
-        float heavyInfluance = attackFormation.HeavyUnit * influance;
+        float heavyInfluance = attackFormation.heavyUnit * influance;
 
         Factory lightFactory = null;
         Factory heavyFactory = null;
@@ -169,13 +124,13 @@ public class Strategist : UnitController
     }
     public bool CreateAttackTactician()
     {
-        if (unusedUnits.Count < 10)
+        if (waitingUnits.Count < 10)
             return false;
 
         int nbLight = 7, nbHeavy = 3, currentNbLight = 0, currentNbHeavy = 0;
         List<Unit> units = new List<Unit>();
 
-        foreach (Unit unit in unusedUnits)
+        foreach (Unit unit in waitingUnits)
         {
             units.Add(unit);
 
@@ -202,64 +157,87 @@ public class Strategist : UnitController
     #endregion
 
     #region Capture
-    private void CreateCaptureTroup()
+
+    private bool CreateCaptureTroup(Task task)
     {
-        int nbUnit = 5;
+        Tactician bestTactician = null;
+        float bestInfluence = float.MinValue;
 
-        Factory lightFactory = null;
-
-        foreach (Factory factory in FactoryList)
+        foreach (Tactician tactician in waitingTacticians)
         {
-            if (!lightFactory && factory.GetFactoryData.TypeId == 0)
+            float influence = tactician.Influence;
+
+            if (bestInfluence < influence)
             {
-                lightFactory = factory;
-                break;
+                bestTactician = tactician;
+                bestInfluence = influence;
             }
         }
 
-        for (int i = 0; i < nbUnit; i++)
+        if (bestTactician == null)
+            bestTactician = new Tactician();
+
+        if (bestTactician.Influence > task.target.Influence)
         {
-            lightFactory.RequestUnitBuild(0);
+            bestTactician.SetState(new AI.StateMachine.IdleTactician(bestTactician));//TODO: Set in attack
+            task.tacticians.Add(bestTactician);
+            waitingTacticians.Remove(bestTactician);
+            task.isRunning = true;
+
+            runningTasks.Add(task);
+            waitingTasks.Remove(task);
+
+            return true;
         }
-    }
-    private int CheckCaptureTroupCost()
-    {
-        //This is a test
-        int nbUnit = 5;
-
-        Factory lightFactory = null;
-
-        int cost = 0;
-
-        foreach (Factory factory in FactoryList)
+        else
         {
-            if (!lightFactory && factory.GetFactoryData.TypeId == 0)
+            int nbLightUnits = 0, nbHeavyUnits = 0;
+            int cost = CheckTroupCost(ref bestTactician, captureFormation, task.target.Influence, out nbLightUnits, out nbHeavyUnits);
+
+            if (_TotalBuildPoints >= cost)
             {
-                lightFactory = factory;
-                break;
+                Factory lightFactory = null;
+                Factory heavyFactory = null;
+
+                foreach (Factory factory in FactoryList)
+                {
+                    if (!lightFactory && factory.GetFactoryData.type == EntityDataScriptable.Type.Light)
+                        lightFactory = factory;
+
+                    else if (!heavyFactory && factory.GetFactoryData.type == EntityDataScriptable.Type.Heavy)
+                        heavyFactory = factory;
+
+                    if (heavyFactory && lightFactory)
+                        break;
+                }
+
+                for (int i = 0; i < nbLightUnits; i++)
+                {
+                    if (!lightFactory.RequestUnitBuild(0))
+                        return false;
+                }
+
+                for(int i = 0; i < nbHeavyUnits; i++)
+                {
+                    if (!heavyFactory.RequestUnitBuild(0))
+                        return false;
+                }
             }
         }
 
-        for (int i = 0; i < nbUnit; i++)
-        {
-            cost += lightFactory.GetUnitCost(0);
-        }
-
-
-        Debug.Log($"Capture Troup: Total cost require = {cost} points.");
-
-        return cost;
+        return false;
     }
+    
 
     private bool CreateCaptureTacticien()
     {
-        if (unusedUnits.Count < 5)
+        if (waitingUnits.Count < 5)
             return false;
 
         int nbUnit = 5;
         List<Unit> units = new List<Unit>();
 
-        foreach (Unit unit in unusedUnits)
+        foreach (Unit unit in waitingUnits)
         {
             if (unit.GetUnitData.type == UnitDataScriptable.Type.Light && units.Count < nbUnit)
                 units.Add(unit);
@@ -279,7 +257,133 @@ public class Strategist : UnitController
 
         return false;
     }
+
     #endregion
+
+    #region Task Methods
+
+    private void TaskUpdate()
+    {
+        waitingTasks.Clear();
+
+        foreach (Base entity in FindObjectsOfType<Base>())
+        {
+            if (entity.GetTeam() != Team)
+            {
+                Task task = new Task();
+                task.target = entity;
+                waitingTasks.Add(task);
+            }
+        }
+
+        bool canCreateTroup = true;
+
+        float bestInfluence = float.MinValue;
+        Task priorityTask = null;
+
+        while (canCreateTroup)
+        {
+            foreach (Task task in waitingTasks)
+            {
+                float influence = task.target.Influence;
+                if (bestInfluence < influence)
+                {
+                    bestInfluence = influence;
+                    priorityTask = task;
+                }
+            }
+
+            if (priorityTask != null)
+            {
+                if (priorityTask.target.GetType() == typeof(Tactician))
+                {
+                    canCreateTroup = TacticianTaskUpdate(priorityTask);
+                }
+                else if (priorityTask.target.GetType() == typeof(TargetBuilding))
+                {
+                    canCreateTroup = BuildingTaskUpdate(priorityTask);
+                }
+                else
+                    canCreateTroup = false;
+            }
+            else
+                canCreateTroup = false;
+        }
+    }
+
+    private bool BuildingTaskUpdate(Task task)
+    { 
+        if(task.target is TargetBuilding)
+            return CreateCaptureTroup(task);
+
+        return false;
+    }
+    private bool TacticianTaskUpdate(Task task)
+    {
+        //if (TotalBuildPoints < CheckAttackTroupCost(task.target.Influence))
+        //    return false;
+
+        //CreateAttackTroup(task.target.Influence);
+        return false;
+    }
+
+    #endregion
+
+    #region Utility Methods
+
+    private int CheckTroupCost(ref Tactician tactician, FormationData formation, float influence, out int nbLightUnits, out int nbHeavyUnits)
+    {
+        nbLightUnits = 0;
+        nbHeavyUnits = 0;
+
+        if (influence <= 0)
+            return int.MaxValue;
+
+        Factory lightFactory = null;
+        Factory heavyFactory = null;
+
+        int cost = 0;
+
+        foreach (Factory factory in FactoryList)
+        {
+            if (!lightFactory && factory.GetFactoryData.type == EntityDataScriptable.Type.Light)
+                lightFactory = factory;
+
+            else if (!heavyFactory && factory.GetFactoryData.type == EntityDataScriptable.Type.Heavy)
+                heavyFactory = factory;
+
+            if (heavyFactory && lightFactory)
+                break;
+        }
+
+        int lightUnitCost = lightFactory.GetUnitCost(0);
+        int heavyUnitCost = heavyFactory.GetUnitCost(0);
+
+        float lightUnitInfluance = lightFactory.GetBuildableUnitInfluence(0);
+        float heavyUnitInfluance = heavyFactory.GetBuildableUnitInfluence(0);
+
+        float newInfluence = influence - tactician.Influence;
+
+        nbLightUnits = (int)((formation.lightUnit * newInfluence) / lightUnitInfluance);
+        nbHeavyUnits = (int)((formation.heavyUnit * newInfluence) / heavyUnitInfluance);
+
+        foreach (Unit unit in waitingUnits)
+        {
+            if (unit.GetUnitData.type == EntityDataScriptable.Type.Light && nbLightUnits > 0)
+                nbLightUnits--;
+            else if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy && nbHeavyUnits > 0)
+                nbHeavyUnits--;
+
+            if (nbLightUnits == 0 && nbHeavyUnits == 0)
+                break;
+        }
+
+        cost = nbLightUnits * lightUnitCost + nbHeavyUnits * heavyUnitCost;
+
+        Debug.Log($"Capture Troup: Total cost require = {cost} points.");
+
+        return cost;
+    }
 
     #endregion
 }
