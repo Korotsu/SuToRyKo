@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using AI.BehaviorStates;
 using UnityEngine;
 
-public class UnitLogic : MonoBehaviour
+public class UnitLogic
 {
     public Unit associatedUnit { get; private set; }
 

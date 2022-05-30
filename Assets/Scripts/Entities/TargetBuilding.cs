@@ -26,7 +26,9 @@ public class TargetBuilding : BaseEntity
     
     protected override float GetInfluence()
     {
-        return 100f;
+        float p = 30;
+        p += 30 *(1f - CaptureGaugeValue / CaptureGaugeStart);
+        return p;
     }
 
 

@@ -41,9 +41,12 @@ public sealed class Factory : InteractableEntity
     public Action OnBuildCanceled;
     public bool IsBuildingUnit { get { return CurrentState == State.BuildingUnit; } }
 
+    
     protected override float GetInfluence()
     {
-        return 0;
+        float p = Cost;
+        p += Cost * (1 - (HP / FactoryData.MaxHP));
+        return p;
     }
 
     #region MonoBehaviour methods

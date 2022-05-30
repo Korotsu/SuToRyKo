@@ -49,8 +49,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 0
-  FactoryData: {fileID: 11400000, guid: 0d9f0c0baf00e0e45b1c28cf2dacb6a7, type: 2}
+  entityVisObj: {fileID: 0}
   VisMat: {fileID: 2100000, guid: 178cda581d0d1b24d82d69bcb50ff2a1, type: 2}
+  VisionMax: 30
+  FactoryData: {fileID: 11400000, guid: 0d9f0c0baf00e0e45b1c28cf2dacb6a7, type: 2}
   MaxBuildingQueueSize: 5
 --- !u!65 &4732168559980594952
 BoxCollider:

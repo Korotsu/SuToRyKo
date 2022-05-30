@@ -173,7 +173,7 @@ public class Strategist : UnitController
                 Tactician tactician = new Tactician();
                 foreach (Unit _unit in units)
                 {
-                    tactician.AddSoldier(_unit.UnitLogic);
+                    tactician.AddSoldier(_unit);
                 }    
     
                 tactician.SetState(new IdleTactician(tactician));//TODO: Set in AttackState
@@ -276,7 +276,7 @@ public class Strategist : UnitController
                 Tactician tactician = new Tactician();
                 foreach (Unit _unit in units)
                 {
-                    tactician.AddSoldier(_unit.UnitLogic);
+                    tactician.AddSoldier(_unit);
                 }
 
                 tactician.SetState(new IdleTactician(tactician));//TODO: Set in CaptureState
