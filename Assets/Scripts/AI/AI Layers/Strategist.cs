@@ -98,7 +98,7 @@ public class Strategist : UnitController
 
         if (!isStarted)
         {
-            //TakeDecision();
+            TaskInit();
             isStarted = true;
         }
 
@@ -431,8 +431,6 @@ public class Strategist : UnitController
 
         float newInfluence = Mathf.Clamp(influence - bestTactician.Influence, 0, float.MaxValue);
 
-        //nbLightUnits = (int)((task.formationData.lightUnit * newInfluence) / lightUnitInfluance);
-        //nbHeavyUnits = (int)((task.formationData.heavyUnit * newInfluence) / heavyUnitInfluance);
         
         float lightUnitsInfluence = task.formationData.lightUnit * newInfluence;
         float heavyUnitsInfluence = task.formationData.heavyUnit * newInfluence;
@@ -449,13 +447,23 @@ public class Strategist : UnitController
             else if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy && heavyUnitsInfluence > 0f)
             {
                 heavyUnitsInfluence -= unit.Influence;
+                //bestTactician.AddSoldier(new UnitLogic(unit));//TODO
             }
 
             if (lightUnitsInfluence <= 0f && heavyUnitsInfluence <= 0f)
                 break;
         }
 
-        cost = nbLightUnits * lightUnitCost + nbHeavyUnits * heavyUnitCost;
+        int nbLightUnitToProduce = 0, nbHeavyUnitToProduce = 0;
+
+        if (lightUnitsInfluence > 0f)
+            nbLightUnitToProduce = (int)(lightUnitsInfluence / lightUnitInfluance);
+        
+        if (nbHeavyUnitToProduce > 0f)
+            nbHeavyUnitToProduce = (int)(heavyUnitsInfluence / heavyUnitInfluance);
+        
+        
+        //cost = lightUnitsInfluence;
 
         //Debug.Log($"Capture Troup: Total cost require = {cost} points.");
 
