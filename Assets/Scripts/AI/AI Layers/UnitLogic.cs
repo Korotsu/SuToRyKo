@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using AI.BehaviorStates;
 using UnityEngine;
 
-public class UnitLogic : MonoBehaviour
+public class UnitLogic
 {
     public Unit associatedUnit { get; private set; }
 
@@ -14,6 +14,7 @@ public class UnitLogic : MonoBehaviour
     public UnitLogic(Unit _associatedUnit)
     {
         associatedUnit = _associatedUnit;
+        Start();
     }
     
     private void Start()
@@ -22,7 +23,7 @@ public class UnitLogic : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void Update()
     {
         CurrentState.Update();
     }

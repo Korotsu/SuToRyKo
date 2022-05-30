@@ -79,12 +79,7 @@ public partial class Unit : InteractableEntity
         if (!IsInitialized)
             Init(Team);
 
-        if (!unitLogic)
-        {
-            unitLogic = gameObject.AddComponent<UnitLogic>();
-            unitLogic.SetUnit(this);
-        }
-            
+        unitLogic ??= new UnitLogic(this);
 
         base.Start();
     }
@@ -92,6 +87,7 @@ public partial class Unit : InteractableEntity
     {
         if (ActionCooldown > 0f)
             ActionCooldown -= Time.time;
+        unitLogic.Update();
     }
     #endregion
 
