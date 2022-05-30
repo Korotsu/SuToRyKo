@@ -15,6 +15,7 @@ public abstract class State
 public abstract class TacticianState : State
 {
     private Tactician tactician;
+    private Base target;
     public TacticianState(Tactician _tactician) => tactician = _tactician;
 }
 

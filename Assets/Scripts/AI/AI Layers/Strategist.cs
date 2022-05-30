@@ -1,11 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using AI.BehaviorStates;
 using AI.ScriptableObjects;
 
-
-public class Task
+public class Task : IEqualityComparer<Task>, IComparable<Task>
 {
     public enum Type
     {
@@ -18,9 +18,34 @@ public class Task
     public int taskType = -1;
 
     public List<Tactician> tacticians = new List<Tactician>();
+    public FormationData formationData = null;
+
     public Base target = null;
 
     public bool isRunning = false;
+
+    public bool Equals(Task x, Task y)
+    {
+        if (!x.target || !y.target)
+            return false;
+
+        return x.target.Influence == y.target.Influence;
+    }
+
+    public int GetHashCode(Task obj)
+    {
+        return (int)obj.target.Influence;
+    }
+
+    public int CompareTo(Task other)
+    {
+        if (!target)
+            return 1;
+        else if (!other.target)
+            return -1;
+
+        return -target.Influence.CompareTo(other.target.Influence);
+    }
 }
 
 [System.Serializable]
@@ -32,16 +57,18 @@ public class Strategist : UnitController
 
     private List<Tactician> tacticians = new List<Tactician>();
     private List<Tactician> waitingTacticians = new List<Tactician>();
+    private List<Tactician> unusedTacticians = new List<Tactician>();
 
     private List<Task> runningTasks = new List<Task>();
     private List<Task> waitingTasks = new List<Task>();
 
-    private List<Unit> waitingUnits = new List<Unit>();
+    private List<Unit> unusedUnits = new List<Unit>();
 
     private List<TargetBuilding> targetBuildings = new List<TargetBuilding>();
 
     bool isStarted = false;
     private int previousUnitsCount = 0;
+    private int totalAllocatedCost = 0;
 
     void Start()
     {
@@ -58,7 +85,7 @@ public class Strategist : UnitController
         {
             factory.OnUnitBuilt += (Unit unit) =>
             {
-                waitingUnits.Add(unit);
+                unusedUnits.Add(unit);
             };
         }
 
@@ -126,13 +153,13 @@ public class Strategist : UnitController
     }
     public bool CreateAttackTactician()
     {
-        if (waitingUnits.Count < 10)
+        if (unusedUnits.Count < 10)
             return false;
 
         int nbLight = 7, nbHeavy = 3, currentNbLight = 0, currentNbHeavy = 0;
         List<Unit> units = new List<Unit>();
 
-        foreach (Unit unit in waitingUnits)
+        foreach (Unit unit in unusedUnits)
         {
             units.Add(unit);
 
@@ -165,7 +192,7 @@ public class Strategist : UnitController
         Tactician bestTactician = null;
         float bestInfluence = float.MinValue;
 
-        foreach (Tactician tactician in waitingTacticians)
+        foreach (Tactician tactician in unusedTacticians)
         {
             float influence = tactician.Influence;
 
@@ -181,7 +208,7 @@ public class Strategist : UnitController
 
         if (bestTactician.Influence > task.target.Influence)
         {
-            bestTactician.SetState(new AI.StateMachine.IdleTactician(bestTactician));//TODO: Set in attack
+            bestTactician.SetState(new IdleTactician(bestTactician));//TODO: Create a CaptureTactician
             task.tacticians.Add(bestTactician);
             waitingTacticians.Remove(bestTactician);
             task.isRunning = true;
@@ -194,7 +221,7 @@ public class Strategist : UnitController
         else
         {
             int nbLightUnits = 0, nbHeavyUnits = 0;
-            int cost = CheckTroupCost(ref bestTactician, captureFormation, task.target.Influence, out nbLightUnits, out nbHeavyUnits);
+            int cost = CheckTroupCost(task, out nbLightUnits, out nbHeavyUnits);
 
             if (_TotalBuildPoints >= cost)
             {
@@ -233,13 +260,13 @@ public class Strategist : UnitController
 
     private bool CreateCaptureTacticien()
     {
-        if (waitingUnits.Count < 5)
+        if (unusedUnits.Count < 5)
             return false;
 
         int nbUnit = 5;
         List<Unit> units = new List<Unit>();
 
-        foreach (Unit unit in waitingUnits)
+        foreach (Unit unit in unusedUnits)
         {
             if (unit.GetUnitData.type == UnitDataScriptable.Type.Light && units.Count < nbUnit)
                 units.Add(unit);
@@ -263,10 +290,10 @@ public class Strategist : UnitController
     #endregion
 
     #region Task Methods
-
-    private void TaskUpdate()
+    private void TaskInit()
     {
         waitingTasks.Clear();
+        List<Task> sortedTaskList = new List<Task>();
 
         foreach (Base entity in FindObjectsOfType<Base>())
         {
@@ -274,42 +301,60 @@ public class Strategist : UnitController
             {
                 Task task = new Task();
                 task.target = entity;
+                sortedTaskList.Add(task);
+            }
+        }
+        sortedTaskList.Sort();
+
+
+        int cost = 0;
+        bool hasAddedTasks = false;
+
+        foreach (Task task in sortedTaskList)
+        {
+            int nbLight = 0, nbHeavy = 0;
+            int currentCost = 0;
+
+            if (task.target is Tactician)
+            {
+                currentCost = CheckTroupCost(task, out nbLight, out nbHeavy);
+                cost += currentCost;
+                task.formationData = attackFormation;
+            }
+            else if (task.target is TargetBuilding)
+            {
+                currentCost = CheckTroupCost(task, out nbLight, out nbHeavy);
+                cost += currentCost;
+                task.formationData = captureFormation;
+            }
+
+            if (TotalBuildPoints < cost)
+                break;
+            
+            else
+            {
+                hasAddedTasks = true;
+                task.cost = currentCost;
                 waitingTasks.Add(task);
             }
         }
+    }
 
-        bool canCreateTroup = true;
+    private void TaskUpdate()
+    {
+        int count = unusedTacticians.Count;
 
-        float bestInfluence = float.MinValue;
-        Task priorityTask = null;
-
-        while (canCreateTroup)
+        for (int i = 0; i < count; i++)
         {
-            foreach (Task task in waitingTasks)
+            if (unusedTacticians[i].Soldiers.Count == 0)
             {
-                float influence = task.target.Influence;
-                if (bestInfluence < influence)
-                {
-                    bestInfluence = influence;
-                    priorityTask = task;
-                }
-            }
+                Tactician tacticianToRemove = unusedTacticians[i];
+                unusedTacticians.RemoveAt(i);
+                Destroy(tacticianToRemove.gameObject);
 
-            if (priorityTask != null)
-            {
-                if (priorityTask.target.GetType() == typeof(Tactician))
-                {
-                    canCreateTroup = TacticianTaskUpdate(priorityTask);
-                }
-                else if (priorityTask.target.GetType() == typeof(TargetBuilding))
-                {
-                    canCreateTroup = BuildingTaskUpdate(priorityTask);
-                }
-                else
-                    canCreateTroup = false;
+                i--;
+                count = unusedTacticians.Count;
             }
-            else
-                canCreateTroup = false;
         }
     }
 
@@ -333,10 +378,13 @@ public class Strategist : UnitController
 
     #region Utility Methods
 
-    private int CheckTroupCost(ref Tactician tactician, FormationData formation, float influence, out int nbLightUnits, out int nbHeavyUnits)
+    private int CheckTroupCost(Task task, out int nbLightUnits, out int nbHeavyUnits)
     {
         nbLightUnits = 0;
         nbHeavyUnits = 0;
+
+        float influence = task.target.Influence;
+
 
         if (influence <= 0)
             return int.MaxValue;
@@ -358,33 +406,68 @@ public class Strategist : UnitController
                 break;
         }
 
+        Tactician bestTactician = null;
+        float bestInfluence = float.MinValue;
+
+        foreach (Tactician tactician in unusedTacticians)
+        {
+            float currentInfluence = tactician.Influence;
+
+            if (bestInfluence < tactician.Influence)
+            {
+                bestTactician = tactician;
+                bestInfluence = currentInfluence;
+            }
+        }
+
+        if (!bestTactician)
+            bestTactician = new Tactician();
+
         int lightUnitCost = lightFactory.GetUnitCost(0);
         int heavyUnitCost = heavyFactory.GetUnitCost(0);
 
         float lightUnitInfluance = lightFactory.GetBuildableUnitInfluence(0);
         float heavyUnitInfluance = heavyFactory.GetBuildableUnitInfluence(0);
 
-        float newInfluence = influence - tactician.Influence;
+        float newInfluence = Mathf.Clamp(influence - bestTactician.Influence, 0, float.MaxValue);
 
-        nbLightUnits = (int)((formation.lightUnit * newInfluence) / lightUnitInfluance);
-        nbHeavyUnits = (int)((formation.heavyUnit * newInfluence) / heavyUnitInfluance);
+        //nbLightUnits = (int)((task.formationData.lightUnit * newInfluence) / lightUnitInfluance);
+        //nbHeavyUnits = (int)((task.formationData.heavyUnit * newInfluence) / heavyUnitInfluance);
+        
+        float lightUnitsInfluence = task.formationData.lightUnit * newInfluence;
+        float heavyUnitsInfluence = task.formationData.heavyUnit * newInfluence;
 
-        foreach (Unit unit in waitingUnits)
+        
+
+        foreach (Unit unit in unusedUnits)
         {
-            if (unit.GetUnitData.type == EntityDataScriptable.Type.Light && nbLightUnits > 0)
-                nbLightUnits--;
-            else if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy && nbHeavyUnits > 0)
-                nbHeavyUnits--;
+            if (unit.GetUnitData.type == EntityDataScriptable.Type.Light && lightUnitsInfluence > 0f)
+            {
+                lightUnitsInfluence -= unit.Influence;
+                //bestTactician.AddSoldier(new UnitLogic(unit));//TODO
+            }
+            else if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy && heavyUnitsInfluence > 0f)
+            {
+                heavyUnitsInfluence -= unit.Influence;
+            }
 
-            if (nbLightUnits == 0 && nbHeavyUnits == 0)
+            if (lightUnitsInfluence <= 0f && heavyUnitsInfluence <= 0f)
                 break;
         }
 
         cost = nbLightUnits * lightUnitCost + nbHeavyUnits * heavyUnitCost;
 
-        Debug.Log($"Capture Troup: Total cost require = {cost} points.");
+        //Debug.Log($"Capture Troup: Total cost require = {cost} points.");
+
+        unusedTacticians.Remove(bestTactician);
+        waitingTacticians.Add(bestTactician);
 
         return cost;
+    }
+
+    private bool RequestCreationTroup()
+    {
+        return false;
     }
 
     #endregion

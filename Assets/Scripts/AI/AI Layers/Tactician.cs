@@ -9,6 +9,8 @@ public class Tactician : Base
 
     private List<UnitLogic> soldiers = new List<UnitLogic>();
 
+    public List<UnitLogic> Soldiers { get => soldiers; private set => soldiers = value; }
+
     private TacticianState currentState;
 
     public ETeam Team = ETeam.Neutral;
