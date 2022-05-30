@@ -13,10 +13,12 @@ public class Tactician : Base
 
     private TacticianState currentState;
 
-    public ETeam Team = ETeam.Neutral;
+    public int nbLightInCreation = 0;
+    public int nbHeavyInCreation = 0;
 
     private void Start()
     {
+        Team = ETeam.Neutral;
         currentState = new IdleTactician(this);
 
         foreach (Transform child in transform)

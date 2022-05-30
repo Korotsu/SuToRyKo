@@ -14,4 +14,9 @@ public abstract class Base : MonoBehaviour
     {
         return Team;
     }
+
+    public void SetTeam(ETeam newTeam)
+    {
+        Team = newTeam;
+    }
 }

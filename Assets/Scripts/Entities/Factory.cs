@@ -206,7 +206,7 @@ public sealed class Factory : InteractableEntity
         }
         return counter;
     }
-    public bool RequestUnitBuild(int unitMenuIndex)
+    public bool RequestUnitBuild(int unitMenuIndex, Tactician tactician = null)
     {
         int cost = GetUnitCost(unitMenuIndex);
         if (Controller.TotalBuildPoints < cost || BuildingQueue.Count >= MaxBuildingQueueSize)
@@ -214,11 +214,11 @@ public sealed class Factory : InteractableEntity
 
         Controller.TotalBuildPoints -= cost;
 
-        StartBuildUnit(unitMenuIndex);
+        StartBuildUnit(unitMenuIndex, tactician);
 
         return true;
     }
-    void StartBuildUnit(int unitMenuIndex)
+    void StartBuildUnit(int unitMenuIndex, Tactician tactician = null)
     {
         if (IsUnitIndexValid(unitMenuIndex) == false)
             return;
@@ -227,11 +227,39 @@ public sealed class Factory : InteractableEntity
         if (CurrentState == State.UnderConstruction)
             return;
 
+        if (tactician)
+        {
+            switch (FactoryData.type)
+            {
+                case EntityDataScriptable.Type.Light:
+                    tactician.nbLightInCreation++;
+                    break;
+                case EntityDataScriptable.Type.Heavy:
+                    tactician.nbHeavyInCreation++;
+                    break;
+                default:
+                    break;
+            }
+        }
         // Build queue
         if (CurrentState == State.BuildingUnit)
         {
             if (BuildingQueue.Count < MaxBuildingQueueSize)
                 BuildingQueue.Enqueue(unitMenuIndex);
+            else if (tactician)
+            {
+                switch (FactoryData.type)
+                {
+                    case EntityDataScriptable.Type.Light:
+                        tactician.nbLightInCreation--;
+                        break;
+                    case EntityDataScriptable.Type.Heavy:
+                        tactician.nbHeavyInCreation--;
+                        break;
+                    default:
+                        break;
+                }
+            }
             return;
         }
 
@@ -249,6 +277,23 @@ public sealed class Factory : InteractableEntity
             {
                 Controller.AddUnit(unit);
                 (Controller as PlayerController)?.UpdateFactoryBuildQueueUI(RequestedEntityBuildIndex);
+
+                if (tactician)
+                {
+                    tactician.AddSoldier(unit);
+
+                    switch (FactoryData.type)
+                    {
+                        case EntityDataScriptable.Type.Light:
+                            tactician.nbLightInCreation--;
+                            break;
+                        case EntityDataScriptable.Type.Heavy:
+                            tactician.nbHeavyInCreation--;
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         };
     }

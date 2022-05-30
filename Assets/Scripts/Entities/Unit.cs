@@ -44,6 +44,7 @@ public partial class Unit : InteractableEntity
         
         HP = UnitData.MaxHP;
         OnDeadEvent += Unit_OnDead;
+        unitLogic ??= new UnitLogic(this);
     }
 
     private void Unit_OnDead()
@@ -78,8 +79,6 @@ public partial class Unit : InteractableEntity
         // Needed for non factory spawned units (debug)
         if (!IsInitialized)
             Init(Team);
-
-        unitLogic ??= new UnitLogic(this);
 
         base.Start();
     }

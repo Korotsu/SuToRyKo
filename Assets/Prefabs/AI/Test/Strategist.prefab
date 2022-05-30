@@ -47,3 +47,5 @@ MonoBehaviour:
   StartingBuildPoints: 15
   attackFormation: {fileID: 11400000, guid: 24aa0103988c5544d8820cdc07d2d6bc, type: 2}
   captureFormation: {fileID: 11400000, guid: e712be988f3e53942a5319ce7e70ef31, type: 2}
+  tacticianPrefab: {fileID: 5596963831254574888, guid: ff015c9dd2cb9c94f9f0339af323e650,
+    type: 3}
