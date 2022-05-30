@@ -1,32 +1,122 @@
+using System.Collections.Generic;
 using Entities;
 using UnityEngine;
 
-namespace AI.StateMachine
+namespace AI.BehaviorStates
 {
-    public class UnitAttack : UnitState
+    public class TacticianAttackState : TacticianState
     {
-        private Unit givenTarget;
-        
+        readonly List<UnitLogic> units;
 
-        public UnitAttack(UnitLogic unitLogic, Unit _givenTarget) : base(unitLogic)
+        public TacticianAttackState(Tactician _tactician) : base(_tactician)
         {
-            givenTarget = _givenTarget;
+            // Cycle through all units and set their states as attack!
+
+            // Additionally, keep track of all enemies by binding their death state to a countdown!
+            
+            // Allies
+            foreach (UnitLogic unit in units)
+            {
+                unit.SetState(new UnitCombatState(unit));
+            }
+            
+            // Opponents
+            foreach (UnitLogic unit in units)
+                unit.associatedUnit.OnDeadEvent += CheckAttackEnding;
+            
         }
-        
-        public override void Start()
-        {
-            if (givenTarget is null)
-                Debug.LogWarning("An attack was ordered, but the target is null!", unit);
 
-            else if (givenTarget.GetTeam() == unit.GetTeam())
+
+        private void CheckAttackEnding()
+        {
+            // Every time an opposite enemy dies, check if everything is still functioning in the adverse tactician.
+            
+            // If not, go into a neutral state. If yes, keep going.
+            
+        }
+
+        public override void Update()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void End()
+        {
+            foreach (UnitLogic unit in units)
+                unit.associatedUnit.OnDeadEvent -= CheckAttackEnding;
+        }
+    }
+    
+    public class UnitCombatState : UnitState
+    {
+        private Unit currentTarget;
+        
+
+        public UnitCombatState(UnitLogic unitLogic, Unit givenTarget) : base(unitLogic)
+        {
+            currentTarget = givenTarget;
+
+            if (currentTarget is null)
+            {
+                Debug.LogWarning("An attack was ordered, but the target is null!", unit);
+                SearchNewTarget();
+            }
+
+            else if (currentTarget.GetTeam() == unit.GetTeam())
+            {
                 Debug.LogWarning("An attack was ordered, but the target is of the same team!", unit);
+                SearchNewTarget();
+            }
 
             else
             {
-                unit.StartAttacking(givenTarget);
-                givenTarget.OnDeadEvent += () => unitLogic.SetState(new IdleUnit(unitLogic));
-
+                unit.StartAttacking(currentTarget);
+                currentTarget.OnDeadEvent += SearchNewTarget;   
             }
+        }
+        
+        public UnitCombatState(UnitLogic unitLogic) : base(unitLogic)
+        {
+            SearchNewTarget();
+        }
+
+        private Unit SearchTarget()
+        {
+            // Reach into your Tactician,
+            // Reach into the enemy Tactician,
+            // Analyze the closest enemy of their group.
+
+            var opposingUnits = new List<Unit>();
+
+            float shortestDist = float.MaxValue;
+            Unit closestUnit = null;
+
+            foreach (Unit opposingUnit in opposingUnits)
+            {
+                float dist = Vector3.Distance(unit.transform.position, opposingUnit.transform.position);
+                
+                if (dist < shortestDist)
+                {
+                    shortestDist = dist;
+                    closestUnit = opposingUnit;
+                }
+            }
+
+            return closestUnit;
+        }
+
+        private void SearchNewTarget()
+        {
+            currentTarget = SearchTarget();
+
+            if (currentTarget is null)
+            {
+                Debug.Log("Unit attack can't pass! There is no attack ongoing..", unit);
+                return;                
+            }
+            
+            unit.StartAttacking(currentTarget);
+            currentTarget.OnDeadEvent += SearchNewTarget;
         }
 
         public override void Update()
@@ -36,7 +126,8 @@ namespace AI.StateMachine
 
         public override void End()
         {
-            
+            if (!(currentTarget is null))
+                currentTarget.OnDeadEvent -= SearchNewTarget;
         }
     }
 }

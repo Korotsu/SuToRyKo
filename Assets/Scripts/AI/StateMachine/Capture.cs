@@ -2,15 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AI.StateMachine
+namespace AI.BehaviorStates
 {
     public class UnitCapture : UnitState
     {
         public UnitCapture(UnitLogic unitLogic) : base(unitLogic) { }
-        public override void Start()
-        {
-
-        }
 
         public override void Update()
         {

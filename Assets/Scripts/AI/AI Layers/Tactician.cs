@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using AI.StateMachine;
+using AI.BehaviorStates;
 using UnityEngine;
 
 public class Tactician : Base
@@ -42,7 +42,6 @@ public class Tactician : Base
     {
         currentState.End();
         currentState = order;
-        currentState.Start();
     }
 
     public void AddSoldier(UnitLogic unitLogic)

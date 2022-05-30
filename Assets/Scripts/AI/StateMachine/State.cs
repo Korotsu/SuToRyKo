@@ -5,9 +5,6 @@ using UnityEngine;
 
 public abstract class State
 {
-    // Called when the state is swapped in
-    public abstract void Start();
-
     // Update is called once per frame
     public abstract void Update();
 

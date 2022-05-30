@@ -2,25 +2,28 @@
 using UnityEngine.UI;
 public class TargetBuilding : BaseEntity
 {
-    [SerializeField]
-    float CaptureGaugeStart = 100f;
-    [SerializeField]
-    float CaptureGaugeSpeed = 1f;
-    [SerializeField]
-    int BuildPoints = 5;
-    [SerializeField]
-    Material BlueTeamMaterial = null;
-    [SerializeField]
-    Material RedTeamMaterial = null;
+    [SerializeField] private float CaptureGaugeStart = 100f;
+    [SerializeField] private float CaptureGaugeSpeed = 1f;
+    
+    [SerializeField] private int ImmediateBuildPoints = 5;
+    
+    [SerializeField] private float PointsPerSecond = 0.5f;
+    private float OngoingPoint = 0f;
+    
+    
+    [SerializeField] private Material BlueTeamMaterial = null;
+    [SerializeField] private Material RedTeamMaterial = null;
 
-    Material NeutralMaterial = null;
-    MeshRenderer BuildingMeshRenderer = null;
-    Image GaugeImage;
-    int[] TeamScore;
-    float CaptureGaugeValue;
-    ETeam OwningTeam = ETeam.Neutral;
-    ETeam CapturingTeam = ETeam.Neutral;
-    public ETeam GetTeam() { return OwningTeam; }
+    private Material NeutralMaterial = null;
+    private MeshRenderer BuildingMeshRenderer = null;
+    private Image GaugeImage;
+    private int[] TeamScore;
+    private float CaptureGaugeValue;
+    private ETeam OwningTeam = ETeam.Neutral;
+    private ETeam CapturingTeam = ETeam.Neutral;
+    
+    public new ETeam GetTeam() => OwningTeam;
+    
     protected override float GetInfluence()
     {
         return 100f;
@@ -28,7 +31,8 @@ public class TargetBuilding : BaseEntity
 
 
     #region MonoBehaviour methods
-    void Start()
+
+    private void Start()
     {
         BuildingMeshRenderer = GetComponentInChildren<MeshRenderer>();
         NeutralMaterial = BuildingMeshRenderer.material;
@@ -41,9 +45,20 @@ public class TargetBuilding : BaseEntity
         TeamScore[0] = 0;
         TeamScore[1] = 0;
     }
-    void Update()
+
+    private void Update()
     {
-        if (CapturingTeam == OwningTeam || CapturingTeam == ETeam.Neutral)
+        if (OwningTeam != ETeam.Neutral && CapturingTeam == ETeam.Neutral)
+        {
+            OngoingPoint += PointsPerSecond * Time.deltaTime;
+
+            if (OngoingPoint >= 1f)
+            {
+                OngoingPoint -= 1f;
+                ++GameServices.GetControllerByTeam(OwningTeam).TotalBuildPoints;
+            }
+        }
+        else if (CapturingTeam == OwningTeam || CapturingTeam == ETeam.Neutral)
             return;
 
         CaptureGaugeValue -= TeamScore[(int)CapturingTeam] * CaptureGaugeSpeed * Time.deltaTime;
@@ -100,27 +115,29 @@ public class TargetBuilding : BaseEntity
             }
         }
     }
-    void ResetCapture()
+
+    private void ResetCapture()
     {
         CaptureGaugeValue = CaptureGaugeStart;
         CapturingTeam = ETeam.Neutral;
         GaugeImage.fillAmount = 0f;
     }
-    void OnCaptured(ETeam newTeam)
+
+    private void OnCaptured(ETeam newTeam)
     {
         Debug.Log("target captured by " + newTeam.ToString());
         if (OwningTeam != newTeam)
         {
             UnitController teamController = GameServices.GetControllerByTeam(newTeam);
             if (teamController != null)
-                teamController.CaptureTarget(BuildPoints);
+                teamController.CaptureTarget(ImmediateBuildPoints);
 
             if (OwningTeam != ETeam.Neutral)
             {
                 // remove points to previously owning team
                 teamController = GameServices.GetControllerByTeam(OwningTeam);
                 if (teamController != null)
-                    teamController.LoseTarget(BuildPoints);
+                    teamController.LoseTarget(ImmediateBuildPoints);
             }
         }
 
