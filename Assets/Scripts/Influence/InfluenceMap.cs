@@ -69,14 +69,13 @@ public class InfluenceMap : MonoBehaviour
     private Vector3 center;
     private float InfluenceCellSize;
     private CellData[,] map;
-    private Task[] tasks;
-        [SerializeField, Range(0.001f, 0.999f)]
-    private float spreadFalloff =0.99f;
-
-    [SerializeField, MinAttribute(0.01f)] private float Exponent;
-    [SerializeField] private bool useSecondary;
-    [SerializeField, Range(0, 0.999f)] private float Exponent2;
     
+    [SerializeField, MinAttribute(0)]
+    private int MaxVisAdd =10;
+
+    private int MaxVisAddCell => (int)(MaxVisAdd * InfluenceCellSize);
+    [SerializeField, MinAttribute(0.0001f)] private float Exponent;
+
     [SerializeField] private bool GizmoBuilding;
     [SerializeField] private bool GizmoUnit;
     //[SerializeField] private bool Bench;
@@ -140,44 +139,38 @@ public class InfluenceMap : MonoBehaviour
         return id;
     }
 
-    void Spread(cellID id, int teamId, float weight, float falloff, bool isBuilding )
+    void Spread(cellID id, int teamId, float weight, bool isBuilding, int sizeBeginFalloff = 10, int maxCircleSize = 30)
     {
-        int c = 0;
-        for (float w = weight; w > 0.0001; w*= (falloff-0.01f))
-        {
-            c++;
-        }
-
-        c *= 5;
+        if (maxCircleSize < sizeBeginFalloff)
+            maxCircleSize = (int)(sizeBeginFalloff * 1.5f);
+        int c = maxCircleSize;
+        int d = sizeBeginFalloff;
         c = (int)(c / InfluenceCellSize);
+        d = (int)(d / InfluenceCellSize);
         float c2 = c * c;
-        Vector2 centerpt = new Vector2(id.x , id.y );
+        float d2 = d * d;
         for(int y=-c; y<=c; y++)
             for(int x=-c; x<=c; x++)
-                if (x * x + y * y <= c * c)
+                if (x * x + y * y <= c2)
                 {
                     bool f = id.x+x < 0 || id.x+x >= subdivision || id.y+y < 0 || id.y+y >= subdivision;
-                    if (!f)
+                    if (f) continue;
+                    int car = (x * x + y * y);
+                    float distance =  car/ d2 ;
+                    if (distance < 1)
                     {
-                        float distance = (x*x+y*y) / c2 ;
-                        float w;
-                        if (useSecondary)
-                        {
-                            float e2 = (Mathf.Pow(Exponent2, distance) - 1) / (Exponent2 - 1);
-                            w= weight -  (weight*e2) ;
-                        }
-                        else
-                        {
-                            float e = Mathf.Exp(Exponent - Exponent / distance);
-                            w=weight -  (weight*e) ;
-                        }
-
-                        if(isBuilding)
-                            map[id.x+x, id.y+y].teamsWeights[teamId].buildingWeight += w >= 0 ? w : 0;
-                        else
-                            map[id.x+x, id.y+y].teamsWeights[teamId].unitWeight += w >= 0 ? w : 0;
-
+                        distance = 0;
                     }
+                    else
+                    {
+                        distance = car /c2;
+                    }
+                    float e = Mathf.Exp(Exponent - Exponent / distance);
+                    float w=weight -  (weight*e) ;
+                    if(isBuilding)
+                        map[id.x+x, id.y+y].teamsWeights[teamId].buildingWeight += w >= 0 ? w : 0;
+                    else
+                        map[id.x+x, id.y+y].teamsWeights[teamId].unitWeight += w >= 0 ? w : 0;
                 }
     }
 
@@ -198,10 +191,9 @@ public class InfluenceMap : MonoBehaviour
     public void Init()
     {
         map = new CellData[subdivision, subdivision];
-        tasks = new Task[subdivision];
 
         center = transform.position;
-        int count = 0;
+        int count = -1;
         for (int i = 0; i < transform.childCount; i++)
         {
             Transform child = transform.GetChild(i);
@@ -213,7 +205,7 @@ public class InfluenceMap : MonoBehaviour
         Terrain ter = null;
         float localScale = 1;
          mapCenter = new Vector3();
-        if (count == 0)
+        if (count == -1)
         {
              TryGetComponent(out mf);
              TryGetComponent(out ter);
@@ -283,7 +275,7 @@ public class InfluenceMap : MonoBehaviour
             Vector3 position = unit.transform.position;
             cellID id = FindCellAtPos(position);
             int team = (int)data.GetTeam();
-            Spread(id,team, data.Influence, spreadFalloff, false);
+            Spread(id,team, data.Influence, false,(int)(data.VisionMax/2.0f),(int)((data.VisionMax)/2.0f)+MaxVisAddCell);
             
         }
         foreach (GameObject building in buildings)
@@ -292,7 +284,7 @@ public class InfluenceMap : MonoBehaviour
             Vector3 position = building.transform.position;
             cellID id = FindCellAtPos(position);
             int team = (int)data.GetTeam();
-            Spread(id,team, data.Influence, spreadFalloff, true);
+            Spread(id,team, data.Influence, true, (int)(data.VisionMax/2.0f),(int)((data.VisionMax)/2.0f)+MaxVisAddCell );
             
         }
     }
