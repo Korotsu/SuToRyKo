@@ -7,9 +7,9 @@ public class Tactician : Base
 {
     private List<UnitState> orderlist = new List<UnitState>();
 
-    private List<UnitLogic> soldiers = new List<UnitLogic>();
+    private List<Unit> soldiers = new List<Unit>();
 
-    public List<UnitLogic> Soldiers { get => soldiers; private set => soldiers = value; }
+    public List<Unit> Soldiers { get => soldiers; private set => soldiers = value; }
 
     private TacticianState currentState;
 
@@ -21,7 +21,7 @@ public class Tactician : Base
 
         foreach (Transform child in transform)
         {
-            UnitLogic unitLogic = child.GetComponent<UnitLogic>();
+            Unit unitLogic = child.GetComponent<Unit>();
             if (unitLogic)
                 soldiers.Add(unitLogic);
         }
@@ -37,7 +37,7 @@ public class Tactician : Base
     private void TakeDecision()
     {
         //Decisional code with influence and modifier Map;
-        soldiers.ForEach(soldier => soldier.SetState(new IdleUnit(soldier)));
+        soldiers.ForEach(soldier => soldier.UnitLogic.SetState(new IdleUnit(soldier.UnitLogic)));
     }
 
     public void SetState(TacticianState order/*, Vector3 Target*/)
@@ -46,7 +46,7 @@ public class Tactician : Base
         currentState = order;
     }
 
-    public void AddSoldier(UnitLogic unitLogic)
+    public void AddSoldier(Unit unitLogic)
     {
         soldiers.Add(unitLogic);
     }
@@ -55,9 +55,9 @@ public class Tactician : Base
     {
         float influence = 0f;
 
-        foreach (UnitLogic unitLogic in soldiers)
+        foreach (Unit unit in soldiers)
         {
-            influence += unitLogic.associatedUnit.Influence;
+            influence += unit.Influence;
         }
 
         return influence;
