@@ -5,6 +5,13 @@ using UnityEngine;
 
 public abstract class State
 {
+    protected Base target;
+
+    public void SetTarget(Base _target)
+    {
+        target = _target;
+    }
+
     // Called once at the start of the state
     public abstract void Start();
 
@@ -18,7 +25,7 @@ public abstract class State
 public abstract class TacticianState : State
 {
     protected Tactician tactician;
-    protected Base target;
+    
     public TacticianState(Tactician _tactician) => tactician = _tactician;
 }
 

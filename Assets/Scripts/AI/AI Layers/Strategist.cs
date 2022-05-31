@@ -109,7 +109,7 @@ public class Strategist : UnitController
 
         timer += Time.deltaTime;
         
-        if (!isStarted /*|| timer >= timerDuration*/)
+        if (!isStarted || timer >= timerDuration)
         {
             TaskInit();
             isStarted = true;

@@ -33,7 +33,7 @@ public class Tactician : Base
     void Update()
     {
         currentState.Update();
-        TakeDecision();
+        //TakeDecision();
     }
 
     private void TakeDecision()

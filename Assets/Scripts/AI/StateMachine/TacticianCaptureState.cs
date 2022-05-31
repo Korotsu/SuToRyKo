@@ -11,11 +11,15 @@ public class TacticianCaptureState : TacticianState
 
     public override void Start()
     {
-        if (!target)
+        if (target)
         {
             foreach (Unit unit in tactician.Soldiers)
             {
                 unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCapture(unit.UnitLogic));
+                unit.UnitLogic.CurrentState.SetTarget(target);
+
+                if(target is TargetBuilding targetBuilding)
+                    unit.SetCaptureTarget(targetBuilding);
             }
         }
     }
