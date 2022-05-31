@@ -397,7 +397,6 @@ public class Strategist : UnitController
                 else
                 {
                     task.nbLight--;
-                    task.nbLightInProgress++;
                 }
             }
 
