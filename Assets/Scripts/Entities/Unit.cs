@@ -69,9 +69,9 @@ public class Unit : BaseEntity
         BulletSlot = transform.Find("BulletSlot");
 
         // fill NavMeshAgent parameters
-        NavMeshAgent.speed          = GetUnitData.Speed;
-        NavMeshAgent.angularSpeed   = GetUnitData.AngularSpeed;
-        NavMeshAgent.acceleration   = GetUnitData.Acceleration;
+        NavMeshAgent.speed = GetUnitData.Speed;
+        NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
+        NavMeshAgent.acceleration = GetUnitData.Acceleration;
         //NavMeshAgent.enabled        = false;
 
         timeLeftForRaycast = raycastDelay;
@@ -87,7 +87,7 @@ public class Unit : BaseEntity
     override protected void Update()
     {
         actions?.Invoke();
-        
+
         // Attack / repair task debug test $$$ to be removed for AI implementation
         if (EntityTarget != null)
         {
@@ -99,7 +99,7 @@ public class Unit : BaseEntity
 
         if (CaptureTarget != null && !isCapturing && CanCapture(CaptureTarget))
             StartCapture(CaptureTarget);
-        
+
     }
     #endregion
 
@@ -141,46 +141,45 @@ public class Unit : BaseEntity
 
     public void FollowFormation()
     {
-        timeLeftForRaycast -= Time.deltaTime;
-
-        if (timeLeftForRaycast <= 0f)
+        if (tempTactician || mainTactician)
         {
-            NavMeshHit hit = new NavMeshHit();
+            timeLeftForRaycast -= Time.deltaTime;
 
-            if (NavMeshAgent.Raycast(formationNode.GetPosition(), out hit) && (path == null || path.status == NavMeshPathStatus.PathInvalid || path.status == NavMeshPathStatus.PathPartial))
+            if (timeLeftForRaycast <= 0f)
             {
-                //NavMeshAgent.SetDestination(formationNode.GetPosition());
-                //NavMeshAgent.isStopped = false;
+                NavMeshHit hit = new NavMeshHit();
 
-                path = new NavMeshPath();
-                if (NavMeshAgent.CalculatePath(formationNode.GetPosition(), path))
-                    pathIndex = 0;
-                else
-                    path = null;
+                if (NavMeshAgent.Raycast(formationNode.GetPosition(), out hit) && (path == null || path.status == NavMeshPathStatus.PathInvalid || path.status == NavMeshPathStatus.PathPartial))
+                {
+                    path = new NavMeshPath();
+                    if (NavMeshAgent.CalculatePath(formationNode.GetPosition(), path))
+                        pathIndex = 0;
+                    else
+                        path = null;
+                }
+
+                timeLeftForRaycast = raycastDelay;
             }
 
-            timeLeftForRaycast = raycastDelay;
-        }
-
-        if (path != null && (path.status == NavMeshPathStatus.PathComplete || path.status == NavMeshPathStatus.PathPartial))
-        {
-            Vector3 destination = path.corners[pathIndex];
-            NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
-            //NavMeshAgent.destination = destination;
-            if ((destination - transform.position).sqrMagnitude <= 0.1)
+            if (path != null && (path.status == NavMeshPathStatus.PathComplete || path.status == NavMeshPathStatus.PathPartial))
             {
-                pathIndex++;
+                Vector3 destination = path.corners[pathIndex] - transform.position;
+                NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+                if ((destination).sqrMagnitude <= 0.1)
+                {
+                    pathIndex++;
 
-                if (path.corners.Length <= pathIndex)
-                    path = null;
+                    if (path.corners.Length <= pathIndex)
+                        path = null;
+                }
             }
-        }
 
-        else if (formationNode.FormationManager && (formationNode.GetPosition() - transform.position).sqrMagnitude >= 0.1)
-        {
-            Vector3 destination = formationNode.GetPosition() - transform.position;
-            destination.Normalize();
-            NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+            else if (formationNode.FormationManager && (formationNode.GetPosition() - transform.position).sqrMagnitude >= 0.1)
+            {
+                Vector3 destination = formationNode.GetPosition() - transform.position;
+                destination.Normalize();
+                NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+            }
         }
     }
 
@@ -188,23 +187,23 @@ public class Unit : BaseEntity
     {
         //transform.position = formationNode.GetPosition();
         if (formationNode.FormationManager)
-           SetTargetPos(formationNode.GetPosition());
+            SetTargetPos(formationNode.GetPosition());
     }
 
     public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
-        formationNode   = _formationNode;
-        actions         += FollowFormation;
+        formationNode = _formationNode;
+        actions += FollowFormation;
     }
 
     public List<Unit> GetAllUnitsInFormation()
     {
         List<Unit> units = new List<Unit>();
         Tactician tactician = tempTactician ?? mainTactician;
-        
+
         if (tactician)
             tactician.GetSoldiers().ForEach(soldier => units.Add(soldier.Unit));
-        
+
         return units;
     }
 
@@ -219,9 +218,9 @@ public class Unit : BaseEntity
         //
         if (target.GetTeam() != GetTeam())
             StartAttacking(target);
-        
-        
-        
+
+
+
         if (CaptureTarget != null)
             StopCapture();
     }
@@ -234,13 +233,13 @@ public class Unit : BaseEntity
 
         if (CanCapture(target) == false)
             SetTargetPos(target.transform.position);
-        
+
         if (EntityTarget != null)
             EntityTarget = null;
 
         if (IsCapturing())
             StopCapture();
-        
+
         CaptureTarget = target;
     }
 
@@ -344,7 +343,7 @@ public class Unit : BaseEntity
 
         CaptureTarget.StopCapture(this);
         CaptureTarget = null;
-        
+
         isCapturing = false;
     }
 
