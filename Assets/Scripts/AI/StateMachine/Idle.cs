@@ -23,6 +23,12 @@ namespace AI.BehaviorStates
 
         public override void End() {}
 
-        public override void Start() {}
+        public sealed override void Start()
+        {
+            foreach (Unit tacticianSoldier in tactician.Soldiers)
+            {
+                tacticianSoldier.UnitLogic.SetState(new IdleUnit(tacticianSoldier.UnitLogic));
+            }
+        }
     }
 }

@@ -22,7 +22,7 @@ public class TargetBuilding : BaseEntity
     private ETeam OwningTeam = ETeam.Neutral;
     private ETeam CapturingTeam = ETeam.Neutral;
     
-    public new ETeam GetTeam() => OwningTeam;
+    public override ETeam GetTeam() => OwningTeam;
     
     protected override float GetInfluence()
     {

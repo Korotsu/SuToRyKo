@@ -5,6 +5,11 @@ using System.Linq;
 using AI.BehaviorStates;
 using AI.ScriptableObjects;
 
+public class TargetWrapper
+{
+    public Base Target;
+}
+
 public class Task : IEqualityComparer<Task>, IComparable<Task>
 {
     public enum Type
@@ -23,6 +28,7 @@ public class Task : IEqualityComparer<Task>, IComparable<Task>
     public FormationData formationData = null;
 
     public Base target = null;
+    public string TargetID;
 
     public bool isRunning = false;
 
@@ -74,7 +80,7 @@ public class Strategist : UnitController
     private List<Tactician> unusedTacticians = new List<Tactician>();
 
     private List<Task> runningTasks = new List<Task>();
-    private Dictionary<Base, Task> EntityToTask = new Dictionary<Base, Task>();
+    private Dictionary<string, Task> EntityToTask = new Dictionary<string, Task>();
     private List<Task> waitingTasks = new List<Task>();
 
     private List<Unit> unusedUnits = new List<Unit>();
@@ -133,13 +139,14 @@ public class Strategist : UnitController
 
         foreach (Base entity in FindObjectsOfType<Base>())
         {
-            if(EntityToTask.ContainsKey(entity))
+            if(EntityToTask.ContainsKey(entity.name))
                 continue;
             if (entity.GetTeam() != Team)
             {
                 Task task = new Task
                 {
-                    target = entity
+                    target = entity,
+                    TargetID = entity.name
                 };
 
                 if (entity is Tactician || entity is Factory || entity is Unit)
@@ -185,7 +192,30 @@ public class Strategist : UnitController
 
     private void TaskUpdate()
     {
-        int count = waitingTasks.Count;
+        int count = runningTasks.Count;
+
+        for (int i = 0; i < count; i++)
+        {
+            Task task = runningTasks[i];
+
+            if (task.target is null || task.target.GetTeam() == Team)
+            {
+                
+                unusedTacticians.AddRange(task.tacticians);
+                foreach (Tactician taskTactician in task.tacticians)
+                {
+                    taskTactician.SetState(new IdleTactician(taskTactician));
+                }
+                
+                runningTasks.RemoveAt(i);
+                EntityToTask.Remove(task.TargetID);
+                i--;
+                count = runningTasks.Count;
+            }
+
+        }
+        
+        count = waitingTasks.Count;
 
         for (int i = 0; i < count; i++)
         {
@@ -196,7 +226,7 @@ public class Strategist : UnitController
                 task.cost = 0;
                 waitingTasks.Remove(task);
                 runningTasks.Add(task);
-                EntityToTask.Add(task.target, task);
+                EntityToTask.Add(task.TargetID, task);
                 i--;
                 count = waitingTasks.Count;
             }
