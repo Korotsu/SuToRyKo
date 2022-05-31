@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class TacticianCaptureState : TacticianState
 {
-    public TacticianCaptureState(Tactician _tactician, InteractableEntity _target = null) : base(_tactician) 
+    public TacticianCaptureState(Tactician _tactician, Base _target = null) : base(_tactician) 
     {
         target = _target;
     }

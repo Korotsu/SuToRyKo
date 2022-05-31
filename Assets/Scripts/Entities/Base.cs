@@ -10,7 +10,7 @@ public abstract class Base : MonoBehaviour
     public float Influence => GetInfluence();
     protected abstract float GetInfluence();
 
-    public ETeam GetTeam()
+    public virtual ETeam GetTeam()
     {
         return Team;
     }
