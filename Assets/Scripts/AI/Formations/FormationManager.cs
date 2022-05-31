@@ -14,6 +14,7 @@ namespace Formations
             Linear,
             VShaped,
             Curved,
+            Custom,
         }
 
         private EFormationTypes formationType = EFormationTypes.Linear;
@@ -46,6 +47,9 @@ namespace Formations
         [SerializeField]
         private bool displayNodes = false;
 
+        [SerializeField, Range(0, 180)]
+        private float formationAngle = 0;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -58,42 +62,25 @@ namespace Formations
             }
 
             leaderNode = new FormationNode(this, transform.position);
-
-            UpdateFormation += UpdateLinearFormation;
         }
 
         public void SwitchFormationType(EFormationTypes newType)
         {
             nodes.Clear();
 
-            switch (formationType)
-            {
-                case EFormationTypes.Linear:
-                    UpdateFormation -= UpdateLinearFormation;
-                    break;
-                case EFormationTypes.VShaped:
-                    UpdateFormation -= UpdateVShapedFormation;
-                    break;
-                case EFormationTypes.Curved:
-                    UpdateFormation -= UpdateCurvedFormation;
-                    break;
-                default:
-                    break;
-            }
-
             switch (newType)
             {
                 case EFormationTypes.Linear:
-                    CreateLinearFormation();
-                    UpdateFormation += UpdateLinearFormation;
+                    CreateFormation(0);
                     break;
                 case EFormationTypes.VShaped:
-                    CreateVShapedFormation();
-                    UpdateFormation += UpdateVShapedFormation;
+                    CreateFormation(45);
                     break;
                 case EFormationTypes.Curved:
-                    CreateCurvedFormation();
-                    UpdateFormation += UpdateCurvedFormation;
+                    CreateFormation(30);
+                    break;
+                case EFormationTypes.Custom:
+                    CreateFormation(formationAngle);
                     break;
                 default:
                     break;
@@ -105,7 +92,7 @@ namespace Formations
         // Update is called once per frame
         void Update()
         {
-            UpdateFormation?.Invoke();
+            //UpdateFormation?.Invoke();
 
             if (path != null && navMeshAgent.path != path)
                 navMeshAgent.SetPath(path);
@@ -147,30 +134,30 @@ namespace Formations
         {
             List<Unit> units = tactician.GetSoldiers().Select(soldier => soldier.Unit).ToList();
 
-            float maxSpeed          = float.MaxValue;
-            float maxAngularSpeed   = float.MaxValue;
-            float maxAcceleration   = float.MaxValue;
+            float maxSpeed = float.MaxValue;
+            float maxAngularSpeed = float.MaxValue;
+            float maxAcceleration = float.MaxValue;
 
             foreach (Unit unit in units)
             {
-                maxSpeed        = (unit.GetUnitData.Speed        < maxSpeed)         ? unit.GetUnitData.Speed         : maxSpeed;
-                maxAngularSpeed = (unit.GetUnitData.AngularSpeed < maxAngularSpeed)  ? unit.GetUnitData.AngularSpeed  : maxAngularSpeed;
-                maxAcceleration = (unit.GetUnitData.Acceleration < maxAcceleration)  ? unit.GetUnitData.Acceleration  : maxAcceleration;
+                maxSpeed = (unit.GetUnitData.Speed < maxSpeed) ? unit.GetUnitData.Speed : maxSpeed;
+                maxAngularSpeed = (unit.GetUnitData.AngularSpeed < maxAngularSpeed) ? unit.GetUnitData.AngularSpeed : maxAngularSpeed;
+                maxAcceleration = (unit.GetUnitData.Acceleration < maxAcceleration) ? unit.GetUnitData.Acceleration : maxAcceleration;
             }
 
             foreach (Unit unit in units)
             {
-                unit.NavMeshAgent.speed         = maxSpeed;
-                unit.NavMeshAgent.angularSpeed  = maxAngularSpeed;
-                unit.NavMeshAgent.acceleration  = maxAcceleration;
-                unit.NavMeshAgent.radius        = float.Epsilon;//maxBounds.x / 2;
+                unit.NavMeshAgent.speed = maxSpeed;
+                unit.NavMeshAgent.angularSpeed = maxAngularSpeed;
+                unit.NavMeshAgent.acceleration = maxAcceleration;
+                unit.NavMeshAgent.radius = float.Epsilon;//maxBounds.x / 2;
             }
 
-            navMeshAgent.speed          = maxSpeed * 0.9f;
-            navMeshAgent.angularSpeed   = maxAngularSpeed * 0.9f;
-            navMeshAgent.acceleration   = maxAcceleration;
-            navMeshAgent.radius         = 0.1f;
-            navMeshAgent.autoRepath     = true;
+            navMeshAgent.speed = maxSpeed * 0.9f;
+            navMeshAgent.angularSpeed = maxAngularSpeed * 0.9f;
+            navMeshAgent.acceleration = maxAcceleration;
+            navMeshAgent.radius = 0.1f;
+            navMeshAgent.autoRepath = true;
         }
     }
 }

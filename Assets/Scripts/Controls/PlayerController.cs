@@ -70,10 +70,10 @@ public sealed class PlayerController : UnitController
     Action OnDestroyEntityPressed = null;
     Action OnCancelFactoryPositioning = null;
     Action OnSelectAllPressed = null;
-    Action OnCreateLinearFormationPressed = null;
+    Action<Formations.FormationManager.EFormationTypes> OnCreateFormationPressed = null;
     Action OnKillTacticianPressed = null;
     Action OnFormationLockTogglePressed = null;
-    Action [] OnCategoryPressed = new Action[9];
+    Action[] OnCategoryPressed = new Action[9];
 
     GameObject GetTargetCursor()
     {
@@ -121,7 +121,7 @@ public sealed class PlayerController : UnitController
         SelectionLineRenderer = GetComponent<LineRenderer>();
 
         PlayerMenuController = GetComponent<MenuController>();
-       
+
         if (SceneEventSystem == null)
         {
             Debug.LogWarning("EventSystem not assigned in PlayerController, searching in current scene...");
@@ -188,7 +188,7 @@ public sealed class PlayerController : UnitController
         // Selection shortcuts
         OnSelectAllPressed += SelectAllUnits;
 
-        for(int i = 0; i < OnCategoryPressed.Length; i++)
+        for (int i = 0; i < OnCategoryPressed.Length; i++)
         {
             // store typeId value for event closure
             int typeId = i;
@@ -198,7 +198,7 @@ public sealed class PlayerController : UnitController
             };
         }
 
-        OnCreateLinearFormationPressed += CreateLinearFormation;
+        OnCreateFormationPressed += CreateFormation;
         OnKillTacticianPressed += KillTactician;
         OnFormationLockTogglePressed += FormationLockToggle;
     }
@@ -245,12 +245,21 @@ public sealed class PlayerController : UnitController
 
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
             OnFormationLockTogglePressed?.Invoke();
-        
+
         if (Input.GetKeyDown(KeyCode.KeypadMinus))
             OnKillTacticianPressed?.Invoke();
 
         if (Input.GetKeyDown(KeyCode.Keypad1))
-            OnCreateLinearFormationPressed?.Invoke();
+            OnCreateFormationPressed?.Invoke(Formations.FormationManager.EFormationTypes.Linear);
+
+        if (Input.GetKeyDown(KeyCode.Keypad2))
+            OnCreateFormationPressed?.Invoke(Formations.FormationManager.EFormationTypes.Curved);
+
+        if (Input.GetKeyDown(KeyCode.Keypad3))
+            OnCreateFormationPressed?.Invoke(Formations.FormationManager.EFormationTypes.VShaped);
+
+        if (Input.GetKeyDown(KeyCode.Keypad0))
+            OnCreateFormationPressed?.Invoke(Formations.FormationManager.EFormationTypes.Custom);
 
         for (int i = 0; i < OnCategoryPressed.Length; i++)
         {
@@ -342,8 +351,8 @@ public sealed class PlayerController : UnitController
             return;
 
         bool isCtrlBtPressed = Input.GetKey(KeyCode.LeftControl);
-        
-        if(!isCtrlBtPressed)
+
+        if (!isCtrlBtPressed)
             UnselectAllUnits();
 
         RaycastHit raycastInfo;
@@ -433,7 +442,7 @@ public sealed class PlayerController : UnitController
 
         if (!Input.GetKey(KeyCode.LeftControl))
             UnselectAllUnits();
-        
+
 
         UnselectCurrentFactory();
 
@@ -449,7 +458,7 @@ public sealed class PlayerController : UnitController
                 if (selectedEntity is Unit)
                 {
                     Unit unit = selectedEntity as Unit;
-                    
+
                     if (!SelectedUnitList.Contains(unit))
                     {
                         if (unit.tempTactician || unit.mainTactician)
@@ -470,7 +479,7 @@ public sealed class PlayerController : UnitController
 
         if (SelectedFactory != null && SelectedUnitList.Count > 0)
             UnselectCurrentFactory();
-        
+
         SelectionStarted = false;
         SelectionStart = Vector3.zero;
         SelectionEnd = Vector3.zero;
@@ -529,7 +538,7 @@ public sealed class PlayerController : UnitController
         WantedFactoryPreview = Instantiate(factoryPrefab.transform.GetChild(0).gameObject); // Quick and dirty access to mesh GameObject
         WantedFactoryPreview.name = WantedFactoryPreview.name.Replace("(Clone)", "_Preview");
         // Set transparency on materials
-        foreach(Renderer rend in WantedFactoryPreview.GetComponentsInChildren<MeshRenderer>())
+        foreach (Renderer rend in WantedFactoryPreview.GetComponentsInChildren<MeshRenderer>())
         {
             Material mat = rend.material;
             mat.shader = PreviewShader;
@@ -591,7 +600,7 @@ public sealed class PlayerController : UnitController
                     /*if (selectedTactician)
                         selectedTactician.SetAttackTarget(other);  //Placeholder for tactician attack;
                     else*/
-                        SelectedUnitList[0].SetAttackTarget(other);
+                    SelectedUnitList[0].SetAttackTarget(other);
                 }
                 else if (other.NeedsRepairing())
                 {
@@ -675,5 +684,5 @@ public sealed class PlayerController : UnitController
         MousePickingGUI.DrawScreenRect(rect, color);
     }
 
-#endregion
+    #endregion
 }

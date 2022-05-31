@@ -185,7 +185,6 @@ public class Unit : BaseEntity
 
     public void UpdateTargetPos()
     {
-        //transform.position = formationNode.GetPosition();
         if (formationNode.FormationManager)
             SetTargetPos(formationNode.GetPosition());
     }

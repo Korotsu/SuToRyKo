@@ -73,7 +73,7 @@ public class UnitController : MonoBehaviour
 
         if (selectedTactician && selectedTactician.isFormationLocked == false && selectedTactician.GetSoldiers().Count <= 1)
             Destroy(selectedTactician.gameObject);
-        
+
         selectedTactician = null;
     }
     protected void SelectAllUnits()
@@ -118,7 +118,7 @@ public class UnitController : MonoBehaviour
                 SelectSingleUnit(unit);
         }
     }
-    protected void SelectUnitList(Unit [] units)
+    protected void SelectUnitList(Unit[] units)
     {
         foreach (Unit unit in units)
         {
@@ -132,11 +132,11 @@ public class UnitController : MonoBehaviour
     protected void SelectSingleUnit(Unit unit)
     {
         SelectUnit(unit);
-        
+
         if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
             CreateTactician();
 
-        else if(selectedTactician)
+        else if (selectedTactician)
         {
             selectedTactician.GetSoldiers().Add(unit.GetComponent<Soldier>());
             unit.tempTactician = selectedTactician;
@@ -147,7 +147,7 @@ public class UnitController : MonoBehaviour
     {
         unit.SetSelected(true);
 
-        if(!SelectedUnitList.Contains(unit))
+        if (!SelectedUnitList.Contains(unit))
             SelectedUnitList.Add(unit);
     }
 
@@ -165,7 +165,7 @@ public class UnitController : MonoBehaviour
 
             if (selectedTactician && _unit.tempTactician && selectedTactician.GetTacticianState() != null)
             {
-                if(!_unit.mainTactician)
+                if (!_unit.mainTactician)
                     _unit.tempTactician.GetSoldiers().Remove(_unit.GetComponent<Soldier>());
                 _unit.tempTactician = null;
             }
@@ -179,7 +179,7 @@ public class UnitController : MonoBehaviour
                 Destroy(selectedTactician.gameObject);
         }
 
-        
+
     }
 
     protected void UnselectUnit(Unit unit)
@@ -225,11 +225,10 @@ public class UnitController : MonoBehaviour
 
     #region Formation methods
 
-    protected void CreateLinearFormation()
+    protected void CreateFormation(Formations.FormationManager.EFormationTypes newType)
     {
-        selectedTactician.GetComponent<Formations.FormationManager>().SwitchFormationType(Formations.FormationManager.EFormationTypes.Linear);
-        //if (lockedTacticians.Count > 0)
-        //lockedTacticians.ForEach(tactician => tactician.GetComponent<Formations.FormationManager>().SwitchFormationType(Formations.FormationManager.EFormationTypes.Linear));
+        if (selectedTactician)
+            selectedTactician.GetComponent<Formations.FormationManager>().SwitchFormationType(newType);
     }
 
     protected void KillTactician()
@@ -357,14 +356,14 @@ public class UnitController : MonoBehaviour
         if (TeamRoot)
             Debug.LogFormat("TeamRoot {0} found !", rootName);
     }
-    virtual protected void Start ()
+    virtual protected void Start()
     {
         CapturedTargets = 0;
         TotalBuildPoints = StartingBuildPoints;
 
         // get all team factory already in scene
-        Factory [] allFactories = FindObjectsOfType<Factory>();
-        foreach(Factory factory in allFactories)
+        Factory[] allFactories = FindObjectsOfType<Factory>();
+        foreach (Factory factory in allFactories)
         {
             if (factory.GetTeam() == GetTeam())
             {
@@ -374,9 +373,9 @@ public class UnitController : MonoBehaviour
 
         Debug.Log("found " + FactoryList.Count + " factory for team " + GetTeam().ToString());
     }
-    virtual protected void Update ()
+    virtual protected void Update()
     {
-		
-	}
+
+    }
     #endregion
 }
