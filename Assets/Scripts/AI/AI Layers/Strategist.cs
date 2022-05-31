@@ -74,6 +74,7 @@ public class Strategist : UnitController
     private List<Tactician> unusedTacticians = new List<Tactician>();
 
     private List<Task> runningTasks = new List<Task>();
+    private Dictionary<Base, Task> EntityToTask = new Dictionary<Base, Task>();
     private List<Task> waitingTasks = new List<Task>();
 
     private List<Unit> unusedUnits = new List<Unit>();
@@ -92,9 +93,10 @@ public class Strategist : UnitController
 
         foreach (Factory factory in FactoryList)
         {
-            factory.OnUnitBuilt += (Unit unit) =>
+            factory.OnUnitBuilt += (Unit unit, Tactician t) =>
             {
-                unusedUnits.Add(unit);
+                if(t is null)
+                    unusedUnits.Add(unit);
             };
         }
 
@@ -131,10 +133,14 @@ public class Strategist : UnitController
 
         foreach (Base entity in FindObjectsOfType<Base>())
         {
+            if(EntityToTask.ContainsKey(entity))
+                continue;
             if (entity.GetTeam() != Team)
             {
-                Task task = new Task();
-                task.target = entity;
+                Task task = new Task
+                {
+                    target = entity
+                };
 
                 if (entity is Tactician || entity is Factory)
                     task.taskType = Task.Type.Attack;
@@ -190,7 +196,7 @@ public class Strategist : UnitController
                 task.cost = 0;
                 waitingTasks.Remove(task);
                 runningTasks.Add(task);
-
+                EntityToTask.Add(task.target, task);
                 i--;
                 count = waitingTasks.Count;
             }
@@ -344,17 +350,17 @@ public class Strategist : UnitController
         //Debug.Log($"Capture Troup: Total cost require = {cost} points.");
 
         unusedTacticians.Remove(bestTactician);
-        waitingTacticians.Add(bestTactician);
+        //waitingTacticians.Add(bestTactician);
 
         task.nbLightInProgress = bestTactician.nbLightInCreation;
         task.nbHeavyInProgress = bestTactician.nbHeavyInCreation;
 
-        task.nbLight = nbLightUnitToProduce;
-        task.nbHeavy = nbHeavyUnitToProduce;
+        task.nbLight = Mathf.Clamp(nbLightUnitToProduce - task.nbLightInProgress, 0, int.MaxValue);
+        task.nbHeavy = Mathf.Clamp(nbHeavyUnitToProduce - task.nbHeavyInProgress, 0, int.MaxValue);
 
         task.tacticians.Add(bestTactician);
 
-        return nbLightUnitToProduce * lightUnitCost + nbHeavyUnitToProduce * heavyUnitCost;
+        return task.nbLight * lightUnitCost + task.nbHeavy * heavyUnitCost;
     }
 
     private bool RequestCreationTroup()
@@ -389,7 +395,10 @@ public class Strategist : UnitController
                 if (!lightFactory.RequestUnitBuild(0, task.tacticians[0]))
                     break;
                 else
+                {
                     task.nbLight--;
+                    task.nbLightInProgress++;
+                }
             }
 
             while (task.nbHeavy - task.nbHeavyInProgress > 0)
