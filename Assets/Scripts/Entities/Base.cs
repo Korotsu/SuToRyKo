@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class Base : MonoBehaviour
 {
     [SerializeField]
-    protected ETeam Team;
+    protected ETeam Team = ETeam.Neutral;
 
     public float Influence => GetInfluence();
     protected abstract float GetInfluence();

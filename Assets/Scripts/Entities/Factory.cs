@@ -3,6 +3,15 @@ using System.Collections.Generic;
 using Entities;
 using UnityEngine;
 using UnityEngine.UI;
+
+
+
+public class UnitBuildOrder
+{
+    public Tactician t = null;
+    public int id = 0;
+
+}
 public sealed class Factory : InteractableEntity
 {
     [SerializeField]
@@ -10,7 +19,7 @@ public sealed class Factory : InteractableEntity
 
     GameObject[] UnitPrefabs = null;
     GameObject[] FactoryPrefabs = null;
-    int RequestedEntityBuildIndex = -1;
+    UnitBuildOrder RequestedEntityBuildIndex =  new UnitBuildOrder{id=-1};
     Image BuildGaugeImage;
     float CurrentBuildDuration = 0f;
     float EndBuildDate = 0f;
@@ -23,7 +32,7 @@ public sealed class Factory : InteractableEntity
 
     [SerializeField]
     int MaxBuildingQueueSize = 5;
-    Queue<int> BuildingQueue = new Queue<int>();
+    Queue<UnitBuildOrder> BuildingQueue = new Queue<UnitBuildOrder>();
     public enum State
     {
         Available = 0,
@@ -36,7 +45,7 @@ public sealed class Factory : InteractableEntity
     public FactoryDataScriptable GetFactoryData { get { return FactoryData; } }
     public int AvailableUnitsCount { get { return Mathf.Min(MaxAvailableUnits, FactoryData.AvailableUnits.Length); } }
     public int AvailableFactoriesCount { get { return Mathf.Min(MaxAvailableFactories, FactoryData.AvailableFactories.Length); } }
-    public Action<Unit> OnUnitBuilt;
+    public Action<Unit, Tactician> OnUnitBuilt;
     public Action<Factory> OnFactoryBuilt;
     public Action OnBuildCanceled;
     public bool IsBuildingUnit { get { return CurrentState == State.BuildingUnit; } }
@@ -119,15 +128,15 @@ public sealed class Factory : InteractableEntity
             case State.BuildingUnit:
                 if (Time.time > EndBuildDate)
                 {
-                    OnUnitBuilt?.Invoke(BuildUnit());
+                    OnUnitBuilt?.Invoke(BuildUnit(), RequestedEntityBuildIndex.t);
                     OnUnitBuilt = null; // remove registered methods
                     CurrentState = State.Available;
 
                     // manage build queue : chain with new unit build if necessary
                     if (BuildingQueue.Count != 0)
                     {
-                        int unitIndex = BuildingQueue.Dequeue();
-                        StartBuildUnit(unitIndex);
+                        UnitBuildOrder unitIndex = BuildingQueue.Dequeue();
+                        StartBuildUnit(unitIndex.id, unitIndex.t, true);
                     }
                 }
                 else if (BuildGaugeImage)
@@ -199,9 +208,9 @@ public sealed class Factory : InteractableEntity
     public int GetQueuedCount(int unitIndex)
     {
         int counter = 0;
-        foreach(int id in BuildingQueue)
+        foreach(UnitBuildOrder id in BuildingQueue)
         {
-            if (id == unitIndex)
+            if (id.id == unitIndex)
                 counter++;
         }
         return counter;
@@ -218,7 +227,7 @@ public sealed class Factory : InteractableEntity
 
         return true;
     }
-    void StartBuildUnit(int unitMenuIndex, Tactician tactician = null)
+    void StartBuildUnit(int unitMenuIndex, Tactician tactician = null, bool deque = false)
     {
         if (IsUnitIndexValid(unitMenuIndex) == false)
             return;
@@ -227,68 +236,76 @@ public sealed class Factory : InteractableEntity
         if (CurrentState == State.UnderConstruction)
             return;
 
-        if (tactician)
-        {
-            switch (FactoryData.type)
-            {
-                case EntityDataScriptable.Type.Light:
-                    tactician.nbLightInCreation++;
-                    break;
-                case EntityDataScriptable.Type.Heavy:
-                    tactician.nbHeavyInCreation++;
-                    break;
-                default:
-                    break;
-            }
-        }
+        
         // Build queue
         if (CurrentState == State.BuildingUnit)
         {
             if (BuildingQueue.Count < MaxBuildingQueueSize)
-                BuildingQueue.Enqueue(unitMenuIndex);
-            else if (tactician)
+            {
+                BuildingQueue.Enqueue(new UnitBuildOrder{id=unitMenuIndex, t= tactician});
+                if (tactician)
+                {
+                    switch (FactoryData.type)
+                    {
+                        case EntityDataScriptable.Type.Light:
+                            tactician.nbLightInCreation++;
+                            break;
+                        case EntityDataScriptable.Type.Heavy:
+                            tactician.nbHeavyInCreation++;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            
+            return;
+        }
+        else if (!deque)
+        {
+            if (tactician)
             {
                 switch (FactoryData.type)
                 {
                     case EntityDataScriptable.Type.Light:
-                        tactician.nbLightInCreation--;
+                        tactician.nbLightInCreation++;
                         break;
                     case EntityDataScriptable.Type.Heavy:
-                        tactician.nbHeavyInCreation--;
+                        tactician.nbHeavyInCreation++;
                         break;
                     default:
                         break;
                 }
             }
-            return;
         }
-
+        
         CurrentBuildDuration = GetBuildableUnitData(unitMenuIndex).BuildDuration;
         //Debug.Log("currentBuildDuration " + CurrentBuildDuration);
 
         CurrentState = State.BuildingUnit;
         EndBuildDate = Time.time + CurrentBuildDuration;
 
-        RequestedEntityBuildIndex = unitMenuIndex;
+        RequestedEntityBuildIndex.id = unitMenuIndex;
+        RequestedEntityBuildIndex.t = tactician;
 
-        OnUnitBuilt += (Unit unit) =>
+        OnUnitBuilt += (Unit unit, Tactician bo) =>
         {
             if (unit != null)
             {
                 Controller.AddUnit(unit);
-                (Controller as PlayerController)?.UpdateFactoryBuildQueueUI(RequestedEntityBuildIndex);
+                (Controller as PlayerController)?.UpdateFactoryBuildQueueUI(RequestedEntityBuildIndex.id);
 
-                if (tactician)
+                if (bo)
                 {
-                    tactician.AddSoldier(unit);
+                    bo.AddSoldier(unit);
 
                     switch (FactoryData.type)
                     {
                         case EntityDataScriptable.Type.Light:
-                            tactician.nbLightInCreation--;
+                            bo.nbLightInCreation--;
                             break;
                         case EntityDataScriptable.Type.Heavy:
-                            tactician.nbHeavyInCreation--;
+                            bo.nbHeavyInCreation--;
                             break;
                         default:
                             break;
@@ -301,12 +318,12 @@ public sealed class Factory : InteractableEntity
     // Finally spawn requested unit
     Unit BuildUnit()
     {
-        if (IsUnitIndexValid(RequestedEntityBuildIndex) == false)
+        if (IsUnitIndexValid(RequestedEntityBuildIndex.id) == false)
             return null;
 
         CurrentState = State.Available;
 
-        GameObject unitPrefab = UnitPrefabs[RequestedEntityBuildIndex];
+        GameObject unitPrefab = UnitPrefabs[RequestedEntityBuildIndex.id];
 
         if (BuildGaugeImage)
             BuildGaugeImage.fillAmount = 0f;
@@ -349,16 +366,16 @@ public sealed class Factory : InteractableEntity
         CurrentState = State.Available;
 
         // refund build points
-        Controller.TotalBuildPoints += GetUnitCost(RequestedEntityBuildIndex);
-        foreach(int unitIndex in BuildingQueue)
+        Controller.TotalBuildPoints += GetUnitCost(RequestedEntityBuildIndex.id);
+        foreach(UnitBuildOrder unitIndex in BuildingQueue)
         {
-            Controller.TotalBuildPoints += GetUnitCost(unitIndex);
+            Controller.TotalBuildPoints += GetUnitCost(unitIndex.id);
         }
         BuildingQueue.Clear();
 
         BuildGaugeImage.fillAmount = 0f;
         CurrentBuildDuration = 0f;
-        RequestedEntityBuildIndex = -1;
+        RequestedEntityBuildIndex.id = -1;
 
         OnBuildCanceled?.Invoke();
         OnBuildCanceled = null;

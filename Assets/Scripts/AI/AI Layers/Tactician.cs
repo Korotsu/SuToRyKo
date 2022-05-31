@@ -18,7 +18,7 @@ public class Tactician : Base
 
     private void Start()
     {
-        Team = ETeam.Neutral;
+        
         currentState = new IdleTactician(this);
 
         foreach (Transform child in transform)
