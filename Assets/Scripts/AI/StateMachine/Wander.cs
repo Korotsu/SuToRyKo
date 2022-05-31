@@ -2,6 +2,11 @@ namespace AI.BehaviorStates
 {
     public class UnitWander : State
     {
+        public override void Start()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override void Update()
         {
             throw new System.NotImplementedException();
@@ -11,5 +16,6 @@ namespace AI.BehaviorStates
         {
             throw new System.NotImplementedException();
         }
+
     }
 }

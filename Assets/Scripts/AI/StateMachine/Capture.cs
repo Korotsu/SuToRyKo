@@ -8,6 +8,8 @@ namespace AI.BehaviorStates
     {
         public UnitCapture(UnitLogic unitLogic) : base(unitLogic) { }
 
+        public override void Start() {}
+
         public override void Update()
         {
             unitLogic.associatedUnit.CaptureUpdate();
@@ -16,7 +18,7 @@ namespace AI.BehaviorStates
         public override void End()
         {
             unitLogic.associatedUnit.StopCapture();
-        }
+        }        
     }
 }
 

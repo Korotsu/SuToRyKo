@@ -10,6 +10,8 @@ namespace AI.BehaviorStates
     {
         public UnitRepair(UnitLogic _targetLogic) : base(_targetLogic) { }
 
+        public override void Start() {}
+
         public override void Update()
         {
             unitLogic.associatedUnit.ComputeRepairing();
@@ -19,6 +21,7 @@ namespace AI.BehaviorStates
         {
 
         }
+
     }
 }
 

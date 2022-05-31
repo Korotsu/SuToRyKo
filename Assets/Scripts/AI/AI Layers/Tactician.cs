@@ -46,6 +46,7 @@ public class Tactician : Base
     {
         currentState.End();
         currentState = order;
+        currentState.Start();
     }
 
     public void AddSoldier(Unit unitLogic)

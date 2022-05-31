@@ -34,6 +34,7 @@ namespace AI.BehaviorStates
             // If not, go into a neutral state. If yes, keep going.
             
         }
+        public override void Start() {}
 
         public override void Update()
         {
@@ -45,6 +46,7 @@ namespace AI.BehaviorStates
             foreach (UnitLogic unit in units)
                 unit.associatedUnit.OnDeadEvent -= CheckAttackEnding;
         }
+
     }
     
     public class UnitCombatState : UnitState
@@ -118,6 +120,7 @@ namespace AI.BehaviorStates
             unit.StartAttacking(currentTarget);
             currentTarget.OnDeadEvent += SearchNewTarget;
         }
+        public override void Start() {}
 
         public override void Update()
         {
@@ -129,6 +132,7 @@ namespace AI.BehaviorStates
             if (!(currentTarget is null))
                 currentTarget.OnDeadEvent -= SearchNewTarget;
         }
+
     }
 }
 

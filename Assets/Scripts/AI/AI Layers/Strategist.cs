@@ -26,6 +26,17 @@ public class Task : IEqualityComparer<Task>, IComparable<Task>
 
     public bool isRunning = false;
 
+    public float GetInfluence()
+    {
+        float totalInfluence = 0f;
+
+        foreach (Tactician tactician in tacticians)
+        {
+            totalInfluence += tactician.Influence;
+        }
+
+        return totalInfluence;
+    }
     public bool Equals(Task x, Task y)
     {
         if (!x.target || !y.target)
@@ -58,7 +69,7 @@ public class Strategist : UnitController
 
     [SerializeField] private GameObject tacticianPrefab = null;
 
-    private List<Tactician> tacticians = new List<Tactician>();
+    private List<Tactician> runningTacticians = new List<Tactician>();
     private List<Tactician> waitingTacticians = new List<Tactician>();
     private List<Tactician> unusedTacticians = new List<Tactician>();
 
@@ -68,31 +79,16 @@ public class Strategist : UnitController
     private List<Unit> unusedUnits = new List<Unit>();
 
     private Factory lightFactory = null;
-    private Factory heavyFactory = null;
-
-    private List<TargetBuilding> targetBuildings = new List<TargetBuilding>();
+    private Factory heavyFactory = null;    
 
     bool isStarted = false;
 
     private float timer = 0;
     [SerializeField] private float timerDuration = 1f;
 
-
-
-    private void Awake()
-    {
-        //GetLightAndHeavyFactory(out lightFactory, out heavyFactory);
-    }
     void Start()
     {
         base.Start();
-
-        targetBuildings.Clear();
-
-        foreach (TargetBuilding targetBuilding in FindObjectsOfType<TargetBuilding>())
-        {
-            targetBuildings.Add(targetBuilding);
-        }
 
         foreach (Factory factory in FactoryList)
         {
@@ -111,7 +107,7 @@ public class Strategist : UnitController
 
         timer += Time.deltaTime;
         
-        if (!isStarted || timer >= timerDuration)
+        if (!isStarted /*|| timer >= timerDuration*/)
         {
             TaskInit();
             isStarted = true;
@@ -121,168 +117,6 @@ public class Strategist : UnitController
 
         TaskUpdate();
     } 
-
-    #region Attack
-
-    private void CreateAttackTroup(float influance)
-    {
-        float lightInfluance = attackFormation.lightUnit * influance;
-        float heavyInfluance = attackFormation.heavyUnit * influance;
-
-        Factory lightFactory = null;
-        Factory heavyFactory = null;
-
-        foreach (Factory factory in FactoryList)
-        {
-            if (!lightFactory && factory.GetFactoryData.TypeId == 0)
-            {
-                lightFactory = factory;
-            }
-            else if (!heavyFactory && factory.GetFactoryData.TypeId == 1)
-            {
-                heavyFactory = factory;
-            }
-        }
-
-        int lightUnitCost = lightFactory.GetUnitCost(0);
-        int heavyUnitCost = heavyFactory.GetUnitCost(0);
-
-        int currentLightInfluance = 0;
-        int currentHeavyInfluance = 0;
-
-        while (currentLightInfluance <= lightInfluance)
-        {
-            lightFactory.RequestUnitBuild(0);
-            currentLightInfluance += lightUnitCost;
-        }
-
-        while (currentHeavyInfluance <= heavyInfluance)
-        {
-            heavyFactory.RequestUnitBuild(0);
-            currentHeavyInfluance += heavyUnitCost;
-        }
-    }
-    public bool CreateAttackTactician()
-    {
-        if (unusedUnits.Count < 10)
-            return false;
-
-        int nbLight = 7, nbHeavy = 3, currentNbLight = 0, currentNbHeavy = 0;
-        List<Unit> units = new List<Unit>();
-
-        foreach (Unit unit in unusedUnits)
-        {
-            units.Add(unit);
-
-            if (unit.GetUnitData.type == UnitDataScriptable.Type.Light && currentNbLight < nbLight)
-                currentNbLight++;
-            else if (unit.GetUnitData.type == UnitDataScriptable.Type.Heavy && currentNbHeavy < nbHeavy)
-                currentNbHeavy++;
-
-            if (currentNbLight == nbLight && currentNbHeavy == nbLight)
-            {
-                Tactician tactician = new Tactician();
-                foreach (Unit _unit in units)
-                {
-                    tactician.AddSoldier(_unit);
-                }    
-    
-                tactician.SetState(new IdleTactician(tactician));//TODO: Set in AttackState
-                return true;
-            } 
-        }
-
-        return false;
-    }
-    #endregion
-
-    #region Capture
-
-    private bool CreateCaptureTroup(Task task)
-    {
-        Tactician bestTactician = null;
-        float bestInfluence = float.MinValue;
-
-        foreach (Tactician tactician in unusedTacticians)
-        {
-            float influence = tactician.Influence;
-
-            if (bestInfluence < influence)
-            {
-                bestTactician = tactician;
-                bestInfluence = influence;
-            }
-        }
-
-        if (bestTactician == null)
-            bestTactician = new Tactician();
-
-        if (bestTactician.Influence > task.target.Influence)
-        {
-            bestTactician.SetState(new IdleTactician(bestTactician));//TODO: Create a CaptureTactician
-            task.tacticians.Add(bestTactician);
-            waitingTacticians.Remove(bestTactician);
-            task.isRunning = true;
-
-            runningTasks.Add(task);
-            waitingTasks.Remove(task);
-
-            return true;
-        }
-        else
-        {
-            int cost = CheckTroupCost(task);
-
-            if (_TotalBuildPoints >= cost)
-            {
-                for (int i = 0; i < task.nbLight; i++)
-                {
-                    if (!lightFactory.RequestUnitBuild(0))
-                        return false;
-                }
-
-                for(int i = 0; i < task.nbHeavy; i++)
-                {
-                    if (!heavyFactory.RequestUnitBuild(0))
-                        return false;
-                }
-            }
-        }
-
-        return false;
-    }
-    
-
-    private bool CreateCaptureTacticien()
-    {
-        if (unusedUnits.Count < 5)
-            return false;
-
-        int nbUnit = 5;
-        List<Unit> units = new List<Unit>();
-
-        foreach (Unit unit in unusedUnits)
-        {
-            if (unit.GetUnitData.type == UnitDataScriptable.Type.Light && units.Count < nbUnit)
-                units.Add(unit);
-
-            if (units.Count == nbUnit)
-            {
-                Tactician tactician = new Tactician();
-                foreach (Unit _unit in units)
-                {
-                    tactician.AddSoldier(_unit);
-                }
-
-                tactician.SetState(new IdleTactician(tactician));//TODO: Set in CaptureState
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    #endregion
 
     #region Task Methods
     private void TaskInit()
@@ -382,6 +216,17 @@ public class Strategist : UnitController
         {
             CreateTroup(task);
         }
+
+        foreach (Task task in runningTasks)
+        {
+            if (task.isRunning)
+                continue;
+        
+            float totalInfluence = task.GetInfluence();
+        
+            if (totalInfluence >= task.target.Influence)
+                LaunchTask(task);
+        }
     }
 
     void LaunchTask(Task task)
@@ -392,12 +237,18 @@ public class Strategist : UnitController
                 foreach (Tactician tactician in task.tacticians)
                 {
                     tactician.SetState(new TacticianAttackState(tactician));
+                    waitingTacticians.Remove(tactician);
+                    runningTacticians.Add(tactician);
+                    task.isRunning = true;
                 }
                 break;
             case Task.Type.Capture:
                 foreach (Tactician tactician in task.tacticians)
                 {
-                    tactician.SetState(new IdleTactician(tactician));//TODO : set in capture
+                    tactician.SetState(new TacticianCaptureState(tactician, task.target));//TODO : set in capture
+                    waitingTacticians.Remove(tactician);
+                    runningTacticians.Add(tactician);
+                    task.isRunning = true;
                 }
                 break;
             case Task.Type.None:
@@ -405,14 +256,6 @@ public class Strategist : UnitController
             default:
                 break;
         }
-    }
-
-    private bool BuildingTaskUpdate(Task task)
-    { 
-        if(task.target is TargetBuilding)
-            return CreateCaptureTroup(task);
-
-        return false;
     }
 
     #endregion

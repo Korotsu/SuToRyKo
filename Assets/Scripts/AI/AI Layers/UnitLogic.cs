@@ -34,6 +34,7 @@ public class UnitLogic
             CurrentState.End();
 
         CurrentState = order;
+        CurrentState.Start();
     }
 
     public void SetUnit(Unit unit)

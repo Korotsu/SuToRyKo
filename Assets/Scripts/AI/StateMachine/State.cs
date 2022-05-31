@@ -5,6 +5,9 @@ using UnityEngine;
 
 public abstract class State
 {
+    // Called once at the start of the state
+    public abstract void Start();
+
     // Update is called once per frame
     public abstract void Update();
 
@@ -14,8 +17,8 @@ public abstract class State
 
 public abstract class TacticianState : State
 {
-    private Tactician tactician;
-    private Base target;
+    protected Tactician tactician;
+    protected Base target;
     public TacticianState(Tactician _tactician) => tactician = _tactician;
 }
 
