@@ -59,20 +59,5 @@ namespace Formations
             foreach (Transform child in obj)
                 GetRenderers(ref renderers, child, includeChildren);
         }
-
-        private void CreateLinearFormation()
-        {
-            CreateFormation(0);
-        }
-
-        private void CreateVShapedFormation()
-        {
-            CreateFormation(45);
-        }
-
-        private void CreateCurvedFormation()
-        {
-            CreateFormation(30);
-        }
     }
 }
