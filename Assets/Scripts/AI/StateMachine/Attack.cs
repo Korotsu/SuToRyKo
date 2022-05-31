@@ -8,22 +8,9 @@ namespace AI.BehaviorStates
     {
         readonly List<UnitLogic> units;
 
-        public TacticianAttackState(Tactician _tactician) : base(_tactician)
+        public TacticianAttackState(Tactician _tactician, Base _target = null) : base(_tactician)
         {
-            // Cycle through all units and set their states as attack!
-
-            // Additionally, keep track of all enemies by binding their death state to a countdown!
-            
-            // Allies
-            foreach (UnitLogic unit in units)
-            {
-                unit.SetState(new UnitCombatState(unit));
-            }
-            
-            // Opponents
-            foreach (UnitLogic unit in units)
-                unit.associatedUnit.OnDeadEvent += CheckAttackEnding;
-            
+            target = _target;
         }
 
 
@@ -34,7 +21,22 @@ namespace AI.BehaviorStates
             // If not, go into a neutral state. If yes, keep going.
             
         }
-        public override void Start() {}
+        public override void Start() 
+        {
+            switch (target)
+            {
+                case Tactician _tactician:
+                    break;
+                case Factory _factory:
+                    foreach (Unit unit in tactician.Soldiers)
+                    {
+                        //unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
 
         public override void Update()
         {
@@ -51,12 +53,12 @@ namespace AI.BehaviorStates
     
     public class UnitCombatState : UnitState
     {
-        private Unit currentTarget;
+        private BaseEntity currentTarget;
         
 
-        public UnitCombatState(UnitLogic unitLogic, Unit givenTarget) : base(unitLogic)
+        public UnitCombatState(UnitLogic unitLogic, BaseEntity target) : base(unitLogic)
         {
-            currentTarget = givenTarget;
+            currentTarget = target;
 
             if (currentTarget is null)
             {
@@ -72,7 +74,9 @@ namespace AI.BehaviorStates
 
             else
             {
-                unit.StartAttacking(currentTarget);
+                if(target is InteractableEntity entity)
+                    unit.StartAttacking(entity);
+
                 currentTarget.OnDeadEvent += SearchNewTarget;   
             }
         }
@@ -117,7 +121,7 @@ namespace AI.BehaviorStates
                 return;                
             }
             
-            unit.StartAttacking(currentTarget);
+            //unit.StartAttacking(currentTarget);
             currentTarget.OnDeadEvent += SearchNewTarget;
         }
         public override void Start() {}

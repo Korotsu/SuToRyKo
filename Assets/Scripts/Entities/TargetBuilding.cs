@@ -60,7 +60,7 @@ public class TargetBuilding : BaseEntity
                 ++GameServices.GetControllerByTeam(OwningTeam).TotalBuildPoints;
             }
         }
-        else if (CapturingTeam == OwningTeam || CapturingTeam == ETeam.Neutral)
+        if (CapturingTeam == OwningTeam || CapturingTeam == ETeam.Neutral)
             return;
 
         CaptureGaugeValue -= TeamScore[(int)CapturingTeam] * CaptureGaugeSpeed * Time.deltaTime;

@@ -251,7 +251,7 @@ public class Strategist : UnitController
             case Task.Type.Capture:
                 foreach (Tactician tactician in task.tacticians)
                 {
-                    tactician.SetState(new TacticianCaptureState(tactician, task.target));//TODO : set in capture
+                    //tactician.SetState(new TacticianCaptureState(tactician, task.target));//TODO : set in capture
                     waitingTacticians.Remove(tactician);
                     runningTacticians.Add(tactician);
                     task.isRunning = true;
