@@ -149,7 +149,7 @@ public class Strategist : UnitController
                     TargetID = entity.name
                 };
 
-                if (entity is Tactician || entity is Factory)
+                if (entity is Tactician || entity is Factory || entity is Unit)
                     task.taskType = Task.Type.Attack;
                 else if (entity is TargetBuilding)
                     task.taskType = Task.Type.Capture;
@@ -166,7 +166,7 @@ public class Strategist : UnitController
         {
             int currentCost = 0;
 
-            if (task.target is Tactician)
+            if (task.target is Tactician || task.target is Factory || task.target is Unit)
             {
                 task.formationData = attackFormation;
                 currentCost = CheckTroupCost(task);
@@ -180,7 +180,7 @@ public class Strategist : UnitController
             }
 
             if (TotalBuildPoints < cost)
-                break;
+                continue;
             
             else
             {
@@ -257,10 +257,14 @@ public class Strategist : UnitController
         {
             if (task.isRunning)
                 continue;
-        
-            float totalInfluence = task.GetInfluence();
-        
-            if (totalInfluence >= task.target.Influence)
+
+            count = 0;
+            foreach (Tactician tactician in task.tacticians)
+            {
+                count += tactician.nbHeavyInCreation + tactician.nbLightInCreation;
+            }
+            //if(task.nbHeavy == 0 && task.nbLight == 0 && task.nbHeavyInProgress == 0 && task.nbLightInProgress == 0)
+            if (count == 0)
                 LaunchTask(task);
         }
     }
@@ -272,10 +276,15 @@ public class Strategist : UnitController
             case Task.Type.Attack:
                 foreach (Tactician tactician in task.tacticians)
                 {
-                    tactician.SetState(new TacticianAttackState(tactician));
-                    waitingTacticians.Remove(tactician);
-                    runningTacticians.Add(tactician);
-                    task.isRunning = true;
+                    if (task.target is BaseEntity entity)
+                    {
+                        tactician.SetState(new TacticianAttackState(tactician, entity));
+                        waitingTacticians.Remove(tactician);
+                        runningTacticians.Add(tactician);
+                        task.isRunning = true;
+                    }
+                    else
+                        continue;
                 }
                 break;
             case Task.Type.Capture:

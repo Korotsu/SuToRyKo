@@ -53,7 +53,7 @@ public sealed class Factory : InteractableEntity
     
     protected override float GetInfluence()
     {
-        float p = Cost;
+        float p = Cost * 10;
         p += Cost * (1 - (HP / FactoryData.MaxHP));
         return p;
     }

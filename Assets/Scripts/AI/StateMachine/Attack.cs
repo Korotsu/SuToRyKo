@@ -6,9 +6,7 @@ namespace AI.BehaviorStates
 {
     public class TacticianAttackState : TacticianState
     {
-        readonly List<UnitLogic> units;
-
-        public TacticianAttackState(Tactician _tactician, Base _target = null) : base(_tactician)
+        public TacticianAttackState(Tactician _tactician, BaseEntity _target = null) : base(_tactician)
         {
             target = _target;
         }
@@ -23,76 +21,41 @@ namespace AI.BehaviorStates
         }
         public override void Start() 
         {
-            switch (target)
+            if (target is BaseEntity entity)
             {
-                case Tactician _tactician:
-                    break;
-                case Factory _factory:
-                    foreach (Unit unit in tactician.Soldiers)
-                    {
-                        //unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit));
-                    }
-                    break;
-                default:
-                    break;
+                foreach (Unit unit in tactician.Soldiers)
+                {
+                    unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic, entity));
+                }
             }
         }
 
         public override void Update()
         {
-            throw new System.NotImplementedException();
+            base.Update();
         }
 
         public override void End()
         {
-            foreach (UnitLogic unit in units)
-                unit.associatedUnit.OnDeadEvent -= CheckAttackEnding;
+            foreach (Unit unit in tactician.Soldiers)
+                unit.UnitLogic.associatedUnit.OnDeadEvent -= CheckAttackEnding;
         }
 
     }
     
     public class UnitCombatState : UnitState
     {
-        private BaseEntity currentTarget;
-        
-
-        public UnitCombatState(UnitLogic unitLogic, BaseEntity target) : base(unitLogic)
+        public UnitCombatState(UnitLogic unitLogic, BaseEntity _target = null) : base(unitLogic)
         {
-            currentTarget = target;
-
-            if (currentTarget is null)
-            {
-                Debug.LogWarning("An attack was ordered, but the target is null!", unit);
-                SearchNewTarget();
-            }
-
-            else if (currentTarget.GetTeam() == unit.GetTeam())
-            {
-                Debug.LogWarning("An attack was ordered, but the target is of the same team!", unit);
-                SearchNewTarget();
-            }
-
-            else
-            {
-                if(target is InteractableEntity entity)
-                    unit.StartAttacking(entity);
-
-                currentTarget.OnDeadEvent += SearchNewTarget;   
-            }
+            target = _target;
         }
         
-        public UnitCombatState(UnitLogic unitLogic) : base(unitLogic)
-        {
-            SearchNewTarget();
-        }
 
-        private Unit SearchTarget()
+        private bool SearchTarget(Unit[] opposingUnits)
         {
             // Reach into your Tactician,
             // Reach into the enemy Tactician,
             // Analyze the closest enemy of their group.
-
-            var opposingUnits = new List<Unit>();
 
             float shortestDist = float.MaxValue;
             Unit closestUnit = null;
@@ -107,24 +70,35 @@ namespace AI.BehaviorStates
                     closestUnit = opposingUnit;
                 }
             }
-
-            return closestUnit;
-        }
-
-        private void SearchNewTarget()
-        {
-            currentTarget = SearchTarget();
-
-            if (currentTarget is null)
+            if (closestUnit)
             {
-                Debug.Log("Unit attack can't pass! There is no attack ongoing..", unit);
-                return;                
+                target = closestUnit;
+                unit.StartAttacking(closestUnit);
+                return true;
             }
             
-            //unit.StartAttacking(currentTarget);
-            currentTarget.OnDeadEvent += SearchNewTarget;
+            return false;
         }
-        public override void Start() {}
+
+        public override void Start() 
+        {
+            switch (unitLogic.CurrentState.Target)
+            {
+                case Tactician _tactician:
+                    SearchTarget(_tactician.Soldiers.ToArray());
+                    break;
+                case Unit _unit:
+                    target = _unit;
+                    unit.StartAttacking(_unit);
+                    break;
+                case Factory factory:
+                    target = factory;
+                    unit.StartAttacking(factory);
+                    break;
+                default:
+                    break;
+            }
+        }
 
         public override void Update()
         {
@@ -133,10 +107,8 @@ namespace AI.BehaviorStates
 
         public override void End()
         {
-            if (!(currentTarget is null))
-                currentTarget.OnDeadEvent -= SearchNewTarget;
+            
         }
-
     }
 }
 
@@ -162,6 +134,11 @@ public partial class Unit
 
     public void ComputeAttack()
     {
+        if (!EntityTarget)
+            return;
+
+        LookAtTarget();
+
         // Efficient moving system towards target
         if (CanAttack(EntityTarget) == false)
         {
@@ -170,11 +147,9 @@ public partial class Unit
                 NavMeshAgent.SetDestination(EntityTarget.transform.position);
                 NavMeshAgent.isStopped = false;
             }
+            return;
         }
 
-        LookAtTarget();
-        
-        
         if (ActionCooldown <= 0f)
         {
             // visual only ?

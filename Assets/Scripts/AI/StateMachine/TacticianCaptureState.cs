@@ -1,5 +1,4 @@
-﻿using Entities;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,10 +26,7 @@ public class TacticianCaptureState : TacticianState
 
     public override void Update()
     {
-        foreach (Unit unit in tactician.Soldiers)
-        {
-            unit.UnitLogic.Update();
-        }
+        base.Update();
     }
 
     public override void End()
