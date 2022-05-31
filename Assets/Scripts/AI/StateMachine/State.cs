@@ -6,6 +6,7 @@ using UnityEngine;
 public abstract class State
 {
     protected Base target;
+    public Base Target { get => target; private set => target = value; }
 
     public void SetTarget(Base _target)
     {
@@ -27,6 +28,14 @@ public abstract class TacticianState : State
     protected Tactician tactician;
     
     public TacticianState(Tactician _tactician) => tactician = _tactician;
+
+    public override void Update()
+    {
+        foreach (Unit unit in tactician.Soldiers)
+        {
+            unit.UnitLogic.Update();
+        }
+    }
 }
 
 public abstract class UnitState : State
