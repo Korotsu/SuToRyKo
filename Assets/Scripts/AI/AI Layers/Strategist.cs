@@ -449,12 +449,13 @@ public class Strategist : UnitController
             }
         }
 
-        if (bestTactician)
+        if (bestTactician )
         {
             task.nbLightInProgress = bestTactician.nbLightInCreation;
             task.nbHeavyInProgress = bestTactician.nbHeavyInCreation;
             task.bestTactician = bestTactician;
-            distanceToGo = (bestTactician.transform.position - task.target.transform.position).magnitude;
+            if(task.nbLight- task.nbLightInProgress <=0 && task.nbHeavy - task.nbHeavyInProgress <= 0)
+                distanceToGo = (bestTactician.transform.position - task.target.transform.position).magnitude;
         }
         
 
