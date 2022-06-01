@@ -21,16 +21,20 @@ public class Task : IEqualityComparer<Task>, IComparable<Task>
 
     public int nbLight = 0, nbHeavy = 0;
     public int nbLightInProgress = 0, nbHeavyInProgress = 0;
-    public float cost = 0f;
+    public int cost = 0;
+    public float TimeToArrive = 0f;
+
     public Type taskType = Type.None;
 
     public List<Tactician> tacticians = new List<Tactician>();
+    public Tactician bestTactician = null;
     public FormationData formationData = null;
 
     public Base target = null;
     public string TargetID;
 
     public bool isRunning = false;
+    
 
     public float GetInfluence()
     {
@@ -48,12 +52,12 @@ public class Task : IEqualityComparer<Task>, IComparable<Task>
         if (!x.target || !y.target)
             return false;
 
-        return x.target.Influence == y.target.Influence;
+        return Mathf.Approximately(x.target.Influence, y.target.Influence) && Mathf.Approximately(x.TimeToArrive, y.TimeToArrive);
     }
 
     public int GetHashCode(Task obj)
     {
-        return (int)obj.target.Influence;
+        return obj.target.name.GetHashCode();
     }
 
     public int CompareTo(Task other)
@@ -63,7 +67,20 @@ public class Task : IEqualityComparer<Task>, IComparable<Task>
         else if (!other.target)
             return -1;
 
-        return -target.Influence.CompareTo(other.target.Influence);
+        float score = target.Influence;
+        float scoreOther = other.target.Influence;
+        if (formationData)
+        {
+            score -= (TimeToArrive * formationData.DistanceImpact);
+
+        }
+        if (other.formationData)
+        {
+            scoreOther -= (other.TimeToArrive * other.formationData.DistanceImpact);
+
+        }
+         
+        return -score.CompareTo(scoreOther);
     }
 }
 
@@ -74,6 +91,7 @@ public class Strategist : UnitController
     [SerializeField] private FormationData captureFormation = null;
 
     [SerializeField] private GameObject tacticianPrefab = null;
+    [SerializeField] private int MaxConcurrentTask  = 3;
 
     private List<Tactician> runningTacticians = new List<Tactician>();
     private List<Tactician> waitingTacticians = new List<Tactician>();
@@ -129,6 +147,7 @@ public class Strategist : UnitController
     #region Task Methods
     private void TaskInit()
     {
+        
         foreach (Task task in waitingTasks)
         {
             unusedTacticians.AddRange(task.tacticians);
@@ -136,6 +155,7 @@ public class Strategist : UnitController
 
         waitingTasks.Clear();
         List<Task> sortedTaskList = new List<Task>();
+        List<Task> sorted2TaskList = new List<Task>();
 
         foreach (Base entity in FindObjectsOfType<Base>())
         {
@@ -150,40 +170,44 @@ public class Strategist : UnitController
                 };
 
                 if (entity is Tactician || entity is Factory || entity is Unit)
+                {
                     task.taskType = Task.Type.Attack;
+                    task.formationData = attackFormation;
+                    task.cost = CheckTroupCost(task);
+                }
                 else if (entity is TargetBuilding)
+                {
                     task.taskType = Task.Type.Capture;
+                    task.formationData = captureFormation;
+                    task.cost = CheckTroupCost(task);
+                }
+                
+                
 
                 sortedTaskList.Add(task);
             }
         }
         sortedTaskList.Sort();
-
+        int maxTaskAvail = MaxConcurrentTask - runningTasks.Count;
+        
 
         int cost = 0;
 
         foreach (Task task in sortedTaskList)
         {
-            int currentCost = 0;
+            if (maxTaskAvail == 0)
+                break;
 
-            if (task.target is Tactician || task.target is Factory || task.target is Unit)
-            {
-                task.formationData = attackFormation;
-                currentCost = CheckTroupCost(task);
-                cost += currentCost;
-            }
-            else if (task.target is TargetBuilding)
-            {
-                task.formationData = captureFormation;
-                currentCost = CheckTroupCost(task);
-                cost += currentCost;
-            }
+            AddTacticianToTask(task);
+            int currentCost = task.cost;
 
             if (TotalBuildPoints < cost)
+            {
                 continue;
-            
+            }
             else
             {
+                maxTaskAvail--;
                 task.cost = currentCost;
                 waitingTasks.Add(task);
             }
@@ -237,7 +261,7 @@ public class Strategist : UnitController
 
         for (int i = 0; i < count; i++)
         {
-            if (unusedTacticians[i].Soldiers.Count == 0)
+            if (unusedTacticians[i].Soldiers.Count + unusedTacticians[i].nbHeavyInCreation + unusedTacticians[i].nbLightInCreation == 0)
             {
                 Tactician tacticianToRemove = unusedTacticians[i];
                 unusedTacticians.RemoveAt(i);
@@ -307,29 +331,38 @@ public class Strategist : UnitController
 
     #region Utility Methods
 
-    private int CheckTroupCost(Task task)
+    private void AddTacticianToTask(Task task)
     {
-        float influence = task.target.Influence;
-
-
-        if (influence <= 0)
-            return int.MaxValue;
-
-
-        Tactician bestTactician = null;
+        Tactician bestTactician = unusedTacticians.Find(tactician => tactician == task.bestTactician);
         float bestInfluence = float.MinValue;
-
-        foreach (Tactician tactician in unusedTacticians)
+        float lightUnitCost = lightFactory.GetBuildableUnitData(0).Cost;
+        float heavyUnitCost = heavyFactory.GetBuildableUnitData(0).Cost;
+        float lightUnitSpeed = lightFactory.GetBuildableUnitData(0).Speed;
+        float heavyUnitSpeed = heavyFactory.GetBuildableUnitData(0).Speed;
+        float lightUnitBuildTime = lightFactory.GetBuildableUnitData(0).BuildDuration;
+        float heavyUnitBuildTime = heavyFactory.GetBuildableUnitData(0).BuildDuration;
+        if (!(bestTactician is null) && bestTactician)
         {
-            float currentInfluence = tactician.Influence;
-
-            if (bestInfluence < tactician.Influence)
-            {
-                bestTactician = tactician;
-                bestInfluence = currentInfluence;
-            }
+            task.bestTactician = null;
+            task.tacticians.Add(bestTactician);
+            task.nbLight = Mathf.Clamp(task.nbLight - task.nbLightInProgress - bestTactician.nbLight, 0, int.MaxValue);
+            task.nbHeavy = Mathf.Clamp(task.nbHeavy - task.nbHeavyInProgress - bestTactician.nbHeavy, 0, int.MaxValue);
+            task.TimeToArrive += (task.nbLight ) * lightUnitBuildTime +
+                                 (task.nbHeavy ) * heavyUnitBuildTime;
+            task.cost = (int)(task.nbLight * lightUnitCost + task.nbHeavy * heavyUnitCost);
+            return;
         }
-
+        float distanceToGoSqr = (lightFactory.transform.position - task.target.transform.position).sqrMagnitude;
+        if ((heavyFactory.transform.position - task.target.transform.position).sqrMagnitude >= distanceToGoSqr)
+            distanceToGoSqr = (heavyFactory.transform.position - task.target.transform.position).sqrMagnitude;
+        float distanceToGo = Mathf.Sqrt(distanceToGoSqr);
+        
+        float minSpeed = lightUnitSpeed >= heavyUnitSpeed ? lightUnitSpeed : heavyUnitSpeed;
+        float timeToMove = distanceToGo / minSpeed;
+        task.TimeToArrive = timeToMove;
+        task.nbLightInProgress = 0;
+        task.nbHeavyInProgress = 0;
+        task.bestTactician = null;
         if (!bestTactician && tacticianPrefab)
         {
             bestTactician = GameObject.Instantiate(tacticianPrefab).GetComponent<Tactician>();
@@ -338,32 +371,19 @@ public class Strategist : UnitController
         else if (!bestTactician && !tacticianPrefab)
         {
             Debug.LogError("There is no tacticianPrefab!");
-            return int.MaxValue;
+            
         }
-        int lightUnitCost = lightFactory.GetUnitCost(0);
-        int heavyUnitCost = heavyFactory.GetUnitCost(0);
-
-        float lightUnitInfluance = lightFactory.GetBuildableUnitInfluence(0);
-        float heavyUnitInfluance = heavyFactory.GetBuildableUnitInfluence(0);
-
-        float newInfluence = Mathf.Clamp(influence - bestTactician.Influence, 0, float.MaxValue);
-
-        
-        float lightUnitsInfluence = task.formationData.lightUnit * newInfluence;
-        float heavyUnitsInfluence = task.formationData.heavyUnit * newInfluence;
-
-
         int count = unusedUnits.Count;
 
         for (int i = 0; i < count; i++)
         {
             Unit unit = unusedUnits[i];
 
-            if (unit.GetUnitData.type == EntityDataScriptable.Type.Light && lightUnitsInfluence > 0f)
-                lightUnitsInfluence -= unit.Influence;
+            if (unit.GetUnitData.type == EntityDataScriptable.Type.Light && task.nbLight > 0)
+                task.nbLight--;
             
-            else if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy && heavyUnitsInfluence > 0f)
-                heavyUnitsInfluence -= unit.Influence;
+            else if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy && task.nbHeavy > 0)
+                task.nbHeavy --;
                 
             bestTactician.AddSoldier(unit);
             unusedUnits.Remove(unit);
@@ -371,9 +391,77 @@ public class Strategist : UnitController
             i--;
             count = unusedUnits.Count;
 
-            if (lightUnitsInfluence <= 0f && heavyUnitsInfluence <= 0f)
+            if (task.nbLight <= 0f && task.nbHeavy <= 0f)
                 break;
         }
+        unusedTacticians.Remove(bestTactician);
+        //waitingTacticians.Add(bestTactician);
+
+        task.nbLightInProgress = bestTactician.nbLightInCreation;
+        task.nbHeavyInProgress = bestTactician.nbHeavyInCreation;
+        task.tacticians.Add(bestTactician);
+
+    }
+
+    private int CheckTroupCost(Task task)
+    {
+        float influence = task.target.Influence;
+
+
+        if (influence <= 0)
+            return int.MaxValue;
+        
+        
+        int lightUnitCost = lightFactory.GetUnitCost(0);
+        int heavyUnitCost = heavyFactory.GetUnitCost(0);
+
+        float lightUnitInfluance = lightFactory.GetBuildableUnitInfluence(0);
+        float heavyUnitInfluance = heavyFactory.GetBuildableUnitInfluence(0);
+
+        float newInfluence = Mathf.Clamp(influence , 0, float.MaxValue);
+
+        
+        float lightUnitsInfluence = task.formationData.lightUnit * newInfluence;
+        float heavyUnitsInfluence = task.formationData.heavyUnit * newInfluence;
+
+        float lightUnitSpeed = lightFactory.GetBuildableUnitData(0).Speed;
+        float heavyUnitSpeed = heavyFactory.GetBuildableUnitData(0).Speed;
+        float lightUnitBuildTime = lightFactory.GetBuildableUnitData(0).BuildDuration;
+        float heavyUnitBuildTime = heavyFactory.GetBuildableUnitData(0).BuildDuration;
+
+        float distanceToGoSqr = (lightFactory.transform.position - task.target.transform.position).sqrMagnitude;
+        if ((heavyFactory.transform.position - task.target.transform.position).sqrMagnitude >= distanceToGoSqr)
+            distanceToGoSqr = (heavyFactory.transform.position - task.target.transform.position).sqrMagnitude;
+        float distanceToGo = Mathf.Sqrt(distanceToGoSqr);
+
+        
+        Tactician bestTactician = null;
+        float bestInfluence = float.MinValue;
+        foreach (Tactician tactician in unusedTacticians)
+        {
+            float tacDist = (tactician.transform.position - task.target.transform.position).magnitude;
+            float currentInfluence = tactician.Influence - (task.formationData.DistanceImpact *tacDist);
+
+            if (bestInfluence < tactician.Influence)
+            {
+                bestTactician = tactician;
+                bestInfluence = currentInfluence;
+            }
+        }
+
+        if (bestTactician)
+        {
+            task.nbLightInProgress = bestTactician.nbLightInCreation;
+            task.nbHeavyInProgress = bestTactician.nbHeavyInCreation;
+            task.bestTactician = bestTactician;
+            distanceToGo = (bestTactician.transform.position - task.target.transform.position).magnitude;
+        }
+        
+
+        float minSpeed = lightUnitSpeed >= heavyUnitSpeed ? lightUnitSpeed : heavyUnitSpeed;
+        float timeToMove = distanceToGo / minSpeed;
+        task.TimeToArrive = timeToMove;
+        
 
         int nbLightUnitToProduce = 0, nbHeavyUnitToProduce = 0;
 
@@ -388,17 +476,15 @@ public class Strategist : UnitController
 
         //Debug.Log($"Capture Troup: Total cost require = {cost} points.");
 
-        unusedTacticians.Remove(bestTactician);
-        //waitingTacticians.Add(bestTactician);
+        
 
-        task.nbLightInProgress = bestTactician.nbLightInCreation;
-        task.nbHeavyInProgress = bestTactician.nbHeavyInCreation;
+        task.nbLight = Mathf.Clamp(nbLightUnitToProduce , 0, int.MaxValue);
+        task.nbHeavy = Mathf.Clamp(nbHeavyUnitToProduce , 0, int.MaxValue);
 
-        task.nbLight = Mathf.Clamp(nbLightUnitToProduce - task.nbLightInProgress, 0, int.MaxValue);
-        task.nbHeavy = Mathf.Clamp(nbHeavyUnitToProduce - task.nbHeavyInProgress, 0, int.MaxValue);
-
-        task.tacticians.Add(bestTactician);
-
+        
+        
+        task.TimeToArrive += (task.nbLight ) * lightUnitBuildTime +
+                             (task.nbHeavy ) * heavyUnitBuildTime;
         return task.nbLight * lightUnitCost + task.nbHeavy * heavyUnitCost;
     }
 

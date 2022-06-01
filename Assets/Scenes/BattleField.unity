@@ -2134,6 +2134,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7781562821485003060, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}
+      propertyPath: MaxConcurrentTask
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7781562821485003060, guid: 691b76ab12d5995479d8a79abcc3b23e,
+        type: 3}
       propertyPath: StartingBuildPoints
       value: 15
       objectReference: {fileID: 0}

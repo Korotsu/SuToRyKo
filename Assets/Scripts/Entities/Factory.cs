@@ -303,9 +303,11 @@ public sealed class Factory : InteractableEntity
                     {
                         case EntityDataScriptable.Type.Light:
                             bo.nbLightInCreation--;
+                            bo.nbLight++;
                             break;
                         case EntityDataScriptable.Type.Heavy:
                             bo.nbHeavyInCreation--;
+                            bo.nbHeavy++;
                             break;
                         default:
                             break;

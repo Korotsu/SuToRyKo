@@ -15,7 +15,8 @@ public class Tactician : Base
 
     public int nbLightInCreation = 0;
     public int nbHeavyInCreation = 0;
-
+    public int nbLight = 0;
+    public int nbHeavy = 0;
     private void Start()
     {
         

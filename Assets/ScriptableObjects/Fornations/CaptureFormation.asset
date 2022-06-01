@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: CaptureFormation
   m_EditorClassIdentifier: 
   lightUnit: 1
-  HeavyUnit: 0
+  heavyUnit: 0
+  DistanceImpact: 1.99
