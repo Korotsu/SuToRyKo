@@ -19,7 +19,7 @@ public class UnitLogic
     
     private void Start()
     {
-        CurrentState = new IdleUnit(this);        
+        CurrentState = new IdleUnit(this);
     }
 
     // Update is called once per frame

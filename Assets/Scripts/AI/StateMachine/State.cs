@@ -33,7 +33,8 @@ public abstract class TacticianState : State
     {
         foreach (Unit unit in tactician.Soldiers)
         {
-            unit.UnitLogic.Update();
+            if(unit)
+                unit.UnitLogic.Update();
         }
     }
 }

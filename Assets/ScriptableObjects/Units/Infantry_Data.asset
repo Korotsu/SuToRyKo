@@ -13,20 +13,20 @@ MonoBehaviour:
   m_Name: Infantry_Data
   m_EditorClassIdentifier: 
   TypeId: 0
+  type: 0
   Caption: Trooper
   Cost: 1
   BuildDuration: 1
   MaxHP: 50
-  type: 0
   DPS: 10
   AttackFrequency: 0.5
   AttackDistanceMax: 10
   CaptureDistanceMax: 10
-  VisionMax: 20
   CanRepair: 1
   RPS: 10
   RepairFrequency: 1
   RepairDistanceMax: 10
+  ViewDistance: 25
   Speed: 10
   AngularSpeed: 300
   Acceleration: 20

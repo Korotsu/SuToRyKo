@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Ornithopter_B_Data
   m_EditorClassIdentifier: 
   TypeId: 7
+  type: 0
   Caption: Ornithopter B
   Cost: 4
   BuildDuration: 4
@@ -25,6 +26,7 @@ MonoBehaviour:
   RPS: 10
   RepairFrequency: 1
   RepairDistanceMax: 10
+  ViewDistance: 25
   Speed: 10
   AngularSpeed: 250
   Acceleration: 20
