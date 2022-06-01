@@ -12,12 +12,14 @@ namespace AI.BehaviorStates
 
         public override void Update()
         {
-            unitLogic.associatedUnit.CaptureUpdate();
+            if(unitLogic.associatedUnit)
+                unitLogic.associatedUnit.CaptureUpdate();
         }
 
         public override void End()
         {
-            unitLogic.associatedUnit.StopCapture();
+            if (unitLogic.associatedUnit)
+                unitLogic.associatedUnit.StopCapture();
         }        
     }
 }

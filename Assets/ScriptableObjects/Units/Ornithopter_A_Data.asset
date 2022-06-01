@@ -13,20 +13,20 @@ MonoBehaviour:
   m_Name: Ornithopter_A_Data
   m_EditorClassIdentifier: 
   TypeId: 6
+  type: 0
   Caption: Ornithopter A
   Cost: 3
   BuildDuration: 3
   MaxHP: 75
-  type: 0
   DPS: 15
   AttackFrequency: 0.8
   AttackDistanceMax: 20
   CaptureDistanceMax: 20
-  VisionMax: 20
   CanRepair: 0
   RPS: 10
   RepairFrequency: 1
   RepairDistanceMax: 10
+  ViewDistance: 25
   Speed: 15
   AngularSpeed: 250
   Acceleration: 25

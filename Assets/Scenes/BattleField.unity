@@ -2135,7 +2135,7 @@ PrefabInstance:
     - target: {fileID: 7781562821485003060, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}
       propertyPath: StartingBuildPoints
-      value: 15
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7781562821485003061, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}

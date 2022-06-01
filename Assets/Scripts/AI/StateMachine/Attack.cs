@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Entities;
 using UnityEngine;
 
@@ -102,7 +101,14 @@ namespace AI.BehaviorStates
 
         public override void Update()
         {
-            unit.ComputeAttack();
+            if (unit)
+            {
+                if (!unit.EntityTarget && target is Tactician _tactician)
+                    SearchTarget(_tactician.Soldiers.ToArray());
+
+                unit.ComputeAttack();
+            }
+            
         }
 
         public override void End()
@@ -125,34 +131,62 @@ public partial class Unit
 
     private bool CanAttack(InteractableEntity target)
     {
-        if (target is null)
+        if (!target)
             return false;
 
         // distance check
         return (target.transform.position - transform.position).sqrMagnitude < GetUnitData.AttackDistanceMax * GetUnitData.AttackDistanceMax;
     }
 
+    private bool SearchClosestEnnemy(out InteractableEntity closestEntity)
+    {
+        closestEntity = null;
+        float shortestDistance = UnitData.ViewDistance;
+
+        foreach (InteractableEntity entity in FindObjectsOfType<InteractableEntity>())
+        {
+            if (entity.GetTeam() == Team)
+                continue;
+            float distance = (entity.transform.position - transform.position).magnitude;
+
+            if (shortestDistance > distance)
+            {
+                shortestDistance = distance;
+                closestEntity = entity;
+            }
+        }
+
+        return closestEntity == null? false : true;
+    }
+
     public void ComputeAttack()
     {
         if (!EntityTarget)
-            return;
+        {
+            InteractableEntity closestTarget;
 
+            if (SearchClosestEnnemy(out closestTarget))
+                StartAttacking(closestTarget);
+            else
+                return;
+        }
+        
         LookAtTarget();
 
-        // Efficient moving system towards target
-        if (CanAttack(EntityTarget) == false)
+        // moving towards target
+        if (!CanAttack(EntityTarget) && NavMeshAgent)
         {
-            if ( !(NavMeshAgent is null) && NavMeshAgent.isStopped )
-            {
-                NavMeshAgent.SetDestination(EntityTarget.transform.position);
-                NavMeshAgent.isStopped = false;
-            }
+            NavMeshAgent.SetDestination(EntityTarget.transform.position);
+            NavMeshAgent.isStopped = false;
             return;
         }
+        else if (NavMeshAgent)
+            NavMeshAgent.isStopped = true;
+        
 
         if (ActionCooldown <= 0f)
         {
-            // visual only ?
+            // visual Effects
             if (UnitData.BulletPrefab)
             {
                 GameObject newBullet = Instantiate(UnitData.BulletPrefab, BulletSlot);

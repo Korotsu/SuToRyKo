@@ -242,7 +242,7 @@ public sealed class PlayerController : UnitController
     {
         // Update keyboard inputs
 
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.A) && Input.GetKey(KeyCode.LeftControl))
             OnSelectAllPressed?.Invoke();
 
         for (int i = 0; i < OnCategoryPressed.Length; i++)
@@ -281,6 +281,25 @@ public sealed class PlayerController : UnitController
             OnUnitActionStart?.Invoke();
         if (Input.GetMouseButtonUp(1))
             OnUnitActionEnd?.Invoke();
+
+        //Stop current state of selected units and pass to combat state
+        if (Input.GetKeyDown(KeyCode.A) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl)))
+        {
+            foreach (Unit unit in SelectedUnitList)
+            {
+                if(!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCombatState))
+                    unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic));
+            }
+        }
+        //Stop current state of selected units and pass to idle state
+        if (Input.GetKeyDown(KeyCode.S) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl)))
+        {
+            foreach (Unit unit in SelectedUnitList)
+            {
+                if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.IdleUnit))
+                    unit.UnitLogic.SetState(new AI.BehaviorStates.IdleUnit(unit.UnitLogic));
+            }
+        }
     }
     void UpdateCameraInput()
     {
@@ -657,7 +676,9 @@ public sealed class PlayerController : UnitController
                 {
                     // Direct call to attacking task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
-                        unit.StartAttacking(other);
+                    {
+                        unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic, other));
+                    }
                 }
                 else if (other.NeedsRepairing())
                 {

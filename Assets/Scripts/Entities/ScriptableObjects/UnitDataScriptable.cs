@@ -9,12 +9,14 @@ public class UnitDataScriptable : EntityDataScriptable
     public float AttackDistanceMax = 10f;
     public float CaptureDistanceMax = 10f;
    
-
     [Header("Repairing")]
     public bool CanRepair = false;
     public int RPS = 10;
     public float RepairFrequency = 1f;
     public float RepairDistanceMax = 10f;
+
+    [Header("View"), Tooltip("The distance of view of the unit to see other enemy/ally unit")]
+    public float ViewDistance = 100f;
 
     [Header("Movement")]
     [Tooltip("Overrides NavMeshAgent steering settings")]
