@@ -86,7 +86,7 @@ public partial class Unit : InteractableEntity
     protected override void Update()
     {
         if (ActionCooldown > 0f)
-            ActionCooldown -= Time.time;
+            ActionCooldown -= Time.deltaTime;
         unitLogic.Update();
     }
     #endregion

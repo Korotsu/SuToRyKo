@@ -21,7 +21,6 @@ namespace AI.BehaviorStates
         {
 
         }
-
     }
 }
 
@@ -79,8 +78,11 @@ public partial class Unit
     {
         if (CanRepair(EntityTarget) == false)
         {
-            NavMeshAgent.SetDestination(EntityTarget.transform.position);
-            NavMeshAgent.isStopped = false;
+            if (NavMeshAgent)
+            {
+                NavMeshAgent.SetDestination(EntityTarget.transform.position);
+                NavMeshAgent.isStopped = false;
+            }
             return;
         }
 

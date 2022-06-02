@@ -407,11 +407,9 @@ public class Strategist : UnitController
     {
         float influence = task.target.Influence;
 
-
-        if (influence <= 0)
+        if (influence <= 0 || !lightFactory || !heavyFactory)
             return int.MaxValue;
-        
-        
+
         int lightUnitCost = lightFactory.GetUnitCost(0);
         int heavyUnitCost = heavyFactory.GetUnitCost(0);
 

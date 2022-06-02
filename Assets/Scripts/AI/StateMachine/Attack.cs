@@ -197,6 +197,7 @@ public partial class Unit
             // apply damages
             int damages = Mathf.FloorToInt(UnitData.DPS * UnitData.AttackFrequency);
             EntityTarget.AddDamage(damages);
+            ActionCooldown = UnitData.AttackFrequency;
         }
     }
 }
