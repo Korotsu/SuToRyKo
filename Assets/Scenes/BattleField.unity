@@ -228,15 +228,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4514436329004458, guid: dc4ee6691f59b07458286e0cfb38d82d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -235.91905
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4514436329004458, guid: dc4ee6691f59b07458286e0cfb38d82d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.500458
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4514436329004458, guid: dc4ee6691f59b07458286e0cfb38d82d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -184.36942
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4514436329004458, guid: dc4ee6691f59b07458286e0cfb38d82d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -284,6 +284,12 @@ PrefabInstance:
       propertyPath: BuildPointsText
       value: 
       objectReference: {fileID: 939042899}
+    - target: {fileID: 114127896467981986, guid: dc4ee6691f59b07458286e0cfb38d82d,
+        type: 3}
+      propertyPath: tacticianPrefab
+      value: 
+      objectReference: {fileID: 5596963831254574888, guid: ff015c9dd2cb9c94f9f0339af323e650,
+        type: 3}
     - target: {fileID: 114127896467981986, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
       propertyPath: SceneEventSystem
@@ -677,7 +683,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.6666667
+  m_VoxelSize: 2.3333333
   m_BuildHeightMesh: 0
   m_NavMeshData: {fileID: 23800000, guid: 9bd5ab76bfdf94748bf370c10465c6ed, type: 2}
 --- !u!114 &727041326
@@ -706,7 +712,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.16666667
+  m_VoxelSize: 0.6666667
   m_BuildHeightMesh: 0
   m_NavMeshData: {fileID: 23800000, guid: 9ec21a39ba751df4992097d95838a9c2, type: 2}
 --- !u!114 &727041327
@@ -852,7 +858,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 973045326}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 235.91905, y: -7.500458, z: 184.36942}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7781562820701931560}
@@ -2080,17 +2086,17 @@ PrefabInstance:
     - target: {fileID: 7781562821485003059, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -181.26009
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7781562821485003059, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 79.152466
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7781562821485003059, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -161.15942
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7781562821485003059, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}

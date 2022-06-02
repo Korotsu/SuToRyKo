@@ -48,6 +48,9 @@ namespace Formations
 
         private void GetRenderers(ref List<Renderer> renderers, Transform obj, bool includeChildren = false)
         {
+            if (obj.gameObject.layer == LayerMask.NameToLayer("UnitView"))
+                return;
+
             Renderer renderer = obj.GetComponent<Renderer>();
 
             if (renderer)

@@ -755,12 +755,17 @@ public sealed class PlayerController : UnitController
             Vector3 newPos = raycastInfo.point;
             SetTargetCursorPosition(newPos);
 
-            // Direct call to moving task $$$ to be improved by AI behaviour
-            foreach (Unit unit in SelectedUnitList)
+            if (selectedTactician)
+                selectedTactician.SetTargetPos(newPos);
+            else
             {
-                unit.SetTargetPos(newPos);
-                if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.IdleUnit))
-                    unit.UnitLogic.SetState(new AI.BehaviorStates.IdleUnit(unit.UnitLogic));
+                // Direct call to moving task $$$ to be improved by AI behaviour
+                foreach (Unit unit in SelectedUnitList)
+                {
+                    unit.SetTargetPos(newPos);
+                    if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.IdleUnit))
+                        unit.UnitLogic.SetState(new AI.BehaviorStates.IdleUnit(unit.UnitLogic));
+                }
             }
         }
     }

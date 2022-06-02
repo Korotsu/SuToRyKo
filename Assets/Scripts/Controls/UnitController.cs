@@ -134,7 +134,7 @@ public class UnitController : MonoBehaviour
         SelectUnit(unit);
 
         if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
-            CreateTactician();
+            CreateTactician(unit.transform.position);
 
         else if (selectedTactician)
         {
@@ -244,11 +244,11 @@ public class UnitController : MonoBehaviour
         }
     }
 
-    protected void CreateTactician()
+    protected void CreateTactician(Vector3 position)
     {
         if (tacticianPrefab)
         {
-            GameObject tacticianObject = Instantiate(tacticianPrefab, transform);
+            GameObject tacticianObject = Instantiate(tacticianPrefab, position, Quaternion.identity);
             Tactician tactician = tacticianObject.GetComponent<Tactician>();
 
             List<Unit> soldiers = tactician.GetSoldiers();

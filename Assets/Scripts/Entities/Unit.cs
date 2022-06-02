@@ -103,6 +103,8 @@ public partial class Unit : InteractableEntity
     }
     protected override void Update()
     {
+        actions?.Invoke();
+
         if (ActionCooldown > 0f)
             ActionCooldown -= Time.deltaTime;
         unitLogic.Update();
