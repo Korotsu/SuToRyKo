@@ -241,6 +241,7 @@ GameObject:
   m_Layer: 10
   m_Name: Unit_Tank
   m_TagString: Unit
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -294,6 +295,9 @@ MonoBehaviour:
   Team: 0
   UnitData: {fileID: 11400000, guid: 02bf545fde7d7f64d86e63f93a59ee9b, type: 2}
   VisMat: {fileID: 2100000, guid: 178cda581d0d1b24d82d69bcb50ff2a1, type: 2}
+  NavMeshAgent: {fileID: 0}
+  mainTactician: {fileID: 0}
+  tempTactician: {fileID: 0}
 --- !u!65 &6593571166977932406
 BoxCollider:
   m_ObjectHideFlags: 0

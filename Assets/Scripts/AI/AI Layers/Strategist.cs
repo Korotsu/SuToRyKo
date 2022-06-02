@@ -90,7 +90,6 @@ public class Strategist : UnitController
     [SerializeField] private FormationData attackFormation = null;
     [SerializeField] private FormationData captureFormation = null;
 
-    [SerializeField] private GameObject tacticianPrefab = null;
     [SerializeField] private int MaxConcurrentTask  = 3;
 
     private List<Tactician> runningTacticians = new List<Tactician>();
@@ -125,6 +124,7 @@ public class Strategist : UnitController
         }
 
         GetLightAndHeavyFactory(out lightFactory, out heavyFactory);
+        
     }
 
     void Update()

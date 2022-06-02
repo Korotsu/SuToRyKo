@@ -44,6 +44,12 @@ public class UnitController : MonoBehaviour
     protected readonly List<Factory> FactoryList = new List<Factory>();
     protected Factory SelectedFactory = null;
 
+    [SerializeField]
+    protected GameObject tacticianPrefab = null;
+
+    protected List<Tactician> lockedTacticians = new List<Tactician>();
+    protected Tactician selectedTactician = null;
+
     // events
     protected Action OnBuildPointsUpdated;
     protected Action OnCaptureTarget;
@@ -52,16 +58,36 @@ public class UnitController : MonoBehaviour
     protected void UnselectAllUnits()
     {
         foreach (Unit unit in SelectedUnitList)
+        {
             unit.SetSelected(false);
+
+            if (selectedTactician && unit.tempTactician && selectedTactician.GetTacticianState() != null)
+            {
+                if (selectedTactician != unit.mainTactician)
+                    unit.tempTactician.Soldiers.Remove(unit);
+                unit.tempTactician = null;
+            }
+        }
+
         SelectedUnitList.Clear();
+
+        if (selectedTactician && selectedTactician.isFormationLocked == false && selectedTactician.GetSoldiers().Count <= 1)
+            Destroy(selectedTactician.gameObject);
+
+        selectedTactician = null;
     }
     protected void SelectAllUnits()
     {
-        foreach (Unit unit in UnitList)
-            unit.SetSelected(true);
+        UnselectAllUnits();
 
-        SelectedUnitList.Clear();
-        SelectedUnitList.AddRange(UnitList);
+        foreach (Unit unit in UnitList)
+        {
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
+
+            else
+                SelectSingleUnit(unit);
+        }
     }
     protected void SelectAllUnitsByTypeId(int typeId)
     {
@@ -74,31 +100,105 @@ public class UnitController : MonoBehaviour
         );
         foreach (Unit unit in SelectedUnitList)
         {
-            unit.SetSelected(true);
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
+
+            else
+                SelectSingleUnit(unit);
         }
     }
     protected void SelectUnitList(List<Unit> units)
     {
         foreach (Unit unit in units)
-            unit.SetSelected(true);
-        SelectedUnitList.AddRange(units);
+        {
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
+
+            else
+                SelectSingleUnit(unit);
+        }
     }
-    protected void SelectUnitList(Unit [] units)
+    protected void SelectUnitList(Unit[] units)
     {
         foreach (Unit unit in units)
-            unit.SetSelected(true);
-        SelectedUnitList.AddRange(units);
+        {
+            if (unit.tempTactician || unit.mainTactician)
+                SelectFormation(unit);
+
+            else
+                SelectSingleUnit(unit);
+        }
     }
+    protected void SelectSingleUnit(Unit unit)
+    {
+        SelectUnit(unit);
+
+        if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
+            CreateTactician();
+
+        else if (selectedTactician)
+        {
+            selectedTactician.Soldiers.Add(unit);
+            unit.tempTactician = selectedTactician;
+        }
+    }
+
     protected void SelectUnit(Unit unit)
     {
         unit.SetSelected(true);
-        SelectedUnitList.Add(unit);
+
+        if (!SelectedUnitList.Contains(unit))
+            SelectedUnitList.Add(unit);
     }
+
+    protected void SelectFormation(Unit unit)
+    {
+        selectedTactician ??= unit.tempTactician ?? unit.mainTactician;
+        unit.GetAllUnitsInFormation().ForEach(_unit => SelectUnit(_unit));
+    }
+
+    protected void UnselectFormation(Unit unit)
+    {
+        foreach (Unit _unit in unit.GetAllUnitsInFormation())
+        {
+            UnselectUnit(_unit);
+
+            if (selectedTactician && _unit.tempTactician && selectedTactician.GetTacticianState() != null)
+            {
+                if (!_unit.mainTactician)
+                    _unit.tempTactician.Soldiers.Remove(_unit);
+                _unit.tempTactician = null;
+            }
+        }
+
+        if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
+        {
+            selectedTactician = null;
+
+            if (selectedTactician.isFormationLocked == false)
+                Destroy(selectedTactician.gameObject);
+        }
+
+
+    }
+
     protected void UnselectUnit(Unit unit)
     {
         unit.SetSelected(false);
         SelectedUnitList.Remove(unit);
     }
+
+    protected void UnselectSingleUnit(Unit unit)
+    {
+        UnselectUnit(unit);
+
+        if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
+        {
+            Destroy(selectedTactician.gameObject);
+            selectedTactician = null;
+        }
+    }
+
     virtual public void AddUnit(Unit unit)
     {
         unit.OnDeadEvent += () =>
@@ -121,6 +221,66 @@ public class UnitController : MonoBehaviour
         TotalBuildPoints -= points;
         CapturedTargets--;
     }
+    #endregion
+
+    #region Formation methods
+
+    protected void CreateFormation(Formations.FormationManager.EFormationTypes newType)
+    {
+        if (selectedTactician)
+            selectedTactician.GetComponent<Formations.FormationManager>().SwitchFormationType(newType);
+    }
+
+    protected void KillTactician()
+    {
+        if (lockedTacticians.Count > 0)
+        {
+            for (int i = 0; i < lockedTacticians.Count; i++)
+            {
+                Destroy(lockedTacticians[i].gameObject);
+            }
+
+            lockedTacticians.ForEach(tactician => Destroy(tactician.gameObject));
+        }
+    }
+
+    protected void CreateTactician()
+    {
+        if (tacticianPrefab)
+        {
+            GameObject tacticianObject = Instantiate(tacticianPrefab, transform);
+            Tactician tactician = tacticianObject.GetComponent<Tactician>();
+
+            List<Unit> soldiers = tactician.GetSoldiers();
+
+            foreach (Unit unit in SelectedUnitList)
+            {
+                soldiers.Add(unit);
+                unit.tempTactician = tactician;
+            }
+
+            selectedTactician = tactician;
+        }
+    }
+
+    protected void FormationLockToggle()
+    {
+        if (selectedTactician)
+        {
+            foreach (Unit unit in SelectedUnitList)
+            {
+                unit.tempTactician = selectedTactician.isFormationLocked ? selectedTactician : null;
+
+                if (!selectedTactician.isFormationLocked && unit.mainTactician)
+                    Destroy(unit.mainTactician.gameObject);
+
+                unit.mainTactician = selectedTactician.isFormationLocked ? null : selectedTactician;
+            }
+
+            selectedTactician.isFormationLocked = !selectedTactician.isFormationLocked;
+        }
+    }
+
     #endregion
 
     #region Factory methods
@@ -196,14 +356,14 @@ public class UnitController : MonoBehaviour
         if (TeamRoot)
             Debug.LogFormat("TeamRoot {0} found !", rootName);
     }
-    virtual protected void Start ()
+    virtual protected void Start()
     {
         CapturedTargets = 0;
         TotalBuildPoints = StartingBuildPoints;
 
         // get all team factory already in scene
-        Factory [] allFactories = FindObjectsOfType<Factory>();
-        foreach(Factory factory in allFactories)
+        Factory[] allFactories = FindObjectsOfType<Factory>();
+        foreach (Factory factory in allFactories)
         {
             if (factory.GetTeam() == GetTeam())
             {
@@ -213,9 +373,9 @@ public class UnitController : MonoBehaviour
 
         Debug.Log("found " + FactoryList.Count + " factory for team " + GetTeam().ToString());
     }
-    virtual protected void Update ()
+    virtual protected void Update()
     {
-		
-	}
+
+    }
     #endregion
 }

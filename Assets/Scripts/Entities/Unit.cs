@@ -3,6 +3,8 @@ using UnityEngine.AI;
 using System;
 using Entities;
 using UnityEditor;
+using System.Collections;
+using System.Collections.Generic;
 
 public partial class Unit : InteractableEntity
 {
@@ -12,15 +14,29 @@ public partial class Unit : InteractableEntity
     private float ActionCooldown = 0f;
     private InteractableEntity entityTarget = null;
     public InteractableEntity EntityTarget { get => entityTarget; private set => entityTarget = value; }
-    private NavMeshAgent NavMeshAgent;
+    public NavMeshAgent NavMeshAgent;
     public UnitDataScriptable GetUnitData => UnitData;
     public int Cost => UnitData.Cost;
     public int GetTypeId => UnitData.TypeId;
 	
     public Action actions;
 
-    public FormationNode formationNode = null;
+    public Tactician mainTactician = null;
 
+    public Tactician tempTactician = null;
+
+    public Formations.FormationNode formationNode = null;
+
+    private NavMeshPath path = null;
+
+    private uint pathIndex = 0;
+
+    private float timeLeftForRaycast;
+
+    [SerializeField]
+    private readonly float raycastDelay = 5.0f;
+
+    
     private UnitLogic unitLogic = null;
 
     public UnitLogic UnitLogic { get => unitLogic; }
@@ -73,7 +89,9 @@ public partial class Unit : InteractableEntity
         NavMeshAgent.speed = GetUnitData.Speed;
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
-        
+        //NavMeshAgent.enabled        = false;
+
+        timeLeftForRaycast = raycastDelay;
     }
     protected override void Start()
     {
@@ -111,13 +129,58 @@ public partial class Unit : InteractableEntity
             NavMeshAgent.isStopped = false;
         }
     }
-    
+
     public void FollowFormation()
     {
-        SetTargetPos(formationNode.GetPosition());
+        if (tempTactician || mainTactician)
+        {
+            timeLeftForRaycast -= Time.deltaTime;
+
+            if (timeLeftForRaycast <= 0f)
+            {
+                NavMeshHit hit = new NavMeshHit();
+
+                if (NavMeshAgent.Raycast(formationNode.GetPosition(), out hit) && (path == null || path.status == NavMeshPathStatus.PathInvalid || path.status == NavMeshPathStatus.PathPartial))
+                {
+                    path = new NavMeshPath();
+                    if (NavMeshAgent.CalculatePath(formationNode.GetPosition(), path))
+                        pathIndex = 0;
+                    else
+                        path = null;
+                }
+
+                timeLeftForRaycast = raycastDelay;
+            }
+
+            if (path != null && (path.status == NavMeshPathStatus.PathComplete || path.status == NavMeshPathStatus.PathPartial))
+            {
+                Vector3 destination = path.corners[pathIndex] - transform.position;
+                NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+                if ((destination).sqrMagnitude <= 0.1)
+                {
+                    pathIndex++;
+
+                    if (path.corners.Length <= pathIndex)
+                        path = null;
+                }
+            }
+
+            else if (formationNode.FormationManager && (formationNode.GetPosition() - transform.position).sqrMagnitude >= 0.1)
+            {
+                Vector3 destination = formationNode.GetPosition() - transform.position;
+                destination.Normalize();
+                NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+            }
+        }
     }
 
-    public void SetFormationNode(ref FormationNode _formationNode)
+    public void UpdateTargetPos()
+    {
+        if (formationNode.FormationManager)
+            SetTargetPos(formationNode.GetPosition());
+    }
+
+    public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
         formationNode = _formationNode;
         actions += FollowFormation;
@@ -125,6 +188,16 @@ public partial class Unit : InteractableEntity
 
     #endregion
     
+    public List<Unit> GetAllUnitsInFormation()
+    {
+        List<Unit> units = new List<Unit>();
+        Tactician tactician = tempTactician ?? mainTactician;
+
+        if (tactician)
+            tactician.GetSoldiers().ForEach(soldier => units.Add(soldier));
+
+        return units;
+    }
     private void LookAtTarget()
     {
         Transform _transform = transform;
