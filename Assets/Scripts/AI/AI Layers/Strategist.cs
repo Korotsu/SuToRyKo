@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using AI.BehaviorStates;
 using AI.ScriptableObjects;
+using UnityEngine.AI;
 
 public class TargetWrapper
 {
@@ -171,6 +172,9 @@ public class Strategist : UnitController
 
                 if (entity is Tactician || entity is Factory || entity is Unit)
                 {
+                    if (entity is Unit _unit && (_unit.mainTactician || _unit.tempTactician))
+                        continue;
+                    
                     task.taskType = Task.Type.Attack;
                     task.formationData = attackFormation;
                     task.cost = CheckTroupCost(task);
@@ -188,6 +192,7 @@ public class Strategist : UnitController
             }
         }
         sortedTaskList.Sort();
+
         int maxTaskAvail = MaxConcurrentTask - runningTasks.Count;
         
 
@@ -222,9 +227,8 @@ public class Strategist : UnitController
         {
             Task task = runningTasks[i];
 
-            if (task.target is null || task.target.GetTeam() == Team)
+            if (!task.target || task.target.GetTeam() == Team)
             {
-                
                 unusedTacticians.AddRange(task.tacticians);
                 foreach (Tactician taskTactician in task.tacticians)
                 {
@@ -280,7 +284,9 @@ public class Strategist : UnitController
         foreach (Task task in runningTasks)
         {
             if (task.isRunning)
+            {
                 continue;
+            }
 
             count = 0;
             foreach (Tactician tactician in task.tacticians)
@@ -365,8 +371,11 @@ public class Strategist : UnitController
         task.bestTactician = null;
         if (!bestTactician && tacticianPrefab)
         {
-            bestTactician = GameObject.Instantiate(tacticianPrefab).GetComponent<Tactician>();
+            GameObject obj = GameObject.Instantiate(tacticianPrefab);
+            bestTactician = obj.GetComponent<Tactician>();
             bestTactician.SetTeam(Team);
+            obj.GetComponent<NavMeshAgent>().enabled = false;
+            obj.GetComponent<Formations.FormationManager>().enabled = false;
         }
         else if (!bestTactician && !tacticianPrefab)
         {
@@ -485,11 +494,6 @@ public class Strategist : UnitController
         task.TimeToArrive += (task.nbLight ) * lightUnitBuildTime +
                              (task.nbHeavy ) * heavyUnitBuildTime;
         return task.nbLight * lightUnitCost + task.nbHeavy * heavyUnitCost;
-    }
-
-    private bool RequestCreationTroup()
-    {
-        return false;
     }
 
     private void GetLightAndHeavyFactory(out Factory light, out Factory heavy)

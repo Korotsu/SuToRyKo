@@ -14,7 +14,8 @@ namespace AI.BehaviorStates
 
         public override void Update()
         {
-            unitLogic.associatedUnit.ComputeRepairing();
+            if(unitLogic.associatedUnit)
+                unitLogic.associatedUnit.ComputeRepairing();
         }
 
         public override void End()

@@ -27,23 +27,26 @@ public class Tactician : Base
     public int nbHeavy = 0;
     private void Start()
     {
-        
         currentState = new IdleTactician(this);
 
         formationManager = GetComponent<Formations.FormationManager>();
+
 		foreach (Transform child in transform)
 		{
 			Unit unitLogic = child.GetComponent<Unit>();
             if (unitLogic)
                 soldiers.Add(unitLogic);
 		}
+
+        if (soldiers.Count > 0)
+            transform.position = soldiers[0].transform.position;
+
         if (!formationManager)
         {
-            
             enabled = false;
             return;
         }
-
+        
         //soldiers.ForEach(soldier => soldier.Unit)
     }
 
@@ -51,13 +54,9 @@ public class Tactician : Base
     void Update()
     {
         currentState.Update();
-        //TakeDecision();
-    }
-
-    private void TakeDecision()
-    {
-        //Decisional code with influence and modifier Map;
-        soldiers.ForEach(soldier => soldier.UnitLogic.SetState(new IdleUnit(soldier.UnitLogic)));
+        
+        if (!formationManager.enabled && soldiers.Count > 0)
+            transform.position = soldiers[0].transform.position;
     }
 
     public void SetState(TacticianState order/*, Vector3 Target*/)
