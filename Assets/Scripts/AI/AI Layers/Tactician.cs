@@ -38,6 +38,8 @@ public class Tactician : Base
                 soldiers.Add(unitLogic);
 		}
 
+        
+
         if (soldiers.Count > 0)
             transform.position = soldiers[0].transform.position;
 
@@ -50,9 +52,30 @@ public class Tactician : Base
         //soldiers.ForEach(soldier => soldier.Unit)
     }
 
+    public void UpdateUnits()
+    {
+        nbHeavy = 0;
+        nbLight = 0;
+        int count = soldiers.Count;
+        for (int i = 0; i < count ; ++i)
+        {
+            Unit unit = soldiers[i];
+            if (!unit)
+            {
+                soldiers.RemoveAt(i);
+                i--;
+                continue;
+            }
+            if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy)
+                nbHeavy++;
+            else
+                nbLight++;
+        }
+    }
     // Update is called once per frame
     void Update()
     {
+       
         currentState.Update();
         
         if (!formationManager.enabled && soldiers.Count > 0)

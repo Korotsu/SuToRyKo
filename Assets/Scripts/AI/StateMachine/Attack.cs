@@ -5,7 +5,7 @@ namespace AI.BehaviorStates
 {
     public class TacticianAttackState : TacticianState
     {
-        public TacticianAttackState(Tactician _tactician, BaseEntity _target = null) : base(_tactician)
+        public TacticianAttackState(Tactician _tactician, Base _target = null) : base(_tactician)
         {
             target = _target;
         }
@@ -20,11 +20,11 @@ namespace AI.BehaviorStates
         }
         public override void Start() 
         {
-            if (target is BaseEntity entity)
+            if (target)
             {
                 foreach (Unit unit in tactician.Soldiers)
                 {
-                    unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic, entity));
+                    unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic, target));
                 }
             }
         }
@@ -44,7 +44,7 @@ namespace AI.BehaviorStates
     
     public class UnitCombatState : UnitState
     {
-        public UnitCombatState(UnitLogic unitLogic, BaseEntity _target = null) : base(unitLogic)
+        public UnitCombatState(UnitLogic unitLogic, Base _target = null) : base(unitLogic)
         {
             target = _target;
         }

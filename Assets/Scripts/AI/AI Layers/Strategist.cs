@@ -148,7 +148,22 @@ public class Strategist : UnitController
     #region Task Methods
     private void TaskInit()
     {
-        
+        int count2 = unusedTacticians.Count;
+        for (int j = 0; j < count2; j++)
+        {
+            Tactician tactician = unusedTacticians[j];
+                
+            if (!tactician)
+            {
+                unusedTacticians.RemoveAt(j);
+                count2--;
+                    
+            }
+            else
+            {
+                tactician.UpdateUnits();
+            }
+        }
         foreach (Task task in waitingTasks)
         {
             unusedTacticians.AddRange(task.tacticians);
@@ -226,8 +241,24 @@ public class Strategist : UnitController
         for (int i = 0; i < count; i++)
         {
             Task task = runningTasks[i];
-
-            if (!task.target || task.target.GetTeam() == Team)
+            int count2 = task.tacticians.Count;
+            for (int j = 0; j < count2; j++)
+            {
+                Tactician tactician = task.tacticians[j];
+                
+                if (!tactician)
+                {
+                    task.tacticians.RemoveAt(j);
+                    count2--;
+                    
+                }
+                else
+                {
+                    tactician.UpdateUnits();
+                }
+            }
+            
+            if (!task.target || task.target.GetTeam() == Team || task.tacticians.Count == 0)
             {
                 unusedTacticians.AddRange(task.tacticians);
                 foreach (Tactician taskTactician in task.tacticians)
@@ -243,13 +274,22 @@ public class Strategist : UnitController
 
         }
         
+        foreach (Task task in waitingTasks)
+        {
+            CreateTroup(task);
+        }
+        
         count = waitingTasks.Count;
 
         for (int i = 0; i < count; i++)
         {
             Task task = waitingTasks[i];
-
-            if ((task.nbLight == 0 && task.nbHeavy == 0))
+            int c2 = 0;
+            foreach (Tactician tactician in task.tacticians)
+            {
+                c2 += tactician.Soldiers.Count + tactician.nbHeavyInCreation + tactician.nbLightInCreation;
+            }
+            if (c2 != 0)
             {
                 task.cost = 0;
                 waitingTasks.Remove(task);
@@ -276,10 +316,7 @@ public class Strategist : UnitController
             }
         }
 
-        foreach (Task task in waitingTasks)
-        {
-            CreateTroup(task);
-        }
+        
 
         foreach (Task task in runningTasks)
         {
@@ -306,13 +343,14 @@ public class Strategist : UnitController
             case Task.Type.Attack:
                 foreach (Tactician tactician in task.tacticians)
                 {
-                    if (task.target is BaseEntity entity)
+                    if (task.target && !(task.target is TargetBuilding))
                     {
-                        tactician.SetState(new TacticianAttackState(tactician, entity));
+                        tactician.SetState(new TacticianAttackState(tactician, task.target));
                         waitingTacticians.Remove(tactician);
                         runningTacticians.Add(tactician);
                         task.isRunning = true;
                     }
+                    
                     else
                         continue;
                 }
@@ -341,6 +379,20 @@ public class Strategist : UnitController
     {
         Tactician bestTactician = unusedTacticians.Find(tactician => tactician == task.bestTactician);
         float bestInfluence = float.MinValue;
+        if (bestTactician is null)
+        {
+            foreach (Tactician tactician in unusedTacticians)
+            {
+                float tacDist = (tactician.transform.position - task.target.transform.position).magnitude;
+                float currentInfluence = tactician.Influence - (task.formationData.DistanceImpact *tacDist);
+
+                if (bestInfluence < tactician.Influence)
+                {
+                    bestTactician = tactician;
+                    bestInfluence = currentInfluence;
+                }
+            }
+        }
         float lightUnitCost = lightFactory.GetBuildableUnitData(0).Cost;
         float heavyUnitCost = heavyFactory.GetBuildableUnitData(0).Cost;
         float lightUnitSpeed = lightFactory.GetBuildableUnitData(0).Speed;
@@ -358,6 +410,8 @@ public class Strategist : UnitController
             task.cost = (int)(task.nbLight * lightUnitCost + task.nbHeavy * heavyUnitCost);
             return;
         }
+        
+        
         float distanceToGoSqr = (lightFactory.transform.position - task.target.transform.position).sqrMagnitude;
         if ((heavyFactory.transform.position - task.target.transform.position).sqrMagnitude >= distanceToGoSqr)
             distanceToGoSqr = (heavyFactory.transform.position - task.target.transform.position).sqrMagnitude;
@@ -369,6 +423,8 @@ public class Strategist : UnitController
         task.nbLightInProgress = 0;
         task.nbHeavyInProgress = 0;
         task.bestTactician = null;
+        
+        
         if (!bestTactician && tacticianPrefab)
         {
             GameObject obj = GameObject.Instantiate(tacticianPrefab);
@@ -533,8 +589,13 @@ public class Strategist : UnitController
                 if (!heavyFactory.RequestUnitBuild(0, task.tacticians[0]))
                     break;
                 else
+                {
                     task.nbHeavy--;
+
+                }
             }
+            task.nbLightInProgress = task.tacticians[0].nbLightInCreation;
+            task.nbHeavyInProgress = task.tacticians[0].nbHeavyInCreation;
 
             return true;
         }
