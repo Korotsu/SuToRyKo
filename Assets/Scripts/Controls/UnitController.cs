@@ -64,7 +64,11 @@ public class UnitController : MonoBehaviour
             if (selectedTactician && unit.tempTactician && selectedTactician.GetTacticianState() != null)
             {
                 if (selectedTactician != unit.mainTactician)
+                {
+                    unit.actions -= unit.FollowFormation;
                     unit.tempTactician.Soldiers.Remove(unit);
+                }
+
                 unit.tempTactician = null;
             }
         }
@@ -166,7 +170,10 @@ public class UnitController : MonoBehaviour
             if (selectedTactician && _unit.tempTactician && selectedTactician.GetTacticianState() != null)
             {
                 if (!_unit.mainTactician)
+                {
+                    _unit.actions -= _unit.FollowFormation;
                     _unit.tempTactician.Soldiers.Remove(_unit);
+                }
                 _unit.tempTactician = null;
             }
         }

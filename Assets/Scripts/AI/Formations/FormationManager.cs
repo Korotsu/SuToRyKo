@@ -19,7 +19,7 @@ namespace Formations
 
         private EFormationTypes formationType = EFormationTypes.Linear;
 
-        private List<FormationNode> nodes = new List<FormationNode>();
+        public List<FormationNode> nodes = new List<FormationNode>();
 
         private FormationNode leaderNode;
 
@@ -125,6 +125,8 @@ namespace Formations
                 //path = new NavMeshPath();
                 //navMeshAgent.CalculatePath(pos, path);
             }
+
+            tactician.Soldiers.ForEach(soldier => soldier.Stop());
 
             /*transform.position = pos;
             tactician.GetSoldiers().ForEach(soldier => soldier.Unit.UpdateTargetPos());*/

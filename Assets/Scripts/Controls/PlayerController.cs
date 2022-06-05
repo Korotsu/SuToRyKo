@@ -312,7 +312,7 @@ public sealed class PlayerController : UnitController
         {
             foreach (Unit unit in SelectedUnitList)
             {
-                if(!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCombatState))
+                if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCombatState))
                     unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic));
             }
         }
@@ -358,50 +358,50 @@ public sealed class PlayerController : UnitController
     int Counter = 0;
     void UpdateFog()
     {
-        
-        GameObject[] units =GameObject.FindGameObjectsWithTag("Unit");
-        GameObject[] buildings =GameObject.FindGameObjectsWithTag("Building");
+
+        GameObject[] units = GameObject.FindGameObjectsWithTag("Unit");
+        GameObject[] buildings = GameObject.FindGameObjectsWithTag("Building");
         Counter++;
         //ComputeShader shader;
         //ComputeBuffer buf;
-        
+
         if (Counter > 20)
         {
             RenderTexture last = RenderTexture.active;
-            RenderTexture.active =Fog;
- 
-                
+            RenderTexture.active = Fog;
+
+
             fogTex.ReadPixels(new Rect(0, 0, fogTex.width, fogTex.height), 0, 0);
             // Restore previously active render texture
             RenderTexture.active = last;
             Counter = 0;
         }
-        
-        
+
+
         foreach (GameObject unit in units)
         {
             BaseEntity data = unit.GetComponent<BaseEntity>();
             ETeam t = data.GetTeam();
             if (!DrawFog)
             {
-                if(data.entityVisObj.activeSelf)
+                if (data.entityVisObj.activeSelf)
                     data.entityVisObj.SetActive(false);
                 if (Pass != 1)
                 {
                     Pass = 1;
                     unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
                 }
-               
+
             }
             else if (t != Team)
             {
-                if(data.entityVisObj.activeSelf)
+                if (data.entityVisObj.activeSelf)
                     data.entityVisObj.SetActive(false);
                 var position = data.entityVisObj.transform.position;
-                Vector2 pos = new Vector2(position.x,position.y);
+                Vector2 pos = new Vector2(position.x, position.y);
                 pos.Normalize();
-                
-                Color c =fogTex.GetPixel((int)(fogTex.width * pos.x), (int)(fogTex.height * pos.y));
+
+                Color c = fogTex.GetPixel((int)(fogTex.width * pos.x), (int)(fogTex.height * pos.y));
                 if (c.a > 0.5f)
                 {
                     if (Pass != 2)
@@ -430,20 +430,20 @@ public sealed class PlayerController : UnitController
                     unit.GetComponentInChildren<MeshRenderer>(true).gameObject.SetActive(true);
                 }
             }
-            
+
 
         }
         foreach (GameObject building in buildings)
         {
             BaseEntity data = building.GetComponent<BaseEntity>();
             ETeam t = data.GetTeam();
-            if((t!= Team && t != ETeam.Neutral) && data.entityVisObj.activeSelf )
+            if ((t != Team && t != ETeam.Neutral) && data.entityVisObj.activeSelf)
                 data.entityVisObj.SetActive(false);
-            else if((t == Team || t == ETeam.Neutral) && !data.entityVisObj.activeSelf)
+            else if ((t == Team || t == ETeam.Neutral) && !data.entityVisObj.activeSelf)
                 data.entityVisObj.SetActive(true);
         }
     }
-    
+
     #endregion
 
     #region Unit selection methods
@@ -503,7 +503,7 @@ public sealed class PlayerController : UnitController
                         UnselectSingleUnit(selectedUnit);
                 }
 
-                else if (selectedUnit.tempTactician || selectedUnit.mainTactician)
+                else if (selectedUnit.mainTactician)
                     SelectFormation(selectedUnit);
 
                 else
@@ -743,7 +743,7 @@ public sealed class PlayerController : UnitController
                 foreach (Unit unit in SelectedUnitList)
                 {
                     unit.SetCaptureTarget(target);
-                    if(!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCapture))
+                    if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCapture))
                         unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCapture(unit.UnitLogic));
                 }
             }
@@ -755,7 +755,7 @@ public sealed class PlayerController : UnitController
             Vector3 newPos = raycastInfo.point;
             SetTargetCursorPosition(newPos);
 
-            if (selectedTactician)
+            if (selectedTactician && selectedTactician.FormationManager.nodes.Count > 1)
                 selectedTactician.SetTargetPos(newPos);
             else
             {

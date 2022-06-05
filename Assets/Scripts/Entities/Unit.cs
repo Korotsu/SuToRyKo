@@ -127,9 +127,15 @@ public partial class Unit : InteractableEntity
 
         if (NavMeshAgent)
         {
-            NavMeshAgent.SetDestination(pos);
             NavMeshAgent.isStopped = false;
+            NavMeshAgent.SetDestination(pos);
         }
+    }
+
+    public void Stop()
+    {
+        NavMeshAgent.isStopped = true;
+        NavMeshAgent.ResetPath();
     }
 
     public void FollowFormation()
