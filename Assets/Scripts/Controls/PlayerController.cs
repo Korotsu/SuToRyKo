@@ -78,7 +78,6 @@ public sealed class PlayerController : UnitController
     Action OnCancelFactoryPositioning = null;
     Action OnSelectAllPressed = null;
     Action<Formations.FormationManager.EFormationTypes> OnCreateFormationPressed = null;
-    Action OnKillTacticianPressed = null;
     Action OnFormationLockTogglePressed = null;
     Action[] OnCategoryPressed = new Action[9];
 
@@ -207,7 +206,6 @@ public sealed class PlayerController : UnitController
         }
 
         OnCreateFormationPressed += CreateFormation;
-        OnKillTacticianPressed += KillTactician;
         OnFormationLockTogglePressed += FormationLockToggle;
     }
     override protected void Update()
@@ -254,9 +252,6 @@ public sealed class PlayerController : UnitController
 
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
             OnFormationLockTogglePressed?.Invoke();
-
-        if (Input.GetKeyDown(KeyCode.KeypadMinus))
-            OnKillTacticianPressed?.Invoke();
 
         if (Input.GetKeyDown(KeyCode.Keypad1))
             OnCreateFormationPressed?.Invoke(Formations.FormationManager.EFormationTypes.Linear);
@@ -579,7 +574,7 @@ public sealed class PlayerController : UnitController
 
                     if (!SelectedUnitList.Contains(unit))
                     {
-                        if (unit.tempTactician || unit.mainTactician)
+                        if (unit.mainTactician)
                             SelectFormation(unit);
 
                         else

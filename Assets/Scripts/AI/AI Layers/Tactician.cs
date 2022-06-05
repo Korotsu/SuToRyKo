@@ -131,4 +131,27 @@ public class Tactician : Base
     {
         soldiers.ForEach(soldier => soldier.actions -= soldier.FollowFormation);
     }
+
+    //Return true if the tempTactician is pending kill;
+    public bool RemoveAndCheck(Unit unit)
+    {
+        soldiers.Remove(unit);
+
+        unit.tempTactician  = null;
+        unit.actions        -= unit.FollowFormation;
+
+        if (soldiers.Count == 1)
+        {
+            soldiers[0].tempTactician = null;
+            soldiers[0].mainTactician = null;
+            soldiers[0].actions -= soldiers[0].FollowFormation;
+            soldiers.Clear();
+            Destroy(this.gameObject);
+
+            return true;
+        }
+
+        else
+            return false;
+    }
 }
