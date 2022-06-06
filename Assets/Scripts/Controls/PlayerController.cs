@@ -712,7 +712,10 @@ public sealed class PlayerController : UnitController
                     // Direct call to attacking task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
                     {
-                        unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic, other));
+                        if (selectedTactician)
+                            selectedTactician.SetState(new AI.BehaviorStates.TacticianAttackState(selectedTactician, other));
+                        else
+                            unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic, other));
                     }
                 }
                 else if (other.NeedsRepairing())
@@ -734,12 +737,19 @@ public sealed class PlayerController : UnitController
             TargetBuilding target = raycastInfo.transform.GetComponent<TargetBuilding>();
             if (target != null && target.GetTeam() != GetTeam())
             {
-                // Direct call to capturing task $$$ to be improved by AI behaviour
-                foreach (Unit unit in SelectedUnitList)
+                if (selectedTactician)
                 {
-                    unit.SetCaptureTarget(target);
-                    if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCapture))
-                        unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCapture(unit.UnitLogic));
+                    selectedTactician.SetState(new TacticianCaptureState(selectedTactician, target));
+                }
+                else
+                {
+                    // Direct call to capturing task $$$ to be improved by AI behaviour
+                    foreach (Unit unit in SelectedUnitList)
+                    {
+                        unit.SetCaptureTarget(target);
+                        if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCapture))
+                            unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCapture(unit.UnitLogic));
+                    }
                 }
             }
         }
