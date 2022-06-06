@@ -30,7 +30,10 @@ namespace Formations
                 for (int j = 0; j < lineUnitNb; j++)
                 {
                     if (i * lineUnitNb + j >= soldiers.Count)
+                    {
+                        soldiers.ForEach(soldier => soldier.CheckRecovery());
                         return;
+                    }
 
                     if (i == lineNb - 1 && lastLineSize != 0)
                         centerX = lastLineSize / 2;
@@ -44,6 +47,8 @@ namespace Formations
                     nodes.Add(formationNode);
                 }
             }
+
+            soldiers.ForEach(soldier => soldier.CheckRecovery());
         }
 
         private void GetRenderers(ref List<Renderer> renderers, Transform obj, bool includeChildren = false)

@@ -17,7 +17,7 @@ namespace Formations
             Custom,
         }
 
-        private EFormationTypes formationType = EFormationTypes.Linear;
+        public EFormationTypes formationType = EFormationTypes.Linear;
 
         public List<FormationNode> nodes = new List<FormationNode>();
 
@@ -120,16 +120,12 @@ namespace Formations
             }
 
             else
-            {
                 navMeshAgent.SetDestination(pos);
-                //path = new NavMeshPath();
-                //navMeshAgent.CalculatePath(pos, path);
-            }
 
-            tactician.Soldiers.ForEach(soldier => soldier.Stop());
-
-            /*transform.position = pos;
-            tactician.GetSoldiers().ForEach(soldier => soldier.Unit.UpdateTargetPos());*/
+            if (nodes.Count <= 1)
+                tactician.GetSoldiers().ForEach(soldier => soldier.SetTargetPos(pos));
+            else
+                tactician.GetSoldiers().ForEach(soldier => soldier.CheckRecovery());
         }
 
         public void SetFormationSpeed()
@@ -152,7 +148,7 @@ namespace Formations
                 unit.NavMeshAgent.speed = maxSpeed;
                 unit.NavMeshAgent.angularSpeed = maxAngularSpeed;
                 unit.NavMeshAgent.acceleration = maxAcceleration;
-                unit.NavMeshAgent.radius = float.Epsilon;//maxBounds.x / 2;
+                unit.NavMeshAgent.radius = 0.001f; //float.Epsilon;//maxBounds.x / 2;
             }
 
             navMeshAgent.speed = maxSpeed * 0.9f;
