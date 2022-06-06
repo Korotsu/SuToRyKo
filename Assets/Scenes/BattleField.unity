@@ -122,7 +122,7 @@ NavMeshSettings:
     preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
-  m_NavMeshData: {fileID: 0}
+  m_NavMeshData: {fileID: 23800000, guid: 4f0f2c38f03687544b8d878dfde068f7, type: 2}
 --- !u!1001 &48757321
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -683,7 +683,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 2.3333333
+  m_VoxelSize: 1
   m_BuildHeightMesh: 0
   m_NavMeshData: {fileID: 23800000, guid: 9bd5ab76bfdf94748bf370c10465c6ed, type: 2}
 --- !u!114 &727041326
@@ -1603,6 +1603,11 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4319010513217961219, guid: 71d18aeefd17f5046abcbf69f67cb97b,
+        type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5132452488542777162, guid: 71d18aeefd17f5046abcbf69f67cb97b,
         type: 3}
       propertyPath: FactoryData
@@ -2152,6 +2157,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Strategist
+      objectReference: {fileID: 0}
+    - target: {fileID: 7781562821485003061, guid: 691b76ab12d5995479d8a79abcc3b23e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 691b76ab12d5995479d8a79abcc3b23e, type: 3}

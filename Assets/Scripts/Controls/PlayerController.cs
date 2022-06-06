@@ -750,7 +750,7 @@ public sealed class PlayerController : UnitController
             Vector3 newPos = raycastInfo.point;
             SetTargetCursorPosition(newPos);
 
-            if (selectedTactician && selectedTactician.FormationManager.nodes.Count > 1)
+            if (selectedTactician /*&& selectedTactician.FormationManager.nodes.Count > 1*/)
                 selectedTactician.SetTargetPos(newPos);
             else
             {

@@ -33,6 +33,9 @@ public class Tactician : Base
 
     [SerializeField] private float maxDistanceToTarget = 20f;
 
+
+    private Vector3 targetPosition = Vector3.zero;
+
     private void Start()
     {
         currentState = new IdleTactician(this);
@@ -160,10 +163,8 @@ public class Tactician : Base
 
     public void SetTargetPos(Vector3 pos)
     {
-        if (formationManager.nodes.Count <= 1)
-            soldiers.ForEach(soldier => soldier.SetTargetPos(pos));
-        else
-            formationManager.SetTargetPos(pos);
+        targetPosition = pos;
+        formationManager.SetTargetPos(pos);
     }
 
     public void StopFollowFormations()
@@ -190,7 +191,6 @@ public class Tactician : Base
         if (soldiers.Count == 1)
         {
             soldiers[0].tempTactician = null;
-            soldiers[0].mainTactician = null;
             soldiers[0].actions -= soldiers[0].FollowFormation;
             soldiers.Clear();
             Destroy(this.gameObject);

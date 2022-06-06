@@ -36,9 +36,9 @@ public partial class Unit : InteractableEntity
     [SerializeField]
     private readonly float raycastDelay = 5.0f;
 
-
     private UnitLogic unitLogic = null;
 
+    public bool recovery = false;
     public UnitLogic UnitLogic { get => unitLogic; }
 
     float GetPower()
@@ -129,8 +129,8 @@ public partial class Unit : InteractableEntity
 
         if (NavMeshAgent)
         {
+            bool result = NavMeshAgent.SetDestination(pos);
             NavMeshAgent.isStopped = false;
-            NavMeshAgent.SetDestination(pos);
         }
     }
 
@@ -153,6 +153,7 @@ public partial class Unit : InteractableEntity
                 if (NavMeshAgent.Raycast(formationNode.GetPosition(), out hit) && (path == null || path.status == NavMeshPathStatus.PathInvalid || path.status == NavMeshPathStatus.PathPartial))
                 {
                     path = new NavMeshPath();
+                    recovery = true;
                     if (NavMeshAgent.CalculatePath(formationNode.GetPosition(), path))
                         pathIndex = 0;
                     else
@@ -171,7 +172,10 @@ public partial class Unit : InteractableEntity
                     pathIndex++;
 
                     if (path.corners.Length <= pathIndex)
-                        path = null;
+                    {
+                        path        = null;
+                        recovery    = false;
+                    }
                 }
             }
 
@@ -184,17 +188,23 @@ public partial class Unit : InteractableEntity
         }
     }
 
-    public void UpdateTargetPos()
-    {
-        if (formationNode.FormationManager)
-            SetTargetPos(formationNode.GetPosition());
-    }
-
     public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
         formationNode = _formationNode;
         if (actions == null || actions.GetInvocationList().Length == 0)
             actions += FollowFormation;
+    }
+
+    public void CheckRecovery()
+    {
+        if (!recovery)
+            Stop();
+
+        if (actions == null || actions.GetInvocationList().Length == 0)
+        {
+            actions += FollowFormation;
+            NavMeshAgent.isStopped = false;
+        }
     }
 
     #endregion

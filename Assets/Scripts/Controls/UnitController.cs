@@ -150,6 +150,9 @@ public class UnitController : MonoBehaviour
 
         selectedTactician ??= unit.mainTactician;
 
+        if (selectedTactician == unit.mainTactician && unit.tempTactician && unit.tempTactician != unit.mainTactician)
+            unit.mainTactician.FormationManager.SwitchFormationType(unit.mainTactician.FormationManager.formationType);
+
         foreach (Unit soldier in unit.mainTactician.Soldiers)
         {
             if (soldier.tempTactician && soldier.tempTactician != soldier.mainTactician)
@@ -157,6 +160,11 @@ public class UnitController : MonoBehaviour
 
             SelectUnit(soldier);
             soldier.tempTactician = selectedTactician;
+            if (!selectedTactician.Soldiers.Contains(soldier))
+            {
+                soldier.actions -= soldier.FollowFormation;
+                selectedTactician.AddSoldier(soldier);
+            }
         }
     }
 
@@ -233,7 +241,8 @@ public class UnitController : MonoBehaviour
             foreach (Unit unit in SelectedUnitList)
             {
                 soldiers.Add(unit);
-                unit.tempTactician = tactician;
+                unit.actions        -= unit.FollowFormation;
+                unit.tempTactician  = tactician;
             }
 
             selectedTactician = tactician;
