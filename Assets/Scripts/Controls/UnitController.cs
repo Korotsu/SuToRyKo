@@ -57,21 +57,10 @@ public class UnitController : MonoBehaviour
     #region Unit methods
     protected void UnselectAllUnits()
     {
-        foreach (Unit unit in SelectedUnitList)
-        {
-            unit.SetSelected(false);
-
-            if (selectedTactician && unit.tempTactician && selectedTactician.GetTacticianState() != null)
-            {
-                if (selectedTactician != unit.mainTactician)
-                    unit.tempTactician.Soldiers.Remove(unit);
-                unit.tempTactician = null;
-            }
-        }
-
+        SelectedUnitList.ForEach(unit => unit.SetSelected(false));
         SelectedUnitList.Clear();
 
-        if (selectedTactician && selectedTactician.isFormationLocked == false && selectedTactician.GetSoldiers().Count <= 1)
+        if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
             Destroy(selectedTactician.gameObject);
 
         selectedTactician = null;
@@ -82,7 +71,7 @@ public class UnitController : MonoBehaviour
 
         foreach (Unit unit in UnitList)
         {
-            if (unit.tempTactician || unit.mainTactician)
+            if (unit.mainTactician)
                 SelectFormation(unit);
 
             else
@@ -100,7 +89,7 @@ public class UnitController : MonoBehaviour
         );
         foreach (Unit unit in SelectedUnitList)
         {
-            if (unit.tempTactician || unit.mainTactician)
+            if (unit.mainTactician)
                 SelectFormation(unit);
 
             else
@@ -111,7 +100,7 @@ public class UnitController : MonoBehaviour
     {
         foreach (Unit unit in units)
         {
-            if (unit.tempTactician || unit.mainTactician)
+            if (unit.mainTactician)
                 SelectFormation(unit);
 
             else
@@ -122,7 +111,7 @@ public class UnitController : MonoBehaviour
     {
         foreach (Unit unit in units)
         {
-            if (unit.tempTactician || unit.mainTactician)
+            if (unit.mainTactician)
                 SelectFormation(unit);
 
             else
@@ -131,6 +120,9 @@ public class UnitController : MonoBehaviour
     }
     protected void SelectSingleUnit(Unit unit)
     {
+        if (unit.tempTactician)
+            unit.tempTactician.RemoveAndCheck(unit);
+
         SelectUnit(unit);
 
         if ((selectedTactician == null && SelectedUnitList.Count > 1) || (selectedTactician && selectedTactician.isFormationLocked))
@@ -153,50 +145,48 @@ public class UnitController : MonoBehaviour
 
     protected void SelectFormation(Unit unit)
     {
-        selectedTactician ??= unit.tempTactician ?? unit.mainTactician;
-        unit.GetAllUnitsInFormation().ForEach(_unit => SelectUnit(_unit));
+        if (selectedTactician && selectedTactician.isFormationLocked)
+            CreateTactician(selectedTactician.transform.position);
+
+        selectedTactician ??= unit.mainTactician;
+
+        foreach (Unit soldier in unit.mainTactician.Soldiers)
+        {
+            if (soldier.tempTactician && soldier.tempTactician != soldier.mainTactician)
+                soldier.tempTactician.RemoveAndCheck(soldier);
+
+            SelectUnit(soldier);
+            soldier.tempTactician = selectedTactician;
+        }
     }
 
-    protected void UnselectFormation(Unit unit)
+    protected void UnselectFormation(Unit _unit)
     {
-        foreach (Unit _unit in unit.GetAllUnitsInFormation())
+        if (_unit.mainTactician)
         {
-            UnselectUnit(_unit);
-
-            if (selectedTactician && _unit.tempTactician && selectedTactician.GetTacticianState() != null)
+            foreach (Unit unit in _unit.mainTactician.Soldiers)
             {
-                if (!_unit.mainTactician)
-                    _unit.tempTactician.Soldiers.Remove(_unit);
-                _unit.tempTactician = null;
+                UnselectUnit(unit);
+
+                if (unit.tempTactician && unit.tempTactician != unit.mainTactician)
+                    unit.tempTactician.RemoveAndCheck(unit);
             }
         }
-
-        if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
-        {
-            selectedTactician = null;
-
-            if (selectedTactician.isFormationLocked == false)
-                Destroy(selectedTactician.gameObject);
-        }
-
-
     }
 
     protected void UnselectUnit(Unit unit)
     {
         unit.SetSelected(false);
-        SelectedUnitList.Remove(unit);
+        if (SelectedUnitList.Contains(unit))
+            SelectedUnitList.Remove(unit);
     }
 
     protected void UnselectSingleUnit(Unit unit)
     {
-        UnselectUnit(unit);
-
-        if (selectedTactician && selectedTactician.GetSoldiers().Count <= 1)
-        {
-            Destroy(selectedTactician.gameObject);
+        if (unit.tempTactician && unit.tempTactician.RemoveAndCheck(unit))
             selectedTactician = null;
-        }
+
+        UnselectUnit(unit);
     }
 
     virtual public void AddUnit(Unit unit)
@@ -229,19 +219,6 @@ public class UnitController : MonoBehaviour
     {
         if (selectedTactician)
             selectedTactician.GetComponent<Formations.FormationManager>().SwitchFormationType(newType);
-    }
-
-    protected void KillTactician()
-    {
-        if (lockedTacticians.Count > 0)
-        {
-            for (int i = 0; i < lockedTacticians.Count; i++)
-            {
-                Destroy(lockedTacticians[i].gameObject);
-            }
-
-            lockedTacticians.ForEach(tactician => Destroy(tactician.gameObject));
-        }
     }
 
     protected void CreateTactician(Vector3 position)

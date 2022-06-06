@@ -18,7 +18,7 @@ public partial class Unit : InteractableEntity
     public UnitDataScriptable GetUnitData => UnitData;
     public int Cost => UnitData.Cost;
     public int GetTypeId => UnitData.TypeId;
-	
+
     public Action actions;
 
     public Tactician mainTactician = null;
@@ -36,7 +36,7 @@ public partial class Unit : InteractableEntity
     [SerializeField]
     private readonly float raycastDelay = 5.0f;
 
-    
+
     private UnitLogic unitLogic = null;
 
     public UnitLogic UnitLogic { get => unitLogic; }
@@ -51,14 +51,14 @@ public partial class Unit : InteractableEntity
     {
         return UnitData.GetInfluence(GetPower());
     }
-    
+
     public override void Init(ETeam _team)
     {
         if (IsInitialized)
             return;
 
         base.Init(_team);
-        
+
         HP = UnitData.MaxHP;
         OnDeadEvent += Unit_OnDead;
         unitLogic ??= new UnitLogic(this);
@@ -113,7 +113,7 @@ public partial class Unit : InteractableEntity
     }
     #endregion
 
-    
+
 
     #region Tasks methods : Moving, Capturing, Targeting, Attacking, Repairing ...
 
@@ -124,14 +124,20 @@ public partial class Unit : InteractableEntity
     {
         EntityTarget = null;
 
-        if ( !(CaptureTarget is null) )
+        if (!(CaptureTarget is null))
             StopCapture();
 
         if (NavMeshAgent)
         {
-            NavMeshAgent.SetDestination(pos);
             NavMeshAgent.isStopped = false;
+            NavMeshAgent.SetDestination(pos);
         }
+    }
+
+    public void Stop()
+    {
+        NavMeshAgent.isStopped = true;
+        NavMeshAgent.ResetPath();
     }
 
     public void FollowFormation()
@@ -187,32 +193,23 @@ public partial class Unit : InteractableEntity
     public void SetFormationNode(ref Formations.FormationNode _formationNode)
     {
         formationNode = _formationNode;
-        actions += FollowFormation;
+        if (actions == null || actions.GetInvocationList().Length == 0)
+            actions += FollowFormation;
     }
 
     #endregion
-    
-    public List<Unit> GetAllUnitsInFormation()
-    {
-        List<Unit> units = new List<Unit>();
-        Tactician tactician = tempTactician ?? mainTactician;
 
-        if (tactician)
-            tactician.GetSoldiers().ForEach(soldier => units.Add(soldier));
-
-        return units;
-    }
     private void LookAtTarget()
     {
         Transform _transform = transform;
-        
+
         _transform.LookAt(EntityTarget.transform);
-        
+
         // only keep Y axis
         Vector3 eulerRotation = _transform.eulerAngles;
         eulerRotation.x = 0f;
         eulerRotation.z = 0f;
-        
+
         _transform.eulerAngles = eulerRotation;
     }
 }

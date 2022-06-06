@@ -13,6 +13,8 @@ public class Tactician : Base
 
     private Formations.FormationManager formationManager;
 
+    public ref Formations.FormationManager FormationManager => ref formationManager;
+
     public ref List<Unit> GetSoldiers() => ref soldiers;
 
     private TacticianState currentState;
@@ -34,14 +36,12 @@ public class Tactician : Base
 
         formationManager = GetComponent<Formations.FormationManager>();
 
-		foreach (Transform child in transform)
-		{
-			Unit unitLogic = child.GetComponent<Unit>();
+        foreach (Transform child in transform)
+        {
+            Unit unitLogic = child.GetComponent<Unit>();
             if (unitLogic)
                 soldiers.Add(unitLogic);
-		}
-
-        
+        }
 
         if (soldiers.Count > 0)
             transform.position = soldiers[0].transform.position;
@@ -51,7 +51,7 @@ public class Tactician : Base
             enabled = false;
             return;
         }
-        
+
         //soldiers.ForEach(soldier => soldier.Unit)
     }
 
@@ -60,7 +60,7 @@ public class Tactician : Base
         nbHeavy = 0;
         nbLight = 0;
         int count = soldiers.Count;
-        for (int i = 0; i < count ; ++i)
+        for (int i = 0; i < count; ++i)
         {
             Unit unit = soldiers[i];
             if (!unit)
@@ -93,9 +93,9 @@ public class Tactician : Base
     // Update is called once per frame
     void Update()
     {
-       
+
         currentState.Update();
-        
+
         if (!formationManager.enabled && soldiers.Count > 0)
             transform.position = soldiers[0].transform.position;
     }
@@ -139,6 +139,37 @@ public class Tactician : Base
 
     public void SetTargetPos(Vector3 pos)
     {
-        formationManager.SetTargetPos(pos);
+        if (formationManager.nodes.Count <= 1)
+            soldiers.ForEach(soldier => soldier.SetTargetPos(pos));
+        else
+            formationManager.SetTargetPos(pos);
+    }
+
+    public void StopFollowFormations()
+    {
+        soldiers.ForEach(soldier => soldier.actions -= soldier.FollowFormation);
+    }
+
+    //Return true if the tempTactician is pending kill;
+    public bool RemoveAndCheck(Unit unit)
+    {
+        soldiers.Remove(unit);
+
+        unit.tempTactician  = null;
+        unit.actions        -= unit.FollowFormation;
+
+        if (soldiers.Count == 1)
+        {
+            soldiers[0].tempTactician = null;
+            soldiers[0].mainTactician = null;
+            soldiers[0].actions -= soldiers[0].FollowFormation;
+            soldiers.Clear();
+            Destroy(this.gameObject);
+
+            return true;
+        }
+
+        else
+            return false;
     }
 }
