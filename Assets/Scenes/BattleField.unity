@@ -403,7 +403,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &471660221
 PrefabInstance:
@@ -712,7 +712,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.6666667
+  m_VoxelSize: 0.016666668
   m_BuildHeightMesh: 0
   m_NavMeshData: {fileID: 23800000, guid: 9ec21a39ba751df4992097d95838a9c2, type: 2}
 --- !u!114 &727041327
@@ -1863,7 +1863,7 @@ PrefabInstance:
     - target: {fileID: 3297987965787243821, guid: 6274f44d969a12f4f9c683eb6eef2d05,
         type: 3}
       propertyPath: m_RootOrder
-      value: 8
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3297987965787243821, guid: 6274f44d969a12f4f9c683eb6eef2d05,
         type: 3}
@@ -1982,7 +1982,7 @@ PrefabInstance:
     - target: {fileID: 5954279422660052413, guid: 2f5a2a2a323dbc84a86dd9718c583417,
         type: 3}
       propertyPath: m_RootOrder
-      value: 9
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5954279422660052413, guid: 2f5a2a2a323dbc84a86dd9718c583417,
         type: 3}
@@ -2161,7 +2161,7 @@ PrefabInstance:
     - target: {fileID: 7781562821485003061, guid: 691b76ab12d5995479d8a79abcc3b23e,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 691b76ab12d5995479d8a79abcc3b23e, type: 3}

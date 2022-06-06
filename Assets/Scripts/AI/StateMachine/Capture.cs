@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace AI.BehaviorStates
 {
@@ -37,7 +38,7 @@ partial class Unit
             return;
 
         if (NavMeshAgent)
-            NavMeshAgent.isStopped = true;
+            Stop();
 
         CaptureTarget.StartCapture(this);
 
@@ -80,10 +81,10 @@ partial class Unit
         if (IsCapturing() && target != CaptureTarget)
             StopCapture();
 
-        if (!CanCapture(target))
+        if (NavMeshAgent)
         {
-            NavMeshAgent.SetDestination(target.transform.position);
-            NavMeshAgent.isStopped = false;            
+            testpath = new NavMeshPath();
+            NavMeshAgent.CalculatePath(target.transform.position, testpath);
         }
 
         EntityTarget = null;

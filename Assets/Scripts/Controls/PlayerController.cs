@@ -756,18 +756,22 @@ public sealed class PlayerController : UnitController
         // Set unit move target
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
-
             Vector3 newPos = raycastInfo.point;
             SetTargetCursorPosition(newPos);
 
             if (selectedTactician /*&& selectedTactician.FormationManager.nodes.Count > 1*/)
+            {
+                selectedTactician.SetState(new AI.BehaviorStates.IdleTactician(selectedTactician));
                 selectedTactician.SetTargetPos(newPos);
+            }
+
             else
             {
                 // Direct call to moving task $$$ to be improved by AI behaviour
                 foreach (Unit unit in SelectedUnitList)
                 {
                     unit.SetTargetPos(newPos);
+
                     if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.IdleUnit))
                         unit.UnitLogic.SetState(new AI.BehaviorStates.IdleUnit(unit.UnitLogic));
                 }

@@ -41,6 +41,8 @@ public partial class Unit : InteractableEntity
     public bool recovery = false;
     public UnitLogic UnitLogic { get => unitLogic; }
 
+    private NavMeshPath testpath = null;
+
     float GetPower()
     {
         float p = UnitData.GetPower();
@@ -110,6 +112,12 @@ public partial class Unit : InteractableEntity
 
         if(!mainTactician && !tempTactician)
             unitLogic.Update();
+
+        if (testpath != null && NavMeshAgent.path != testpath)
+        {
+            NavMeshAgent.SetDestination(testpath.corners[testpath.corners.Length-1]);
+            NavMeshAgent.isStopped = false;
+        }
     }
     #endregion
 
@@ -129,14 +137,15 @@ public partial class Unit : InteractableEntity
 
         if (NavMeshAgent)
         {
-            bool result = NavMeshAgent.SetDestination(pos);
-            NavMeshAgent.isStopped = false;
+            testpath = new NavMeshPath();
+            NavMeshAgent.CalculatePath(pos, testpath);
         }
     }
 
     public void Stop()
     {
-        NavMeshAgent.isStopped = true;
+        NavMeshAgent.isStopped  = true;
+        testpath                = null;
         NavMeshAgent.ResetPath();
     }
 
@@ -167,6 +176,7 @@ public partial class Unit : InteractableEntity
             {
                 Vector3 destination = path.corners[pathIndex] - transform.position;
                 NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+                transform.rotation = Quaternion.LookRotation(destination);
                 if ((destination).sqrMagnitude <= 0.1)
                 {
                     pathIndex++;
@@ -184,6 +194,7 @@ public partial class Unit : InteractableEntity
                 Vector3 destination = formationNode.GetPosition() - transform.position;
                 destination.Normalize();
                 NavMeshAgent.Move(destination * NavMeshAgent.speed * Time.deltaTime);
+                transform.rotation = Quaternion.LookRotation(destination);
             }
         }
     }

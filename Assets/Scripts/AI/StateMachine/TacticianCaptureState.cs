@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class TacticianCaptureState : TacticianState
 {
-    private bool isStoppedFollowFormation = false;
+    private bool alreadyStopMovement        = false;
+
     public TacticianCaptureState(Tactician _tactician, Base _target = null) : base(_tactician) 
     {
         target = _target;
@@ -18,9 +19,6 @@ public class TacticianCaptureState : TacticianState
             {
                 unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCapture(unit.UnitLogic));
                 unit.UnitLogic.CurrentState.SetTarget(target);
-
-                if (target is TargetBuilding targetBuilding)
-                    unit.SetCaptureTarget(targetBuilding);
             }
         }
     }
@@ -30,23 +28,27 @@ public class TacticianCaptureState : TacticianState
         if (!tactician)
             return;
 
-        if (!tactician.IsNearTarget())
-        {
-            tactician.SetTargetPos(target.transform.position);
+        bool isNotInFormation = tactician.FormationManager.nodes.Count < 2;
 
-            if(isStoppedFollowFormation)
-                isStoppedFollowFormation = false;
-        }
-        else
+        if (tactician.IsNearTarget() || isNotInFormation)
         {
-            if (!isStoppedFollowFormation)
-            {
-                isStoppedFollowFormation = true;
+            if (!isNotInFormation)
                 tactician.StopFollowFormations();
+
+            if (!alreadyStopMovement)
+            {
+                alreadyStopMovement     = true;
                 SetCaptureTarget();
             }
 
+
             base.Update();
+        }
+
+        else if (target.transform.position != tactician.targetPosition)
+        {
+            tactician.SetTargetPos(target.transform.position);
+            alreadyStopMovement     = false;
         }
     }
 

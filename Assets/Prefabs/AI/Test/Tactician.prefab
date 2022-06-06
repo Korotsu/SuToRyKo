@@ -51,7 +51,8 @@ MonoBehaviour:
   nbHeavyInCreation: 0
   nbLight: 0
   nbHeavy: 0
-  maxDistanceToTarget: 10
+  maxDistanceToTarget: 20
+  targetPosition: {x: 0, y: 0, z: 0}
 --- !u!114 &6606963459901174156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,6 +65,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75f300b0551424c40a82f5af2df4950c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  formationType: 0
   lineUnitNb: 5
   displayNodes: 0
   formationAngle: 0

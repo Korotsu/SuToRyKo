@@ -31,10 +31,10 @@ public class Tactician : Base
     public int nbLight = 0;
     public int nbHeavy = 0;
 
-    [SerializeField] private float maxDistanceToTarget = 20f;
+    public float maxDistanceToTarget = 20f;
 
 
-    private Vector3 targetPosition = Vector3.zero;
+    public Vector3 targetPosition = Vector3.zero;
 
     private void Start()
     {
@@ -92,11 +92,15 @@ public class Tactician : Base
 
     public bool IsNearTarget()
     {
-        if (currentState != null && currentState.Target)
+        if ( navMeshAgent.destination != Vector3.zero && currentState != null && currentState.Target && targetPosition == currentState.Target.transform.position)
         {
-            float distance = (currentState.Target.transform.position - transform.position).magnitude;
+            float distance = (navMeshAgent.destination - transform.position).magnitude;
+            /*float distance = (currentState.Target.transform.position - transform.position).magnitude;
 
-            if (Mathf.Abs(distance) <= maxDistanceToTarget)
+            if (distance <= maxDistanceToTarget)
+                return true;*/
+
+            if (distance <= maxDistanceToTarget)
                 return true;
         }
 

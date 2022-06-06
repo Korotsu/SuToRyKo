@@ -10,14 +10,6 @@ namespace AI.BehaviorStates
             target = _target;
         }
 
-
-        private void CheckAttackEnding()
-        {
-            // Every time an opposite enemy dies, check if everything is still functioning in the adverse tactician.
-            
-            // If not, go into a neutral state. If yes, keep going.
-            
-        }
         public override void Start() 
         {
             if (target && tactician)
@@ -47,8 +39,6 @@ namespace AI.BehaviorStates
 
         public override void End()
         {
-            foreach (Unit unit in tactician.Soldiers)
-                unit.UnitLogic.associatedUnit.OnDeadEvent -= CheckAttackEnding;
         }
 
     }

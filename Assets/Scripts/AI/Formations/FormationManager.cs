@@ -135,12 +135,14 @@ namespace Formations
             float maxSpeed = float.MaxValue;
             float maxAngularSpeed = float.MaxValue;
             float maxAcceleration = float.MaxValue;
+            float CaptureDistanceMax = float.MaxValue;
 
             foreach (Unit unit in units)
             {
                 maxSpeed = (unit.GetUnitData.Speed < maxSpeed) ? unit.GetUnitData.Speed : maxSpeed;
                 maxAngularSpeed = (unit.GetUnitData.AngularSpeed < maxAngularSpeed) ? unit.GetUnitData.AngularSpeed : maxAngularSpeed;
                 maxAcceleration = (unit.GetUnitData.Acceleration < maxAcceleration) ? unit.GetUnitData.Acceleration : maxAcceleration;
+                CaptureDistanceMax = (unit.GetUnitData.CaptureDistanceMax < CaptureDistanceMax) ? unit.GetUnitData.CaptureDistanceMax : CaptureDistanceMax;
             }
 
             foreach (Unit unit in units)
@@ -151,11 +153,12 @@ namespace Formations
                 unit.NavMeshAgent.radius = 0.001f; //float.Epsilon;//maxBounds.x / 2;
             }
 
-            navMeshAgent.speed = maxSpeed * 0.9f;
-            navMeshAgent.angularSpeed = maxAngularSpeed * 0.9f;
-            navMeshAgent.acceleration = maxAcceleration;
-            navMeshAgent.radius = 0.1f;
-            navMeshAgent.autoRepath = true;
+            navMeshAgent.speed              = maxSpeed * 0.9f;
+            navMeshAgent.angularSpeed       = maxAngularSpeed * 0.9f;
+            navMeshAgent.acceleration       = maxAcceleration;
+            navMeshAgent.radius             = 0.1f;
+            navMeshAgent.autoRepath         = true;
+            tactician.maxDistanceToTarget   = CaptureDistanceMax;
         }
     }
 }
