@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using AI.BehaviorStates;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Tactician : Base
 {
@@ -10,6 +11,8 @@ public class Tactician : Base
     private List<Unit> soldiers = new List<Unit>();
 
     public List<Unit> Soldiers { get => soldiers; private set => soldiers = value; }
+
+    private NavMeshAgent navMeshAgent;
 
     private Formations.FormationManager formationManager;
 
@@ -33,6 +36,8 @@ public class Tactician : Base
     private void Start()
     {
         currentState = new IdleTactician(this);
+        navMeshAgent = GetComponent<NavMeshAgent>();
+
 
         formationManager = GetComponent<Formations.FormationManager>();
 
@@ -52,7 +57,13 @@ public class Tactician : Base
             return;
         }
 
-        //soldiers.ForEach(soldier => soldier.Unit)
+        if (soldiers.Count < 2)
+        {
+            formationManager.enabled = false;
+            
+            if (navMeshAgent)
+                navMeshAgent.enabled = false;
+        }
     }
 
     public void UpdateUnits()
@@ -82,7 +93,7 @@ public class Tactician : Base
         {
             float distance = (currentState.Target.transform.position - transform.position).magnitude;
 
-            if (distance <= maxDistanceToTarget)
+            if (Mathf.Abs(distance) <= maxDistanceToTarget)
                 return true;
         }
 
@@ -91,13 +102,23 @@ public class Tactician : Base
 
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
+        if (transform.position == Vector3.zero && soldiers.Count > 0)
+        {
+            transform.position = soldiers[0].transform.position;
+        }
 
-        currentState.Update();
+        if (formationManager && !formationManager.enabled && soldiers.Count >= 2)
+        {
+            formationManager.enabled = true;
+            navMeshAgent.enabled = true;
+        }
 
         if (!formationManager.enabled && soldiers.Count > 0)
             transform.position = soldiers[0].transform.position;
+
+        currentState.Update();
     }
 
     public void SetState(TacticianState order/*, Vector3 Target*/)
@@ -148,6 +169,14 @@ public class Tactician : Base
     public void StopFollowFormations()
     {
         soldiers.ForEach(soldier => soldier.actions -= soldier.FollowFormation);
+    }
+
+    public void StartFormation()
+    {
+        if (currentState != null)
+        {
+            formationManager.SwitchFormationType(currentState.GetFormationType());
+        }
     }
 
     //Return true if the tempTactician is pending kill;

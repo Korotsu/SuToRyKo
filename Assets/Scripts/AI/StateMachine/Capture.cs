@@ -80,10 +80,10 @@ partial class Unit
         if (IsCapturing() && target != CaptureTarget)
             StopCapture();
 
-        if (CanCapture(target) == false)
+        if (!CanCapture(target))
         {
             NavMeshAgent.SetDestination(target.transform.position);
-            NavMeshAgent.isStopped = false;
+            NavMeshAgent.isStopped = false;            
         }
 
         EntityTarget = null;
@@ -93,7 +93,7 @@ partial class Unit
 
     public void CaptureUpdate()
     {
-        if (CaptureTarget && !isCapturing && CanCapture(CaptureTarget))
+        if (!isCapturing && CanCapture(CaptureTarget))
             StartCapture();
     }
 }

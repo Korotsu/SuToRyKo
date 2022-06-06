@@ -47,6 +47,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Team: 2
   isFormationLocked: 0
+  nbLightInCreation: 0
+  nbHeavyInCreation: 0
+  nbLight: 0
+  nbHeavy: 0
+  maxDistanceToTarget: 10
 --- !u!114 &6606963459901174156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,6 +66,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lineUnitNb: 5
   displayNodes: 0
+  formationAngle: 0
 --- !u!195 &1560948577168077706
 NavMeshAgent:
   m_ObjectHideFlags: 0

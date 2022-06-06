@@ -26,7 +26,10 @@ public abstract class State
 public abstract class TacticianState : State
 {
     protected Tactician tactician;
-    
+    protected Formations.FormationManager.EFormationTypes formationType = Formations.FormationManager.EFormationTypes.Linear;
+
+    public Formations.FormationManager.EFormationTypes GetFormationType() {return formationType; }
+
     public TacticianState(Tactician _tactician) => tactician = _tactician;
 
     public override void Update()
@@ -36,6 +39,11 @@ public abstract class TacticianState : State
             if(unit)
                 unit.UnitLogic.Update();
         }
+    }
+
+    public void InitFormationType()
+    {
+        formationType = (Formations.FormationManager.EFormationTypes)Random.Range(0, 2);
     }
 }
 

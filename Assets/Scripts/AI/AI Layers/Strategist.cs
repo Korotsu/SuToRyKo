@@ -348,6 +348,10 @@ public class Strategist : UnitController
                         tactician.SetState(new TacticianAttackState(tactician, task.target));
                         waitingTacticians.Remove(tactician);
                         runningTacticians.Add(tactician);
+
+                        tactician.GetTacticianState().InitFormationType();
+                        tactician.StartFormation();
+
                         task.isRunning = true;
                     }
                     
@@ -361,6 +365,10 @@ public class Strategist : UnitController
                     tactician.SetState(new TacticianCaptureState(tactician, task.target));//TODO : set in capture
                     waitingTacticians.Remove(tactician);
                     runningTacticians.Add(tactician);
+
+                    tactician.GetTacticianState().InitFormationType();
+                    tactician.StartFormation();
+
                     task.isRunning = true;
                 }
                 break;

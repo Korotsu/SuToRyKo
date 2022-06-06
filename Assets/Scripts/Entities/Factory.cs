@@ -298,6 +298,7 @@ public sealed class Factory : InteractableEntity
                 if (bo)
                 {
                     bo.AddSoldier(unit);
+                    unit.tempTactician = bo;
 
                     switch (FactoryData.type)
                     {

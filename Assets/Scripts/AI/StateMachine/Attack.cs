@@ -20,7 +20,7 @@ namespace AI.BehaviorStates
         }
         public override void Start() 
         {
-            if (target)
+            if (target && tactician)
             {
                 foreach (Unit unit in tactician.Soldiers)
                 {
@@ -31,13 +31,16 @@ namespace AI.BehaviorStates
 
         public override void Update()
         {
-            if (tactician.IsNearTarget())
+            if (!tactician)
+                return;
+
+            if (!tactician.IsNearTarget())
             {
-                //tactician.SetTargetPos();
+                tactician.SetTargetPos(target.transform.position);
             }
             else
             {
-                //StopFollowFormations();
+                tactician.StopFollowFormations();
                 base.Update();
             }
         }
