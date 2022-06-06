@@ -25,6 +25,9 @@ public class Tactician : Base
     public int nbHeavyInCreation = 0;
     public int nbLight = 0;
     public int nbHeavy = 0;
+
+    [SerializeField] private float maxDistanceToTarget = 20f;
+
     private void Start()
     {
         currentState = new IdleTactician(this);
@@ -72,6 +75,21 @@ public class Tactician : Base
                 nbLight++;
         }
     }
+
+    public bool IsNearTarget()
+    {
+        if (currentState != null && currentState.Target)
+        {
+            float distance = (currentState.Target.transform.position - transform.position).magnitude;
+
+            if (distance <= maxDistanceToTarget)
+                return true;
+        }
+
+        return false;
+    }
+
+
     // Update is called once per frame
     void Update()
     {

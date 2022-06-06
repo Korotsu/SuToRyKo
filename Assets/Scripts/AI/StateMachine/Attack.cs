@@ -31,7 +31,15 @@ namespace AI.BehaviorStates
 
         public override void Update()
         {
-            base.Update();
+            if (tactician.IsNearTarget())
+            {
+                //tactician.SetTargetPos();
+            }
+            else
+            {
+                //StopFollowFormations();
+                base.Update();
+            }
         }
 
         public override void End()

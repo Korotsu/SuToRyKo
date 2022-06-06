@@ -107,7 +107,9 @@ public partial class Unit : InteractableEntity
 
         if (ActionCooldown > 0f)
             ActionCooldown -= Time.deltaTime;
-        unitLogic.Update();
+
+        if(!mainTactician && !tempTactician)
+            unitLogic.Update();
     }
     #endregion
 

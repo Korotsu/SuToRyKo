@@ -430,8 +430,8 @@ public class Strategist : UnitController
             GameObject obj = GameObject.Instantiate(tacticianPrefab);
             bestTactician = obj.GetComponent<Tactician>();
             bestTactician.SetTeam(Team);
-            obj.GetComponent<NavMeshAgent>().enabled = false;
-            obj.GetComponent<Formations.FormationManager>().enabled = false;
+            //obj.GetComponent<NavMeshAgent>().enabled = false;
+            //obj.GetComponent<Formations.FormationManager>().enabled = false;
         }
         else if (!bestTactician && !tacticianPrefab)
         {
