@@ -160,7 +160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ebd48912a4e2a14d909c566d931e7fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Team: 0
+  Team: 2
   entityVisObj: {fileID: 0}
   VisMat: {fileID: 0}
   VisionMax: 35
