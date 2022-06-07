@@ -14,7 +14,7 @@ public class Tactician : Base
 
     public NavMeshAgent navMeshAgent;
 
-    private Formations.FormationManager formationManager;
+    public Formations.FormationManager formationManager;
 
     public ref Formations.FormationManager FormationManager => ref formationManager;
 
@@ -83,6 +83,7 @@ public class Tactician : Base
             {
                 soldiers.RemoveAt(i);
                 i--;
+                count = soldiers.Count;
                 continue;
             }
             if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy)

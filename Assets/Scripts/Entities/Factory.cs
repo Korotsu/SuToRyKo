@@ -335,7 +335,7 @@ public sealed class Factory : InteractableEntity
         // compute simple spawn position around the factory
         float angle = 2f * Mathf.PI / FactoryData.NbSpawnSlots * slotIndex;
         int offsetIndex = Mathf.FloorToInt(SpawnCount / FactoryData.NbSpawnSlots);
-        float radius = FactoryData.SpawnRadius + offsetIndex * FactoryData.RadiusOffset;
+        float radius = FactoryData.SpawnRadius /*+ offsetIndex * FactoryData.RadiusOffset*/;
         Vector3 spawnPos = transform.position + new Vector3(radius * Mathf.Cos(angle), 0f, radius * Mathf.Sin(angle));
 
         // !! Flying units require a specific layer to be spawned on !!

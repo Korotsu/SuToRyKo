@@ -39,7 +39,8 @@ public class UnitController : MonoBehaviour
     public Transform GetTeamRoot() { return TeamRoot; }
 
     protected readonly List<Unit> UnitList = new List<Unit>();
-    protected List<Unit> SelectedUnitList = new List<Unit>();
+    public List<Unit> SelectedUnitList { get; protected set; } = new List<Unit>();
+    
     protected readonly List<Factory> FactoryList = new List<Factory>();
     protected Factory SelectedFactory = null;
 
@@ -47,7 +48,7 @@ public class UnitController : MonoBehaviour
     protected GameObject tacticianPrefab = null;
 
     protected List<Tactician> lockedTacticians = new List<Tactician>();
-    protected Tactician selectedTactician = null;
+    public Tactician selectedTactician { get; protected set; } = null;
 
     // events
     protected Action OnBuildPointsUpdated;
