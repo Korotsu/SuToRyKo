@@ -429,10 +429,9 @@ public sealed class Factory : InteractableEntity
         float overlapYOffset = 0.1f;
         buildPos += Vector3.up * (extent.y + overlapYOffset);
 
-        if (Physics.CheckBox(buildPos, extent))
-        //foreach(Collider col in Physics.OverlapBox(buildPos, halfExtent))
+        if (Physics.CheckBox(buildPos, extent, Quaternion.identity, 
+                LayerMask.GetMask("Floor") | LayerMask.GetMask("Factory") | LayerMask.GetMask("Target") ))
         {
-            //Debug.Log("Overlap");
             return false;
         }
 
