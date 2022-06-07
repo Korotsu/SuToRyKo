@@ -28,9 +28,16 @@ public class MenuController : MonoBehaviour
     
     public GraphicRaycaster UnitsMenuRaycaster { get; private set; }
     
-    private GameObject UnitsMenuPanel = null;
-    private GameObject FormationTextBarrage = null;
-    private readonly GameObject[] FormationButtons = new GameObject[4];
+    private GameObject UnitsMenuPanel;
+    
+    private Button AttackButton;
+    private Image AttackImage;
+    
+    private Button IdleButton;
+    private Image IdleImage;
+    
+    private GameObject FormationTextBarrage;
+    private readonly GameObject[] FormationButtons = new GameObject[5];
 
     
     public void HideFactoryMenu()
@@ -181,9 +188,10 @@ public class MenuController : MonoBehaviour
                 FormationTextBarrage.SetActive(true);
                 
                 foreach (GameObject formationButton in FormationButtons)
-                {
                     formationButton.SetActive(false);
-                }
+
+                AttackImage.color   = Controller.SelectedUnitList[0].UnitLogic.CurrentState is UnitCombatState ? Color.red  : Color.white;
+                IdleImage.color     = Controller.SelectedUnitList[0].UnitLogic.CurrentState is IdleUnit        ? Color.gray : Color.white;
 
                 break;
             }
@@ -195,10 +203,36 @@ public class MenuController : MonoBehaviour
                 FormationTextBarrage.SetActive(false);
 
                 foreach (GameObject formationButton in FormationButtons)
-                {
                     formationButton.SetActive(true);
-                }
 
+                AttackImage.color   = Controller.selectedTactician.GetTacticianState() is TacticianAttackState ? Color.red  : Color.white;
+                IdleImage.color     = Controller.selectedTactician.GetTacticianState() is IdleTactician        ? Color.gray : Color.white;
+                
+                break;
+            }
+        }
+    }
+    
+    public void UpdateUnitsButtonColors()
+    {
+        switch (Controller.SelectedUnitList.Count)
+        {
+            case 0:
+                break;
+            
+            case 1:
+            {
+                AttackImage.color   = Controller.SelectedUnitList[0].UnitLogic.CurrentState is UnitCombatState ? Color.red  : Color.white;
+                IdleImage.color     = Controller.SelectedUnitList[0].UnitLogic.CurrentState is IdleUnit        ? Color.gray : Color.white;
+
+                break;
+            }
+            
+            default:
+            {
+                AttackImage.color   = Controller.selectedTactician.GetTacticianState() is TacticianAttackState ? Color.red  : Color.white;
+                IdleImage.color     = Controller.selectedTactician.GetTacticianState() is IdleTactician        ? Color.gray : Color.white;
+                
                 break;
             }
         }
@@ -245,6 +279,72 @@ public class MenuController : MonoBehaviour
         Controller = GetComponent<PlayerController>();
     }
     
+    private void SetUpUnitPannel()
+    {
+        AttackButton = UnitsMenuPanel.transform.Find("AttackStanceButton").GetComponent<Button>();
+        AttackButton.onClick.AddListener
+        (() =>
+        {
+            if (Controller.selectedTactician)
+                Controller.selectedTactician.SetState(new TacticianAttackState(Controller.selectedTactician));
+            else
+                foreach (Unit unit in Controller.SelectedUnitList)
+                    unit.UnitLogic.SetState(new UnitCombatState(unit.UnitLogic));
+        });
+        AttackImage = AttackButton.GetComponent<Image>();
+
+
+        IdleButton = UnitsMenuPanel.transform.Find("IdleStanceButton").GetComponent<Button>();
+        IdleButton.onClick.AddListener
+        (() =>
+        {
+            if (Controller.selectedTactician)
+                Controller.selectedTactician.SetState(new IdleTactician(Controller.selectedTactician));
+            else
+                foreach (Unit unit in Controller.SelectedUnitList)
+                    unit.UnitLogic.SetState(new IdleUnit(unit.UnitLogic));
+        });
+        IdleImage = IdleButton.GetComponent<Image>();
+
+
+        FormationTextBarrage = UnitsMenuPanel.transform.Find("FormationsAccessText").gameObject;
+
+        FormationButtons[0] = UnitsMenuPanel.transform.Find("FormationLineButton").gameObject;
+        FormationButtons[1] = UnitsMenuPanel.transform.Find("FormationSpikeButton").gameObject;
+        FormationButtons[2] = UnitsMenuPanel.transform.Find("FormationCurveButton").gameObject;
+        FormationButtons[3] = UnitsMenuPanel.transform.Find("CustomAngleControlSlider").gameObject;
+        FormationButtons[4] = UnitsMenuPanel.transform.Find("CustomSpacingControlSlider").gameObject;
+
+
+        FormationButtons[0].GetComponent<Button>().onClick.AddListener
+        (() =>
+        {
+            Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Linear);
+        });
+
+        FormationButtons[1].GetComponent<Button>().onClick.AddListener
+        (() =>
+        {
+            Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Curved);
+        });
+
+        FormationButtons[2].GetComponent<Button>().onClick.AddListener
+        (() =>
+        {
+            Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.VShaped);
+        });
+
+        FormationButtons[3].GetComponent<Slider>().onValueChanged.AddListener
+        ((value) =>
+        {
+            Controller.selectedTactician.formationManager.FormationAngle = value;
+            Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Custom);
+        });
+
+        FormationButtons[4].GetComponent<Slider>().onValueChanged.AddListener
+            ((value) => { Controller.selectedTactician.formationManager.LineUnitNb = (int) value; });
+    }
+    
     private void Start()
     {
         BuildUnitButtons    = FactoryMenuPanel.transform.Find("BuildUnitMenu_Panel").GetComponentsInChildren<Button>();
@@ -252,51 +352,8 @@ public class MenuController : MonoBehaviour
         CancelBuildButton   = FactoryMenuPanel.transform.Find("UnitsCancel_Button").GetComponent<Button>();
         CancelFactoryButton = FactoryMenuPanel.transform.Find("FactoryCancel_Button").GetComponent<Button>();
         BuildQueueTexts = new Text[BuildUnitButtons.Length];
-
-
-        UnitsMenuPanel.transform.Find("AttackStanceButton").GetComponent<Button>().onClick.AddListener
-            (() =>
-            {
-                if (Controller.selectedTactician)
-                    Controller.selectedTactician.SetState(new TacticianAttackState(Controller.selectedTactician));
-                else
-                    foreach (Unit unit in Controller.SelectedUnitList)
-                        unit.UnitLogic.SetState(new UnitCombatState(unit.UnitLogic));
-            } );
         
-        UnitsMenuPanel.transform.Find("IdleStanceButton").GetComponent<Button>().onClick.AddListener
-            (() =>
-            {
-                if (Controller.selectedTactician)
-                    Controller.selectedTactician.SetState(new IdleTactician(Controller.selectedTactician));
-                else
-                    foreach (Unit unit in Controller.SelectedUnitList)
-                        unit.UnitLogic.SetState(new IdleUnit(unit.UnitLogic));
-            } );
-        
-        
-        FormationTextBarrage = UnitsMenuPanel.transform.Find("FormationsAccessText").gameObject;
-
-        FormationButtons[0] = UnitsMenuPanel.transform.Find("FormationLineButton").gameObject;
-        FormationButtons[1] = UnitsMenuPanel.transform.Find("FormationSpikeButton").gameObject;
-        FormationButtons[2] = UnitsMenuPanel.transform.Find("FormationCurveButton").gameObject;
-        FormationButtons[3] = UnitsMenuPanel.transform.Find("CustomAngleControlSlider").gameObject;
-
-        FormationButtons[0].GetComponent<Button>().onClick.AddListener
-            (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Linear);} );
-        
-        FormationButtons[1].GetComponent<Button>().onClick.AddListener
-            (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Curved);} );
-
-        FormationButtons[2].GetComponent<Button>().onClick.AddListener
-            (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.VShaped);} );
-        
-        FormationButtons[3].GetComponent<Slider>().onValueChanged.AddListener
-            ((value) =>
-            {
-                Controller.selectedTactician.formationManager.FormationAngle = value;
-                Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Custom);
-            } );
+        SetUpUnitPannel();
     }
 }
 

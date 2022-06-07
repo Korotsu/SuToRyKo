@@ -152,6 +152,7 @@ public sealed class PlayerController : UnitController
 
         // right click : Unit actions (move / attack / capture ...)
         OnUnitActionEnd += ComputeUnitsAction;
+        OnUnitActionEnd += PlayerMenuController.UpdateUnitsButtonColors;
 
         // Camera movement
         // middle click : camera movement
