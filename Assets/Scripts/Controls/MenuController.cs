@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System;
+using AI.BehaviorStates;
+using Formations;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine;
@@ -21,6 +23,15 @@ public class MenuController : MonoBehaviour
     private Button CancelFactoryButton = null;
     private Text[] BuildQueueTexts = null;
 
+    
+    [SerializeField] private Transform UnitsMenuCanvas = null;
+    
+    public GraphicRaycaster UnitsMenuRaycaster { get; private set; }
+    
+    private GameObject UnitsMenuPanel = null;
+    private readonly GameObject[] FormationButtons = new GameObject[4];
+
+    
     public void HideFactoryMenu()
     {
         if (FactoryMenuPanel)
@@ -31,6 +42,18 @@ public class MenuController : MonoBehaviour
         if (FactoryMenuPanel)
             FactoryMenuPanel.SetActive(true);
     }
+    
+    public void HideUnitsMenu()
+    {
+        if (UnitsMenuPanel)
+            UnitsMenuPanel.SetActive(false);
+    }
+    public void ShowUnitsMenu()
+    {
+        if (UnitsMenuPanel)
+            UnitsMenuPanel.SetActive(true);
+    }
+    
     public void UpdateBuildPointsUI()
     {
         if (BuildPointsText != null)
@@ -113,7 +136,7 @@ public class MenuController : MonoBehaviour
         // activate Cancel button
         CancelBuildButton.onClick.AddListener(  () =>
                                                 {
-                                                    selectedFactory?.CancelCurrentBuild();
+                                                    selectedFactory.CancelCurrentBuild();
                                                     HideAllFactoryBuildQueue();
                                                 });
 
@@ -141,11 +164,46 @@ public class MenuController : MonoBehaviour
             BuildFactoryButtons[i].gameObject.SetActive(false);
         }
     }
-    void Awake()
+
+    public void UpdateUnitsPannel()
     {
-        if (FactoryMenuCanvas == null)
+        switch (Controller.SelectedUnitList.Count)
         {
-            Debug.LogWarning("FactoryMenuCanvas not assigned in inspector");
+            case 0:
+                HideUnitsMenu();
+                break;
+            
+            case 1:
+            {
+                ShowUnitsMenu();
+
+                foreach (GameObject formationButton in FormationButtons)
+                {
+                    formationButton.SetActive(false);
+                }
+
+                break;
+            }
+            
+            default:
+            {
+                ShowUnitsMenu();
+                
+                foreach (GameObject formationButton in FormationButtons)
+                {
+                    formationButton.SetActive(true);
+                }
+
+                break;
+            }
+        }
+    }
+    
+    private void Awake()
+    {
+        if (!FactoryMenuCanvas ||  !UnitsMenuCanvas)
+        {
+            Debug.LogWarning("FactoryMenuCanvas or UnitsMenuCanvas was not assigned in inspector");
         }
         else
         {
@@ -156,27 +214,83 @@ public class MenuController : MonoBehaviour
                 FactoryMenuPanel.SetActive(false);
             }
             BuildMenuRaycaster = FactoryMenuCanvas.GetComponent<GraphicRaycaster>();
+
             Transform BuildPointsTextTransform = FactoryMenuCanvas.Find("BuildPointsText");
             if (BuildPointsTextTransform)
             {
                 BuildPointsText = BuildPointsTextTransform.GetComponent<Text>();
             }
+            
             Transform CapturedTargetsTextTransform = FactoryMenuCanvas.Find("CapturedTargetsText");
             if (CapturedTargetsTextTransform)
             {
                 CapturedTargetsText = CapturedTargetsTextTransform.GetComponent<Text>();
             }
+
+
+            Transform UnitsMenuPanelTansform = UnitsMenuCanvas.Find("UnitsSelection_Panel");
+            if (UnitsMenuPanelTansform)
+            {
+                UnitsMenuPanel = UnitsMenuPanelTansform.gameObject;
+                UnitsMenuPanel.SetActive(false);
+            }
+            UnitsMenuRaycaster = UnitsMenuCanvas.GetComponent<GraphicRaycaster>();
         }
 
-        Controller = GetComponent<UnitController>();
+        Controller = GetComponent<PlayerController>();
     }
-    void Start()
+    
+    private void Start()
     {
         BuildUnitButtons    = FactoryMenuPanel.transform.Find("BuildUnitMenu_Panel").GetComponentsInChildren<Button>();
         BuildFactoryButtons = FactoryMenuPanel.transform.Find("BuildFactoryMenu_Panel").GetComponentsInChildren<Button>();
         CancelBuildButton   = FactoryMenuPanel.transform.Find("UnitsCancel_Button").GetComponent<Button>();
         CancelFactoryButton = FactoryMenuPanel.transform.Find("FactoryCancel_Button").GetComponent<Button>();
         BuildQueueTexts = new Text[BuildUnitButtons.Length];
+
+
+        UnitsMenuPanel.transform.Find("AttackStanceButton").GetComponent<Button>().onClick.AddListener
+            (() =>
+            {
+                if (Controller.selectedTactician)
+                    Controller.selectedTactician.SetState(new TacticianAttackState(Controller.selectedTactician));
+                else
+                    foreach (Unit unit in Controller.SelectedUnitList)
+                        unit.UnitLogic.SetState(new UnitCombatState(unit.UnitLogic));
+            } );
+        
+        UnitsMenuPanel.transform.Find("IdleStanceButton").GetComponent<Button>().onClick.AddListener
+            (() =>
+            {
+                if (Controller.selectedTactician)
+                    Controller.selectedTactician.SetState(new IdleTactician(Controller.selectedTactician));
+                else
+                    foreach (Unit unit in Controller.SelectedUnitList)
+                        unit.UnitLogic.SetState(new IdleUnit(unit.UnitLogic));
+            } );
+        
+        
+        FormationButtons[0] = UnitsMenuPanel.transform.Find("FormationLineButton").gameObject;
+        FormationButtons[1] = UnitsMenuPanel.transform.Find("FormationSpikeButton").gameObject;
+        FormationButtons[2] = UnitsMenuPanel.transform.Find("FormationCurveButton").gameObject;
+        FormationButtons[3] = UnitsMenuPanel.transform.Find("CustomAngleControlSlider").gameObject;
+
+        
+        FormationButtons[0].GetComponent<Button>().onClick.AddListener
+            (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Linear);} );
+        
+        FormationButtons[1].GetComponent<Button>().onClick.AddListener
+            (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Curved);} );
+
+        FormationButtons[2].GetComponent<Button>().onClick.AddListener
+            (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.VShaped);} );
+        
+        FormationButtons[3].GetComponent<Slider>().onValueChanged.AddListener
+            ((value) =>
+            {
+                Controller.selectedTactician.formationManager.FormationAngle = value;
+                Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Custom);
+            } );
     }
 }
 

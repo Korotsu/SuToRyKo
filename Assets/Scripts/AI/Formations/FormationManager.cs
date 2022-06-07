@@ -47,6 +47,8 @@ namespace Formations
 
         [SerializeField, Range(0, 180)]
         private float formationAngle = 0;
+        
+        public float FormationAngle { set => formationAngle = value; }
 
         // Start is called before the first frame update
         void Start()
