@@ -139,7 +139,7 @@ public sealed class PlayerController : UnitController
         fogTex = new Texture2D(Fog.width, Fog.height);
     }
 
-    override protected void Start()
+    protected override void Start()
     {
         base.Start();
 
@@ -149,6 +149,7 @@ public sealed class PlayerController : UnitController
         OnMouseLeftPressed += StartSelection;
         OnMouseLeft += UpdateSelection;
         OnMouseLeftReleased += EndSelection;
+        OnMouseLeftReleased += PlayerMenuController.UpdateUnitsPannel;
 
         // right click : Unit actions (move / attack / capture ...)
         OnUnitActionEnd += ComputeUnitsAction;
@@ -210,7 +211,7 @@ public sealed class PlayerController : UnitController
         OnKillTacticianPressed += KillTactician;
         OnFormationLockTogglePressed += FormationLockToggle;
     }
-    override protected void Update()
+    protected override void Update()
     {
         switch (CurrentInputMode)
         {
@@ -465,6 +466,7 @@ public sealed class PlayerController : UnitController
         //Create a list of Raycast Results
         List<RaycastResult> results = new List<RaycastResult>();
         PlayerMenuController.BuildMenuRaycaster.Raycast(MenuPointerEventData, results);
+        PlayerMenuController.UnitsMenuRaycaster.Raycast(MenuPointerEventData, results);
         if (results.Count > 0)
             return;
 

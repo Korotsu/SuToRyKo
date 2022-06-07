@@ -11,7 +11,7 @@ public class Tactician : Base
 
     public List<Unit> Soldiers { get => soldiers; private set => soldiers = value; }
 
-    private Formations.FormationManager formationManager;
+    public Formations.FormationManager formationManager { get; private set; }
 
     public ref List<Unit> GetSoldiers() => ref soldiers;
 
@@ -64,6 +64,7 @@ public class Tactician : Base
             {
                 soldiers.RemoveAt(i);
                 i--;
+                count = soldiers.Count;
                 continue;
             }
             if (unit.GetUnitData.type == EntityDataScriptable.Type.Heavy)
