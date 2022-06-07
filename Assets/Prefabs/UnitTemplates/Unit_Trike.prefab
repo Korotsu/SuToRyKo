@@ -51,11 +51,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team: 0
-  UnitData: {fileID: 11400000, guid: b4a2cf66d48b98043b5a7e8bfb7b27a4, type: 2}
+  entityVisObj: {fileID: 0}
   VisMat: {fileID: 2100000, guid: 178cda581d0d1b24d82d69bcb50ff2a1, type: 2}
+  VisionMax: 35
+  UnitData: {fileID: 11400000, guid: b4a2cf66d48b98043b5a7e8bfb7b27a4, type: 2}
   NavMeshAgent: {fileID: 0}
   mainTactician: {fileID: 0}
   tempTactician: {fileID: 0}
+  recovery: 0
 --- !u!65 &3563715967324713862
 BoxCollider:
   m_ObjectHideFlags: 0

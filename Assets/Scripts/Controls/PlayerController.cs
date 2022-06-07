@@ -749,9 +749,8 @@ public sealed class PlayerController : UnitController
             if (target != null && target.GetTeam() != GetTeam())
             {
                 if (selectedTactician)
-                {
                     selectedTactician.SetState(new TacticianCaptureState(selectedTactician, target));
-                }
+
                 else
                 {
                     // Direct call to capturing task $$$ to be improved by AI behaviour

@@ -99,7 +99,7 @@ public class TargetBuilding : BaseEntity
     }
     public void StopCapture(Unit unit)
     {
-        if (unit == null)
+        if (unit == null || TeamScore[(int)unit.GetTeam()] <= 0)
             return;
 
         TeamScore[(int)unit.GetTeam()] -= unit.Cost;
