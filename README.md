@@ -65,3 +65,7 @@ There is two layers of fog: The permanent and the non-visibility layers.
 In places that were not explored, the area is shrouded in *dark grey*, and nothing inside is visible apart from a hint of the terrain.  
 In places that were previously explored but not currently watched by your units, the area is shrouded in *light grey*, and no enemy units are visible inside.
 Any area currently supervised by of your units, a neutral building, or one of your buildings, will be lit up and enemies can be seen inside.
+
+### Bug known:
+
+- Sometimes the navMeshAgent of the unit is locked and can't do his task. Due to is limited of running task, the strategist won't make others units until the current task is destroy. You can kill the units to make the AI run again.
