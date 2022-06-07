@@ -37,6 +37,9 @@ namespace Formations
 
         [SerializeField, Range(0, 10)]
         private int lineUnitNb = 5;
+        
+        public int LineUnitNb
+        { set => lineUnitNb = value; }
 
         private float lineSize = 0f;
 
