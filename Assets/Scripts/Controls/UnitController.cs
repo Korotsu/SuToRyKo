@@ -19,7 +19,6 @@ public class UnitController : MonoBehaviour
         get => _TotalBuildPoints;
         set
         {
-            Debug.Log("TotalBuildPoints updated");
             _TotalBuildPoints = value;
             OnBuildPointsUpdated?.Invoke();
         }

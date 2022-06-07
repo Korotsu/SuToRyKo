@@ -184,7 +184,7 @@ public partial class Unit : InteractableEntity
                 {
                     pathIndex++;
 
-                    if (path.corners.Length <= pathIndex)
+                    if (pathIndex >= path.corners.Length)
                     {
                         path        = null;
                         recovery    = false;
