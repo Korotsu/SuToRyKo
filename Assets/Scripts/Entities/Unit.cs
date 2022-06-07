@@ -142,6 +142,7 @@ public partial class Unit : InteractableEntity
         {
             path = new NavMeshPath();
             NavMeshAgent.CalculatePath(pos, path);
+            pathIndex = 0;
         }
     }
 
@@ -149,6 +150,7 @@ public partial class Unit : InteractableEntity
     {
         NavMeshAgent.isStopped  = true;
         path                    = null;
+        pathIndex               = 0;
         NavMeshAgent.ResetPath();
     }
 
@@ -186,6 +188,7 @@ public partial class Unit : InteractableEntity
 
                     if (pathIndex >= path.corners.Length)
                     {
+                        pathIndex   = 0;
                         path        = null;
                         recovery    = false;
                     }
