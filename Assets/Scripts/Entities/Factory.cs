@@ -30,6 +30,8 @@ public sealed class Factory : InteractableEntity
 
     UnitController Controller = null;
 
+    private float OngoingPoint = 0;
+
     [SerializeField]
     int MaxBuildingQueueSize = 5;
     Queue<UnitBuildOrder> BuildingQueue = new Queue<UnitBuildOrder>();
@@ -112,6 +114,13 @@ public sealed class Factory : InteractableEntity
         switch (CurrentState)
         {
             case State.Available:
+                OngoingPoint += 0.3f * Time.deltaTime;
+
+                if (OngoingPoint >= 1f)
+                {
+                    OngoingPoint -= 1f;
+                    ++GameServices.GetControllerByTeam(Team).TotalBuildPoints;
+                }
                 break;
 
             case State.UnderConstruction:

@@ -374,9 +374,6 @@ public class Strategist : UnitController
 
                         task.isRunning = true;
                     }
-                    
-                    else
-                        continue;
                 }
                 break;
             case Task.Type.Capture:

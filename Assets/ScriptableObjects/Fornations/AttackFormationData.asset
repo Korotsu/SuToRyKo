@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c9facc0f2a285142b9373d13429a2dc, type: 3}
   m_Name: AttackFormationData
   m_EditorClassIdentifier: 
-  lightUnit: 1
-  heavyUnit: 0
-  DistanceImpact: 6
+  lightUnit: 0.9
+  heavyUnit: 0.1
+  DistanceImpact: 8.07

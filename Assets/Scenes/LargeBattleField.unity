@@ -1218,7 +1218,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.016666668
+  m_VoxelSize: 0.16666667
   m_BuildHeightMesh: 0
   m_NavMeshData: {fileID: 23800000, guid: 579f8597beb439c4aa83fae9951d41d6, type: 2}
 --- !u!154 &576818555
@@ -2813,6 +2813,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3124353299293301185, guid: 32676265f95fdeb40833df7b0b170998,
+        type: 3}
+      propertyPath: MoveSpeed
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 3124353299293301185, guid: 32676265f95fdeb40833df7b0b170998,
         type: 3}
       propertyPath: TerrainBorder
