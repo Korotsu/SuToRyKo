@@ -163,7 +163,7 @@ MonoBehaviour:
   Team: 0
   entityVisObj: {fileID: 0}
   VisMat: {fileID: 0}
-  VisionMax: 50
+  VisionMax: 35
   CaptureGaugeStart: 200
   CaptureGaugeSpeed: 10
   ImmediateBuildPoints: 5

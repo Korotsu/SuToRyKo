@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lightUnit: 1
   heavyUnit: 0
-  DistanceImpact: 1.99
+  DistanceImpact: 3
