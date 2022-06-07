@@ -87,12 +87,6 @@ namespace Formations
             formationType = newType;
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-            //UpdateFormation?.Invoke();
-        }
-
         private void OnDrawGizmos()
         {
             if (displayNodes)
@@ -106,6 +100,9 @@ namespace Formations
 
         public void SetTargetPos(Vector3 pos)
         {
+            if (!tactician)
+                return;
+
             SetFormationSpeed();
 
             if (!navMeshAgent.hasPath)
@@ -125,6 +122,9 @@ namespace Formations
 
         public void SetFormationSpeed()
         {
+            if (!tactician)
+                return;
+
             List<Unit> units = tactician.GetSoldiers().Select(soldier => soldier).ToList();
 
             float maxSpeed = float.MaxValue;

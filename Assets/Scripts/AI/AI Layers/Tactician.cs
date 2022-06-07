@@ -24,6 +24,8 @@ public class Tactician : Base
 
     public TacticianState GetTacticianState() => currentState;
 
+    public int SoldiersInProgress => nbHeavyInCreation + nbLightInCreation;
+
     public bool isFormationLocked = false;
 
     public int nbLightInCreation = 0;

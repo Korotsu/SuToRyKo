@@ -8,7 +8,11 @@ namespace Formations
     {
         private void CreateFormation(float angle)
         {
+            if (tactician == null)
+                return;
+
             List<Unit> soldiers = tactician.GetSoldiers();
+                
             formationSize = soldiers.Count;
 
             List<Renderer> renderers = new List<Renderer>();

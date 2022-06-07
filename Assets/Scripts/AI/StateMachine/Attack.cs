@@ -41,6 +41,13 @@ namespace AI.BehaviorStates
 
         public override void End()
         {
+            if (tactician)
+            {
+                foreach (Unit unit in tactician.GetSoldiers())
+                {
+                    unit.EntityTarget = null;
+                }
+            }
         }
 
     }

@@ -148,25 +148,41 @@ public class Strategist : UnitController
     #region Task Methods
     private void TaskInit()
     {
-        int count2 = unusedTacticians.Count;
+        int count2 = runningTasks.Count;
+        for (int j = 0; j < count2; j++)
+        {
+            Task task = runningTasks[j];
+            if(task.tacticians.Count > 0 && task.tacticians[0] && task.tacticians[0].Soldiers.Count == 0 && task.tacticians[0].SoldiersInProgress == 0)
+            {
+                unusedTacticians.AddRange(task.tacticians);
+                runningTasks.RemoveAt(j);
+                j--;
+                count2 = runningTasks.Count;
+            }
+            
+        }
+
+        
+        foreach (Task task in waitingTasks)
+        {
+            unusedTacticians.AddRange(task.tacticians);
+        }
+
+        count2 = unusedTacticians.Count;
         for (int j = 0; j < count2; j++)
         {
             Tactician tactician = unusedTacticians[j];
-                
+
             if (!tactician)
             {
                 unusedTacticians.RemoveAt(j);
                 count2--;
-                    
+
             }
             else
             {
                 tactician.UpdateUnits();
             }
-        }
-        foreach (Task task in waitingTasks)
-        {
-            unusedTacticians.AddRange(task.tacticians);
         }
 
         waitingTasks.Clear();
@@ -200,9 +216,6 @@ public class Strategist : UnitController
                     task.formationData = captureFormation;
                     task.cost = CheckTroupCost(task);
                 }
-                
-                
-
                 sortedTaskList.Add(task);
             }
         }
@@ -250,7 +263,7 @@ public class Strategist : UnitController
                 {
                     task.tacticians.RemoveAt(j);
                     count2--;
-                    
+                    continue;
                 }
                 else
                 {
@@ -270,8 +283,13 @@ public class Strategist : UnitController
                 EntityToTask.Remove(task.TargetID);
                 i--;
                 count = runningTasks.Count;
+                continue;
             }
-
+            if(task.tacticians.Count > 0)
+            {
+                runningTasks[i].nbHeavyInProgress = runningTasks[i].tacticians[0].nbHeavyInCreation;
+                runningTasks[i].nbLightInProgress = runningTasks[i].tacticians[0].nbLightInCreation;
+            }
         }
         
         foreach (Task task in waitingTasks)
@@ -309,7 +327,9 @@ public class Strategist : UnitController
             {
                 Tactician tacticianToRemove = unusedTacticians[i];
                 unusedTacticians.RemoveAt(i);
-                Destroy(tacticianToRemove.gameObject);
+
+                if(tacticianToRemove.gameObject)
+                    Destroy(tacticianToRemove.gameObject);
 
                 i--;
                 count = unusedTacticians.Count;
@@ -401,12 +421,23 @@ public class Strategist : UnitController
                 }
             }
         }
-        float lightUnitCost = lightFactory.GetBuildableUnitData(0).Cost;
-        float heavyUnitCost = heavyFactory.GetBuildableUnitData(0).Cost;
-        float lightUnitSpeed = lightFactory.GetBuildableUnitData(0).Speed;
-        float heavyUnitSpeed = heavyFactory.GetBuildableUnitData(0).Speed;
-        float lightUnitBuildTime = lightFactory.GetBuildableUnitData(0).BuildDuration;
-        float heavyUnitBuildTime = heavyFactory.GetBuildableUnitData(0).BuildDuration;
+
+        float lightUnitCost = 0f, heavyUnitCost = 0f, lightUnitSpeed = 0f,
+              heavyUnitSpeed = 0f, lightUnitBuildTime = 0f, heavyUnitBuildTime = 0f;
+
+        if (lightFactory)
+        {
+            lightUnitCost = lightFactory.GetBuildableUnitData(0).Cost;
+            lightUnitSpeed = lightFactory.GetBuildableUnitData(0).Speed;
+            lightUnitBuildTime = lightFactory.GetBuildableUnitData(0).BuildDuration;
+        }
+        if (heavyFactory)
+        {
+            heavyUnitCost = heavyFactory.GetBuildableUnitData(0).Cost;
+            heavyUnitSpeed = heavyFactory.GetBuildableUnitData(0).Speed;
+            heavyUnitBuildTime = heavyFactory.GetBuildableUnitData(0).BuildDuration;
+        }
+
         if (!(bestTactician is null) && bestTactician)
         {
             task.bestTactician = null;
@@ -418,11 +449,14 @@ public class Strategist : UnitController
             task.cost = (int)(task.nbLight * lightUnitCost + task.nbHeavy * heavyUnitCost);
             return;
         }
-        
-        
-        float distanceToGoSqr = (lightFactory.transform.position - task.target.transform.position).sqrMagnitude;
-        if ((heavyFactory.transform.position - task.target.transform.position).sqrMagnitude >= distanceToGoSqr)
+
+        float distanceToGoSqr = 0f;
+        if(lightFactory)
+            distanceToGoSqr = (lightFactory.transform.position - task.target.transform.position).sqrMagnitude;
+
+        if (heavyFactory && (heavyFactory.transform.position - task.target.transform.position).sqrMagnitude >= distanceToGoSqr)
             distanceToGoSqr = (heavyFactory.transform.position - task.target.transform.position).sqrMagnitude;
+
         float distanceToGo = Mathf.Sqrt(distanceToGoSqr);
         
         float minSpeed = lightUnitSpeed >= heavyUnitSpeed ? lightUnitSpeed : heavyUnitSpeed;

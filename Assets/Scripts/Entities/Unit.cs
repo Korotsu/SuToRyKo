@@ -13,7 +13,7 @@ public partial class Unit : InteractableEntity
     private Transform BulletSlot;
     private float ActionCooldown = 0f;
     private InteractableEntity entityTarget = null;
-    public InteractableEntity EntityTarget { get => entityTarget; private set => entityTarget = value; }
+    public InteractableEntity EntityTarget { get => entityTarget;  set => entityTarget = value; }
     public NavMeshAgent NavMeshAgent;
     public UnitDataScriptable GetUnitData => UnitData;
     public int Cost => UnitData.Cost;
