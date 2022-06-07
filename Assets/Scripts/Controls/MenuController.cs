@@ -29,7 +29,7 @@ public class MenuController : MonoBehaviour
     public GraphicRaycaster UnitsMenuRaycaster { get; private set; }
     
     private GameObject UnitsMenuPanel = null;
-    private readonly GameObject[] FormationButtons = new GameObject[3];
+    private readonly GameObject[] FormationButtons = new GameObject[4];
 
     
     public void HideFactoryMenu()
@@ -269,11 +269,13 @@ public class MenuController : MonoBehaviour
                         unit.UnitLogic.SetState(new IdleUnit(unit.UnitLogic));
             } );
         
+        
         FormationButtons[0] = UnitsMenuPanel.transform.Find("FormationLineButton").gameObject;
         FormationButtons[1] = UnitsMenuPanel.transform.Find("FormationSpikeButton").gameObject;
         FormationButtons[2] = UnitsMenuPanel.transform.Find("FormationCurveButton").gameObject;
+        FormationButtons[3] = UnitsMenuPanel.transform.Find("CustomAngleControlSlider").gameObject;
 
-            
+        
         FormationButtons[0].GetComponent<Button>().onClick.AddListener
             (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Linear);} );
         
@@ -282,6 +284,13 @@ public class MenuController : MonoBehaviour
 
         FormationButtons[2].GetComponent<Button>().onClick.AddListener
             (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.VShaped);} );
+        
+        FormationButtons[3].GetComponent<Slider>().onValueChanged.AddListener
+            ((value) =>
+            {
+                Controller.selectedTactician.formationManager.FormationAngle = value;
+                Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Custom);
+            } );
     }
 }
 
