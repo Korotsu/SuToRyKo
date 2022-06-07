@@ -29,6 +29,7 @@ public class MenuController : MonoBehaviour
     public GraphicRaycaster UnitsMenuRaycaster { get; private set; }
     
     private GameObject UnitsMenuPanel = null;
+    private GameObject FormationTextBarrage = null;
     private readonly GameObject[] FormationButtons = new GameObject[4];
 
     
@@ -177,6 +178,8 @@ public class MenuController : MonoBehaviour
             {
                 ShowUnitsMenu();
 
+                FormationTextBarrage.SetActive(true);
+                
                 foreach (GameObject formationButton in FormationButtons)
                 {
                     formationButton.SetActive(false);
@@ -189,6 +192,8 @@ public class MenuController : MonoBehaviour
             {
                 ShowUnitsMenu();
                 
+                FormationTextBarrage.SetActive(false);
+
                 foreach (GameObject formationButton in FormationButtons)
                 {
                     formationButton.SetActive(true);
@@ -270,12 +275,13 @@ public class MenuController : MonoBehaviour
             } );
         
         
+        FormationTextBarrage = UnitsMenuPanel.transform.Find("FormationsAccessText").gameObject;
+
         FormationButtons[0] = UnitsMenuPanel.transform.Find("FormationLineButton").gameObject;
         FormationButtons[1] = UnitsMenuPanel.transform.Find("FormationSpikeButton").gameObject;
         FormationButtons[2] = UnitsMenuPanel.transform.Find("FormationCurveButton").gameObject;
         FormationButtons[3] = UnitsMenuPanel.transform.Find("CustomAngleControlSlider").gameObject;
 
-        
         FormationButtons[0].GetComponent<Button>().onClick.AddListener
             (() => {Controller.selectedTactician.formationManager.SwitchFormationType(FormationManager.EFormationTypes.Linear);} );
         
