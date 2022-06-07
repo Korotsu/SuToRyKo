@@ -267,7 +267,7 @@ PrefabInstance:
     - target: {fileID: 114127896467981986, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
       propertyPath: DrawFog
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114127896467981986, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
@@ -475,7 +475,7 @@ PrefabInstance:
     - target: {fileID: 7559374507699960205, guid: bdd1126d50cc5ab4eb3858e9dc54b2b9,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bdd1126d50cc5ab4eb3858e9dc54b2b9, type: 3}
@@ -1047,6 +1047,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1365325577}
     m_Modifications:
+    - target: {fileID: 570667858280657274, guid: 2f79c333a7fc014468deedd4aa8b568e,
+        type: 3}
+      propertyPath: m_Carve
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 570667858280657274, guid: 2f79c333a7fc014468deedd4aa8b568e,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3393487227576296503, guid: 2f79c333a7fc014468deedd4aa8b568e,
         type: 3}
       propertyPath: m_LocalPosition.z
@@ -1388,6 +1398,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11493676, guid: 79699270ed6dad648ad050a5e8010a5c, type: 3}
       propertyPath: Team
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6957881582202263641, guid: 79699270ed6dad648ad050a5e8010a5c,
+        type: 3}
+      propertyPath: m_Carve
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6957881582202263641, guid: 79699270ed6dad648ad050a5e8010a5c,
+        type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []

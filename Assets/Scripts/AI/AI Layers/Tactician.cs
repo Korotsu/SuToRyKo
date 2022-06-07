@@ -12,7 +12,7 @@ public class Tactician : Base
 
     public List<Unit> Soldiers { get => soldiers; private set => soldiers = value; }
 
-    private NavMeshAgent navMeshAgent;
+    public NavMeshAgent navMeshAgent;
 
     private Formations.FormationManager formationManager;
 
@@ -92,13 +92,9 @@ public class Tactician : Base
 
     public bool IsNearTarget()
     {
-        if ( navMeshAgent.destination != Vector3.zero && currentState != null && currentState.Target && targetPosition == currentState.Target.transform.position)
+        if ( (currentState.Target.transform.position- navMeshAgent.destination).magnitude <= maxDistanceToTarget && currentState != null && currentState.Target && targetPosition == currentState.Target.transform.position)
         {
             float distance = (navMeshAgent.destination - transform.position).magnitude;
-            /*float distance = (currentState.Target.transform.position - transform.position).magnitude;
-
-            if (distance <= maxDistanceToTarget)
-                return true;*/
 
             if (distance <= maxDistanceToTarget)
                 return true;

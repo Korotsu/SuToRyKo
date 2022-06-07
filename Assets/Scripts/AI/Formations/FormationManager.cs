@@ -27,8 +27,6 @@ namespace Formations
 
         private Tactician tactician;
 
-        private NavMeshPath path;
-
         public Tactician Tactician => tactician;
 
         private NavMeshAgent navMeshAgent;
@@ -93,9 +91,6 @@ namespace Formations
         void Update()
         {
             //UpdateFormation?.Invoke();
-
-            if (path != null && navMeshAgent.path != path)
-                navMeshAgent.SetPath(path);
         }
 
         private void OnDrawGizmos()
@@ -113,9 +108,9 @@ namespace Formations
         {
             SetFormationSpeed();
 
-            if (!navMeshAgent.hasPath && path == null)
+            if (!navMeshAgent.hasPath)
             {
-                navMeshAgent.SetDestination(pos);
+                bool result = navMeshAgent.SetDestination(pos);
                 navMeshAgent.isStopped = false;
             }
 

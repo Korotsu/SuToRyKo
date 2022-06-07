@@ -34,7 +34,7 @@ public abstract class TacticianState : State
 
     public override void Update()
     {
-        foreach (Unit unit in tactician.Soldiers)
+        foreach (Unit unit in tactician.GetSoldiers())
         {
             if(unit)
                 unit.UnitLogic.Update();

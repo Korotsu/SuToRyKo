@@ -12,7 +12,7 @@ namespace AI.BehaviorStates
 
         public override void Start() 
         {
-            if (target && tactician)
+            if (tactician)
             {
                 foreach (Unit unit in tactician.Soldiers)
                 {
@@ -26,10 +26,12 @@ namespace AI.BehaviorStates
             if (!tactician)
                 return;
 
-            if (!tactician.IsNearTarget())
-            {
+            if (target == null)
+                base.Update();
+
+            else if (!tactician.IsNearTarget() && (target.transform.position - tactician.navMeshAgent.destination).magnitude > tactician.maxDistanceToTarget)
                 tactician.SetTargetPos(target.transform.position);
-            }
+
             else
             {
                 tactician.StopFollowFormations();
@@ -125,7 +127,7 @@ public partial class Unit
     // Begin Attack, stops movements!
     public void StartAttacking(InteractableEntity target)
     {
-        NavMeshAgent.isStopped = true;
+        Stop();
         
         EntityTarget = target;
     }

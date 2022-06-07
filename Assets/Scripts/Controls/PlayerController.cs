@@ -305,10 +305,16 @@ public sealed class PlayerController : UnitController
         //Stop current state of selected units and pass to combat state
         if (Input.GetKeyDown(KeyCode.A) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl)))
         {
-            foreach (Unit unit in SelectedUnitList)
+            if (selectedTactician)
+                selectedTactician.SetState(new AI.BehaviorStates.TacticianAttackState(selectedTactician));
+
+            else
             {
-                if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCombatState))
-                    unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic));
+                foreach (Unit unit in SelectedUnitList)
+                {
+                    if (!(unit.UnitLogic.CurrentState is AI.BehaviorStates.UnitCombatState))
+                        unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic));
+                }
             }
         }
         //Stop current state of selected units and pass to idle state
@@ -709,13 +715,16 @@ public sealed class PlayerController : UnitController
             {
                 if (other.GetTeam() != GetTeam())
                 {
-                    // Direct call to attacking task $$$ to be improved by AI behaviour
-                    foreach (Unit unit in SelectedUnitList)
+                    if (selectedTactician)
+                        selectedTactician.SetState(new AI.BehaviorStates.TacticianAttackState(selectedTactician, other));
+
+                    else
                     {
-                        if (selectedTactician)
-                            selectedTactician.SetState(new AI.BehaviorStates.TacticianAttackState(selectedTactician, other));
-                        else
+                        // Direct call to attacking task $$$ to be improved by AI behaviour
+                        foreach (Unit unit in SelectedUnitList)
+                        {
                             unit.UnitLogic.SetState(new AI.BehaviorStates.UnitCombatState(unit.UnitLogic, other));
+                        }
                     }
                 }
                 else if (other.NeedsRepairing())
@@ -759,7 +768,7 @@ public sealed class PlayerController : UnitController
             Vector3 newPos = raycastInfo.point;
             SetTargetCursorPosition(newPos);
 
-            if (selectedTactician /*&& selectedTactician.FormationManager.nodes.Count > 1*/)
+            if (selectedTactician)
             {
                 selectedTactician.SetState(new AI.BehaviorStates.IdleTactician(selectedTactician));
                 selectedTactician.SetTargetPos(newPos);

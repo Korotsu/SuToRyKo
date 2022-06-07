@@ -46,7 +46,7 @@ partial class Unit
     }
     public void StopCapture()
     {
-        if ( !(CaptureTarget is null) )
+        if (CaptureTarget)
         {
             CaptureTarget.StopCapture(this);
             CaptureTarget = null;
@@ -83,8 +83,8 @@ partial class Unit
 
         if (NavMeshAgent)
         {
-            testpath = new NavMeshPath();
-            NavMeshAgent.CalculatePath(target.transform.position, testpath);
+            path = new NavMeshPath();
+            NavMeshAgent.CalculatePath(target.transform.position, path);
         }
 
         EntityTarget = null;

@@ -41,8 +41,6 @@ public partial class Unit : InteractableEntity
     public bool recovery = false;
     public UnitLogic UnitLogic { get => unitLogic; }
 
-    private NavMeshPath testpath = null;
-
     float GetPower()
     {
         float p = UnitData.GetPower();
@@ -76,6 +74,12 @@ public partial class Unit : InteractableEntity
             GameObject fx = Instantiate(GetUnitData.DeathFXPrefab, transform);
             fx.transform.parent = null;
         }
+
+        if (tempTactician && tempTactician != mainTactician)
+            tempTactician.Soldiers.Remove(this);
+
+        if(mainTactician)
+            mainTactician.Soldiers.Remove(this);
 
         Destroy(gameObject);
     }
@@ -113,9 +117,9 @@ public partial class Unit : InteractableEntity
         if(!mainTactician && !tempTactician)
             unitLogic.Update();
 
-        if (testpath != null && NavMeshAgent.path != testpath)
+        if (path != null && path.status != NavMeshPathStatus.PathInvalid && NavMeshAgent.path != path)
         {
-            NavMeshAgent.SetDestination(testpath.corners[testpath.corners.Length-1]);
+            NavMeshAgent.SetDestination(path.corners[path.corners.Length-1]);
             NavMeshAgent.isStopped = false;
         }
     }
@@ -130,22 +134,21 @@ public partial class Unit : InteractableEntity
     // Moving Task
     public void SetTargetPos(Vector3 pos)
     {
-        EntityTarget = null;
 
         if (!(CaptureTarget is null))
             StopCapture();
 
         if (NavMeshAgent)
         {
-            testpath = new NavMeshPath();
-            NavMeshAgent.CalculatePath(pos, testpath);
+            path = new NavMeshPath();
+            NavMeshAgent.CalculatePath(pos, path);
         }
     }
 
     public void Stop()
     {
         NavMeshAgent.isStopped  = true;
-        testpath                = null;
+        path                    = null;
         NavMeshAgent.ResetPath();
     }
 
