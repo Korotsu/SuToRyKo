@@ -46,6 +46,8 @@ and executes them in order, skipping some if it does not have enough ressources 
 
 ### Interactive formations:
 
+![Interactive formations](Screenshots/Curve.png) ![Interactive formations](Screenshots/Line.png) ![Interactive formations](Screenshots/Spike.png)
+
 With every selection (especially for the player), a new group of units is formed.  
 This group can either be moved as usual, or you can apply formations using UI buttons, or the numpad keys.
 
@@ -61,10 +63,18 @@ You can even select temporary units to join a locked group!
 
 ### Fog of war:
 
+![UI](Screenshots/FOW.png)
+
 There is two layers of fog: The permanent and the non-visibility layers.  
 In places that were not explored, the area is shrouded in *dark grey*, and nothing inside is visible apart from a hint of the terrain.  
 In places that were previously explored but not currently watched by your units, the area is shrouded in *light grey*, and no enemy units are visible inside.
 Any area currently supervised by of your units, a neutral building, or one of your buildings, will be lit up and enemies can be seen inside.
+
+### UI Added:
+
+We added UI in order to set formation and unit/tactician state.
+
+![UI](Screenshots/UI.png)
 
 ### Bug known:
 
